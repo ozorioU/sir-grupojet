@@ -4,6 +4,7 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>SIR — Grupo Jet</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
@@ -9017,10 +9018,7 @@ function ItensPage({
     showToast("Obra enviada para Custos!");
   };
   const importarExcel = (arrayBuffer, filename, sincronizar = false) => {
-    // Parser XLSX básico usando SheetJS via CDN dinâmico
-    const script = document.createElement("script");
-    script.src = "https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js";
-    script.onload = () => {
+    const executar = () => {
       try {
         const wb = XLSX.read(arrayBuffer, {
           type: "array"
@@ -9125,8 +9123,16 @@ function ItensPage({
         showToast("Erro ao processar planilha: " + err.message, "err");
       }
     };
-    script.onerror = () => showToast("Erro ao carregar biblioteca XLSX.", "err");
-    document.head.appendChild(script);
+    // Se XLSX já carregado, executar direto; senão carregar via CDN
+    if (typeof XLSX !== "undefined") {
+      executar();
+    } else {
+      const script = document.createElement("script");
+      script.src = "https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js";
+      script.onload = executar;
+      script.onerror = () => showToast("Erro ao carregar biblioteca XLSX.", "err");
+      document.head.appendChild(script);
+    }
   };
   const save = () => {
     var _form$descricao;
@@ -9701,10 +9707,7 @@ function PontosPage({
     showToast("Obra enviada para Custos!");
   };
   const importarExcel = (arrayBuffer, filename, sincronizar = false) => {
-    // Parser XLSX básico usando SheetJS via CDN dinâmico
-    const script = document.createElement("script");
-    script.src = "https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js";
-    script.onload = () => {
+    const executar = () => {
       try {
         const wb = XLSX.read(arrayBuffer, {
           type: "array"
@@ -9809,8 +9812,16 @@ function PontosPage({
         showToast("Erro ao processar planilha: " + err.message, "err");
       }
     };
-    script.onerror = () => showToast("Erro ao carregar biblioteca XLSX.", "err");
-    document.head.appendChild(script);
+    // Se XLSX já carregado, executar direto; senão carregar via CDN
+    if (typeof XLSX !== "undefined") {
+      executar();
+    } else {
+      const script = document.createElement("script");
+      script.src = "https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js";
+      script.onload = executar;
+      script.onerror = () => showToast("Erro ao carregar biblioteca XLSX.", "err");
+      document.head.appendChild(script);
+    }
   };
   const save = () => {
     var _form$descricao2;
@@ -10925,10 +10936,7 @@ function CustosInternoPage({
     showToast("Obra enviada para Custos!");
   };
   const importarExcel = (arrayBuffer, filename, sincronizar = false) => {
-    // Parser XLSX básico usando SheetJS via CDN dinâmico
-    const script = document.createElement("script");
-    script.src = "https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js";
-    script.onload = () => {
+    const executar = () => {
       try {
         const wb = XLSX.read(arrayBuffer, {
           type: "array"
@@ -11033,8 +11041,16 @@ function CustosInternoPage({
         showToast("Erro ao processar planilha: " + err.message, "err");
       }
     };
-    script.onerror = () => showToast("Erro ao carregar biblioteca XLSX.", "err");
-    document.head.appendChild(script);
+    // Se XLSX já carregado, executar direto; senão carregar via CDN
+    if (typeof XLSX !== "undefined") {
+      executar();
+    } else {
+      const script = document.createElement("script");
+      script.src = "https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js";
+      script.onload = executar;
+      script.onerror = () => showToast("Erro ao carregar biblioteca XLSX.", "err");
+      document.head.appendChild(script);
+    }
   };
   const save = () => {
     var _form$descricao3;
