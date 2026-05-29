@@ -24,19 +24,23 @@ const SB_URL = "https://lddprbkfrqmrvspcstsm.supabase.co";
 const SB_KEY = "sb_publishable_jXZSpv_jNAYIK3c06tdJvw_V_1bIND2";
 async function sbFetch(table, method = "GET", body = null, query = "") {
   const url = SB_URL + "/rest/v1/" + table + (query ? "?" + query : "");
+  let prefer = "";
+  if (method === "POST" && query === "on_conflict=id") prefer = "resolution=merge-duplicates,return=representation";else if (method === "POST") prefer = "return=representation";
   const res = await fetch(url, {
     method,
     headers: {
       "apikey": SB_KEY,
       "Authorization": "Bearer " + SB_KEY,
       "Content-Type": "application/json",
-      "Prefer": method === "POST" ? "return=representation" : ""
+      ...(prefer ? {
+        "Prefer": prefer
+      } : {})
     },
     body: body ? JSON.stringify(body) : undefined
   });
   if (!res.ok) {
     const e = await res.text();
-    console.error("SB error", e);
+    console.error("SB error [" + table + "]:", e);
     return null;
   }
   if (method === "DELETE" || res.status === 204) return true;
@@ -12086,8 +12090,8 @@ function App() {
   const [user, setUser] = useState(null);
   const [page, setPage] = useState("dashboard");
   const [dashFilter, setDashFilter] = useState("");
-  const [obras, setObras] = useState([...OBRAS_DATA]);
-  const [budgets, setBudgets] = useState([...BUDGETS_INIT]);
+  const [obras, setObras] = useState([]);
+  const [budgets, setBudgets] = useState([]);
   const [toast, setToast] = useState(null);
   const [openBudgetId, setOpenBudgetId] = useState(null);
   const [pontos, setPontos] = useState([]);
@@ -12107,28 +12111,70 @@ function App() {
   const loadFromSupabase = async () => {
     try {
       const [dbObras, dbBudgets, dbPontos, dbCustos, dbEspelhos] = await Promise.all([sb.get("sir_obras", "order=cod"), sb.get("sir_orcamentos", "order=ordem"), sb.get("sir_pontos", "order=created_at"), sb.get("sir_custos", "order=data"), sb.get("sir_espelhos", "order=created_at")]);
-      if (dbObras !== null && dbObras !== void 0 && dbObras.length) setObras(dbObras);
-      if (dbBudgets !== null && dbBudgets !== void 0 && dbBudgets.length) setBudgets(dbBudgets.map(b => ({
-        ...b,
-        historico: b.historico || []
-      })));
+
+      // Obras: se Supabase vazio, faz seed com OBRAS_DATA
+      if (dbObras && dbObras.length > 0) {
+        setObras(dbObras);
+      } else if (dbObras && dbObras.length === 0) {
+        // Primeiro uso: popular Supabase com dados iniciais
+        console.log("Supabase vazio, populando com dados iniciais...");
+        for (const o of OBRAS_DATA) await sb.upsert("sir_obras", o);
+        setObras([...OBRAS_DATA]);
+      }
+
+      // Orçamentos: seed se vazio
+      if (dbBudgets && dbBudgets.length > 0) {
+        setBudgets(dbBudgets.map(b => ({
+          ...b,
+          historico: b.historico || []
+        })));
+      } else if (dbBudgets && dbBudgets.length === 0) {
+        for (const b of BUDGETS_INIT) await sb.upsert("sir_orcamentos", b);
+        setBudgets([...BUDGETS_INIT]);
+      }
       if (dbPontos !== null && dbPontos !== void 0 && dbPontos.length) setPontos(dbPontos);
       if (dbCustos !== null && dbCustos !== void 0 && dbCustos.length) setCustosInt(dbCustos);
       if (dbEspelhos !== null && dbEspelhos !== void 0 && dbEspelhos.length) setEspelhos(dbEspelhos);
+      console.log("Supabase carregado: obras=" + (dbObras === null || dbObras === void 0 ? void 0 : dbObras.length) + " pontos=" + (dbPontos === null || dbPontos === void 0 ? void 0 : dbPontos.length));
     } catch (e) {
       console.log("Supabase load error:", e.message);
     }
   };
-  const syncObra = o => sb.upsert("sir_obras", o).catch(() => {});
-  const delObra = id => sb.del("sir_obras", id).catch(() => {});
-  const syncBudget = b => sb.upsert("sir_orcamentos", b).catch(() => {});
-  const delBudget = id => sb.del("sir_orcamentos", id).catch(() => {});
-  const syncPonto = p => sb.upsert("sir_pontos", p).catch(() => {});
-  const delPonto = id => sb.del("sir_pontos", id).catch(() => {});
-  const syncCusto = c => sb.upsert("sir_custos", c).catch(() => {});
-  const delCusto = id => sb.del("sir_custos", id).catch(() => {});
-  const syncEspelho = e => sb.upsert("sir_espelhos", e).catch(() => {});
-  const delEspelho = id => sb.del("sir_espelhos", id).catch(() => {});
+  const syncObra = async o => {
+    const r = await sb.upsert("sir_obras", o);
+    if (!r) console.error("syncObra falhou", o.id);
+  };
+  const delObra = async id => {
+    await sb.del("sir_obras", id);
+  };
+  const syncBudget = async b => {
+    const r = await sb.upsert("sir_orcamentos", b);
+    if (!r) console.error("syncBudget falhou", b.id);
+  };
+  const delBudget = async id => {
+    await sb.del("sir_orcamentos", id);
+  };
+  const syncPonto = async p => {
+    const r = await sb.upsert("sir_pontos", p);
+    if (!r) console.error("syncPonto falhou", p.id);else console.log("syncPonto OK", p.id);
+  };
+  const delPonto = async id => {
+    await sb.del("sir_pontos", id);
+  };
+  const syncCusto = async c => {
+    const r = await sb.upsert("sir_custos", c);
+    if (!r) console.error("syncCusto falhou", c.id);
+  };
+  const delCusto = async id => {
+    await sb.del("sir_custos", id);
+  };
+  const syncEspelho = async e => {
+    const r = await sb.upsert("sir_espelhos", e);
+    if (!r) console.error("syncEspelho falhou", e.id);
+  };
+  const delEspelho = async id => {
+    await sb.del("sir_espelhos", id);
+  };
 
   // Seções colapsáveis — DEVE ficar antes de qualquer return condicional
   const [collapsed, setCollapsed] = useState({});
