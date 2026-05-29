@@ -9066,6 +9066,10 @@ function ItensPage({
         if (novos.length > 0) {
           setPontos(p => [...p, ...novos]);
           showToast(`${importados} ponto(s) importado(s)!${ignorados > 0 ? " " + ignorados + " ignorado(s)." : ""}`);
+          // Salvar no Supabase
+          if (syncPonto) {
+            Promise.all(novos.map(p => syncPonto(p))).then(() => console.log("Import sync OK: " + novos.length + " pontos")).catch(e => console.error("Import sync erro:", e));
+          }
         } else {
           showToast(`Nenhum ponto novo. ${ignorados} já existentes ou sem dados.`, "info");
         }
@@ -9710,6 +9714,10 @@ function PontosPage({
         if (novos.length > 0) {
           setPontos(p => [...p, ...novos]);
           showToast(`${importados} ponto(s) importado(s)!${ignorados > 0 ? " " + ignorados + " ignorado(s)." : ""}`);
+          // Salvar no Supabase
+          if (syncPonto) {
+            Promise.all(novos.map(p => syncPonto(p))).then(() => console.log("Import sync OK: " + novos.length + " pontos")).catch(e => console.error("Import sync erro:", e));
+          }
         } else {
           showToast(`Nenhum ponto novo. ${ignorados} já existentes ou sem dados.`, "info");
         }
@@ -10849,6 +10857,10 @@ function CustosInternoPage({
         if (novos.length > 0) {
           setPontos(p => [...p, ...novos]);
           showToast(`${importados} ponto(s) importado(s)!${ignorados > 0 ? " " + ignorados + " ignorado(s)." : ""}`);
+          // Salvar no Supabase
+          if (syncPonto) {
+            Promise.all(novos.map(p => syncPonto(p))).then(() => console.log("Import sync OK: " + novos.length + " pontos")).catch(e => console.error("Import sync erro:", e));
+          }
         } else {
           showToast(`Nenhum ponto novo. ${ignorados} já existentes ou sem dados.`, "info");
         }
