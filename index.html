@@ -5624,7 +5624,8 @@ function CustosPage({
   }));
 
   // Mostrar obras espelhadas ou (se nenhuma espelhada ainda) as que têm movimento financeiro
-  const rows = espelhos && espelhos.length > 0 ? obras.filter(o => espelhos.some(e => String(e.obra_id) === String(o.id))) : obras.filter(o => o.custo > 0 || o.fat > 0);
+  // Mostrar APENAS obras espelhadas — sem fallback
+  const rows = espelhos ? obras.filter(o => espelhos.some(e => String(e.obra_id) === String(o.id))) : [];
   const tg = rows.reduce((s, o) => s + o.custo, 0);
   const tf = rows.filter(o => o.fat > 0).reduce((s, o) => s + o.fat, 0);
   const l = tf - tg;
