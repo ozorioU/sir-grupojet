@@ -5611,6 +5611,7 @@ function CustosPage({
   espelhos,
   setEspelhos,
   setCustosInt,
+  delEspelho,
   showToast
 }) {
   const [expand, setExpand] = useState(null);
@@ -5903,8 +5904,11 @@ function CustosPage({
       title: "Remover de Obras e Custos",
       onClick: e => {
         e.stopPropagation();
+        const rem = espelhos ? espelhos.find(e2 => e2.obra_id === o.id) : null;
         if (setEspelhos) setEspelhos(p => p.filter(e2 => e2.obra_id !== o.id));
+        if (rem && setEspelhos) setEspelhos(p => p.filter(e2 => e2.id !== rem.id));
         showToast("Obra removida de Obras e Custos.");
+        if (rem && delEspelho) delEspelho(rem.id);
       }
     }, /*#__PURE__*/React.createElement("svg", {
       width: "13",
@@ -12283,6 +12287,7 @@ function App() {
           espelhos: espelhos,
           setEspelhos: setEspelhos,
           setCustosInt: setCustosInt,
+          delEspelho: delEspelho,
           showToast: showToast
         });
       case "custosint":
