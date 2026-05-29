@@ -22,6 +22,36 @@
   <script type="text/babel" data-presets="react">
 const { useState, useMemo, useEffect } = React;
 
+// ─── SUPABASE ─────────────────────────────────────────────────────────────────
+const SB_URL = "https://lddprbkfrqmrvspcstsm.supabase.co";
+const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxkZHByYmtmcnFtcnZzcGNzdHNtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk4NTUzNzksImV4cCI6MjA5NTQzMTM3OX0.raDOLzL-XK4QB-aeRfoHLgZFd5R67SmFL3KhVKIYY7Q";
+
+async function sbFetch(table, method="GET", body=null, query="") {
+  const url = SB_URL+"/rest/v1/"+table+(query?"?"+query:"");
+  const res = await fetch(url, {
+    method,
+    headers: {
+      "apikey": SB_KEY,
+      "Authorization": "Bearer "+SB_KEY,
+      "Content-Type": "application/json",
+      "Prefer": method==="POST"?"return=representation":"",
+    },
+    body: body ? JSON.stringify(body) : undefined,
+  });
+  if(!res.ok) { const e=await res.text(); console.error("SB error",e); return null; }
+  if(method==="DELETE"||res.status===204) return true;
+  return res.json().catch(()=>null);
+}
+
+// CRUD helpers
+const sb = {
+  get:    (t,q)    => sbFetch(t,"GET",null,q),
+  post:   (t,body) => sbFetch(t,"POST",body,""),
+  patch:  (t,id,b) => sbFetch(t,"PATCH",b,"id=eq."+id),
+  del:    (t,id)   => sbFetch(t,"DELETE",null,"id=eq."+id),
+  upsert: (t,body) => sbFetch(t,"POST",body,"on_conflict=id"),
+};
+
 const LOGO_B64 = "data:image/png;base64,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peaskD3NygMZty2s1e0Kqio6WnfQ2WleXwwucC+V2Mb78cM4zgDoyelZjkp6FqL5rZmqayB4tloJdG5zfZlqCMNA7d3O8ew7vatu0ZyZGR1TKjVt9E8TeJpaFhbveMjuOPBo8VYKxWm22K1QWu00cVJR07d2OKMYAH3ntJ4lAe5ERAEREAREQBERAFre1G5ts+znUNyLt0w26bcP7ZYQ3/UQtkWibd7BfdUbOauxaehjlqqqaIPD5Qwc21wceJ+aB5oCiXNPe4MYC57jho7Sv0R0XaG2HSNosrcf7DRRQEjrLWAE+Zyqt6V2B69p9T2upuVBRtooayKScirY4hgeC7h18AVbtAEREAREQBERAEREARFw8uDCWjLscB2oDULxtH0va6ueknqZ3zwPLHsjhJw4HBGTgKLNou0Ko1QwUFJA6ktzX72645fKR0F2Ogdy767ZlrOuuE9TLBSh08rpHE1AOMnKylj2N1rqhr7zc4Y4QfajpwXOd3ZIAHuKr68ra5qKdFU3GL7McO1ssmxobP6Ziu6qlNduePYl5ms7MdNTai1HCHNcKKlcJah+OGBxDfEn4ZVjQMDAXisVot9ktzKC207YIGdQ4lx6yT1le5SfQ9IWmUN1vMnxb8vYRLXtZeqXG+liEeCXm+1hERdo4YREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAEREAREQBERAf/9k=";
 
 const OBRAS_DATA = [
@@ -466,12 +496,13 @@ function LoginPage({onLogin}) {
   const [email, setEmail] = useState("");
   const [pw, setPw] = useState("");
   const [err, setErr] = useState("");
+  const [busy, setBusy] = useState(false);
 
-  const go = () => {
+  const go = async () => {
     if(!email||!pw) { setErr("Preencha e-mail e senha."); return; }
-    const u = PROFILES.find(p => p.email===email);
-    if(!u) { setErr("E-mail não encontrado."); return; }
-    onLogin(u);
+    setBusy(true);
+    const erro = await onLogin(email, pw);
+    if(erro) { setErr(erro); setBusy(false); }
   };
 
   return (
@@ -490,14 +521,7 @@ function LoginPage({onLogin}) {
           <input style={inp} type="password" placeholder="••••••••" value={pw} onChange={e=>setPw(e.target.value)} onKeyDown={e=>e.key==="Enter"&&go()}/>
         </div>
         {err && <div style={{color:"#991b1b",fontSize:11,background:"#fee2e2",padding:"6px 9px",borderRadius:6,marginBottom:8}}>{err}</div>}
-        <div style={{background:"#f9fafb",borderRadius:6,padding:"8px 10px",fontSize:10,color:"#6b7280",marginBottom:12,lineHeight:2}}>
-          <strong>Usuários do sistema:</strong><br/>
-          {PROFILES.map(p => (
-            <span key={p.id} style={{cursor:"pointer",textDecoration:"underline",display:"block"}} onClick={()=>setEmail(p.email)}>
-              {p.email} <span style={{opacity:.7}}>({p.grupo} · {p.perfil})</span>
-            </span>
-          ))}
-        </div>
+
         <button style={{...btn("primary"),width:"100%",justifyContent:"center"}} onClick={go}>Entrar</button>
       </div>
     </div>
@@ -1434,7 +1458,7 @@ function Dashboard({obras, budgets, pontos, custosInt=[], espelhos=[], user, set
 }
 
 // ─── OBRAS ────────────────────────────────────────────────────────────────────
-function ObrasPage({obras, setObras, dashFilter, setDashFilter, user, espelhos, setEspelhos, setPage, showToast}) {
+function ObrasPage({obras, setObras, dashFilter, setDashFilter, user, espelhos, setEspelhos, setPage, syncObra, delObra, syncEspelho, delEspelho, showToast}) {
   const [pdfData, setPdfData] = useState(null);
   const [search, setSearch] = useState("");
   const [fst, setFst] = useState("all");
@@ -1573,10 +1597,14 @@ function ObrasPage({obras, setObras, dashFilter, setDashFilter, user, espelhos, 
                               title={jaEspelhada?"Já enviada para Obras e Custos — clique para remover":"Enviar para Obras e Custos"}
                               onClick={()=>{
                                 if(jaEspelhada) {
+                                  const rem = espelhos.find(e=>e.obra_id===o.id);
                                   setEspelhos(p=>p.filter(e=>e.obra_id!==o.id));
                                   showToast("Espelho removido de Obras e Custos.");
+                                  if(delEspelho && rem) delEspelho(rem.id);
                                 } else {
-                                  setEspelhos(p=>[...p,{id:uid(),obra_id:o.id,enviado_em:new Date().toLocaleDateString("pt-BR"),enviado_por:user.nome}]);
+                                  const esp = {id:uid(),obra_id:o.id,enviado_em:new Date().toLocaleDateString("pt-BR"),enviado_por:user.nome};
+                                  setEspelhos(p=>[...p,esp]);
+                                  if(syncEspelho) syncEspelho(esp);
                                   showToast("Obra enviada para Obras e Custos!");
                                   setPage("custos");
                                 }
@@ -1929,7 +1957,7 @@ function EsteiraTimeline({historico}) {
   );
 }
 
-function OrcamentosPage({budgets, setBudgets, user, openBudgetId, setOpenBudgetId, showToast}) {
+function OrcamentosPage({budgets, setBudgets, user, openBudgetId, setOpenBudgetId, syncBudget, delBudget, showToast}) {
   const [pdfData, setPdfData] = useState(null);
   const [search, setSearch] = useState("");
   const [filtroEtapa, setFiltroEtapa] = useState("all");
@@ -2565,7 +2593,7 @@ function ImportarPage({showToast}) {
 
 
 // ─── COLABORADORES ────────────────────────────────────────────────────────────
-function PontosPage({pontos, setPontos, showToast}) {
+function PontosPage({pontos, setPontos, syncPonto, delPonto, showToast}) {
   const [modal, setModal] = useState(null);
   const [confirm, setConfirm] = useState(null);
   const [form, setForm] = useState({});
@@ -3060,7 +3088,7 @@ function UsuariosPage({showToast}) {
 
 // ─── TIMELINE ─────────────────────────────────────────────────────────────────
 // ─── CUSTOS INTERNO ──────────────────────────────────────────────────────────
-function CustosInternoPage({custos=[], setCustos, pontos=[], showToast}) {
+function CustosInternoPage({custos=[], setCustos, pontos=[], syncCusto, delCusto, showToast}) {
   const hoje = new Date();
   const mesAtualKey = `${hoje.getFullYear()}-${String(hoje.getMonth()+1).padStart(2,"0")}`;
   const [modal, setModal] = useState(null);
@@ -3469,19 +3497,49 @@ function App() {
   const [collapsed, setCollapsed] = useState({});
   const toggleSection = s => setCollapsed(p=>({...p,[s]:!p[s]}));
 
-  if(!user) return <LoginPage onLogin={u=>{setUser(u);setTimeout(()=>showToast(`Bem-vindo, ${u.nome.split(" ")[0]}!`),100);}}/>;
+  if(!user) return <LoginPage
+    onLogin={async (email, senha) => {
+      setLoading(true);
+      try {
+        const users = await sb.get("sir_usuarios", `email=eq.${encodeURIComponent(email)}&senha=eq.${encodeURIComponent(senha)}`);
+        if(users && users.length > 0) {
+          const u = {...users[0], modulos: users[0].modulos || ALL_MODS};
+          setUser(u);
+          await loadFromSupabase();
+          setTimeout(()=>showToast(`Bem-vindo, ${u.nome.split(" ")[0]}!`),100);
+        } else {
+          // Fallback: tentar login local (para desenvolvimento)
+          const local = PROFILES.find(p=>p.email===email);
+          if(local) {
+            setUser(local);
+            await loadFromSupabase();
+            setTimeout(()=>showToast(`Bem-vindo, ${local.nome.split(" ")[0]}!`),100);
+          } else {
+            setLoading(false);
+            return "E-mail ou senha incorretos.";
+          }
+        }
+      } catch(e) {
+        // Offline: usar login local
+        const local = PROFILES.find(p=>p.email===email);
+        if(local) { setUser(local); setTimeout(()=>showToast(`Bem-vindo (offline), ${local.nome.split(" ")[0]}!`),100); }
+        else { setLoading(false); return "E-mail ou senha incorretos."; }
+      }
+      setLoading(false);
+    }}
+  />;
 
   const renderPage = () => {
     switch(page) {
       case "dashboard": return <DashboardPrincipal obras={obras} budgets={budgets} pontos={pontos} user={user} setPage={setPage} setDashFilter={setDashFilter} setOpenBudgetId={setOpenBudgetId}/>;
       case "dashint": return <Dashboard obras={obras} budgets={budgets} pontos={pontos} custosInt={custosInt} espelhos={espelhos} user={user} setPage={setPage} setDashFilter={setDashFilter} setOpenBudgetId={setOpenBudgetId}/>;
-      case "obras": return <ObrasPage obras={obras} setObras={setObras} dashFilter={dashFilter} setDashFilter={setDashFilter} user={user} espelhos={espelhos} setEspelhos={setEspelhos} setPage={setPage} showToast={showToast}/>;
+      case "obras": return <ObrasPage obras={obras} setObras={setObras} dashFilter={dashFilter} setDashFilter={setDashFilter} user={user} espelhos={espelhos} setEspelhos={setEspelhos} setPage={setPage} syncObra={syncObra} delObra={delObra} syncEspelho={syncEspelho} delEspelho={delEspelho} showToast={showToast}/>;
       case "custos": return <CustosPage obras={obras} setObras={setObras} espelhos={espelhos} setEspelhos={setEspelhos} setCustosInt={setCustosInt} showToast={showToast}/>;
-      case "custosint": return <CustosInternoPage custos={custosInt} setCustos={setCustosInt} pontos={pontos} showToast={showToast}/>;
-      case "orcamentos": return <OrcamentosPage budgets={budgets} setBudgets={setBudgets} user={user} openBudgetId={openBudgetId} setOpenBudgetId={setOpenBudgetId} showToast={showToast}/>;
+      case "custosint": return <CustosInternoPage custos={custosInt} setCustos={setCustosInt} pontos={pontos} syncCusto={syncCusto} delCusto={delCusto} showToast={showToast}/>;
+      case "orcamentos": return <OrcamentosPage budgets={budgets} setBudgets={setBudgets} user={user} openBudgetId={openBudgetId} setOpenBudgetId={setOpenBudgetId} syncBudget={syncBudget} delBudget={delBudget} showToast={showToast}/>;
       case "itens": return <ItensPage showToast={showToast} user={user}/>;
       case "importar": return <ImportarPage showToast={showToast}/>;
-      case "pontos": return <PontosPage pontos={pontos} setPontos={setPontos} showToast={showToast}/>;
+      case "pontos": return <PontosPage pontos={pontos} setPontos={setPontos} syncPonto={syncPonto} delPonto={delPonto} showToast={showToast}/>;
       case "usuarios": return <UsuariosPage showToast={showToast}/>;
       default: return <Dashboard obras={obras} setPage={setPage} setDashFilter={setDashFilter}/>;
     }
