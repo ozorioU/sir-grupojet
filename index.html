@@ -9902,15 +9902,60 @@ function PontosPage({
       const reader = new FileReader();
       reader.onload = ev => {
         try {
-          // Parsear XLSX manualmente via ArrayBuffer
-          // Usar SheetJS via CDN não está disponível, então parsear CSV-like
-          // Vamos usar uma abordagem com FileReader + parsing manual do xlsx binário
-          // Alternativa: pedir ao usuário para salvar como CSV
-          // Por ora, usamos um parser simples de texto TSV/CSV
-          const data = ev.target.result;
-          importarExcel(data, file.name);
+          importarExcel(ev.target.result, file.name, false);
         } catch (err) {
           showToast("Erro ao importar: " + err.message, "err");
+        }
+      };
+      reader.readAsArrayBuffer(file);
+      e.target.value = "";
+    }
+  })), /*#__PURE__*/React.createElement("label", {
+    style: {
+      ...btn(),
+      cursor: "pointer",
+      display: "inline-flex",
+      alignItems: "center",
+      gap: 6,
+      background: "#eff6ff",
+      borderColor: "#bfdbfe",
+      color: "#1e40af"
+    },
+    title: "Adiciona novos com data + remove os que n\xE3o est\xE3o na planilha"
+  }, /*#__PURE__*/React.createElement("svg", {
+    width: "14",
+    height: "14",
+    viewBox: "0 0 24 24",
+    fill: "none",
+    stroke: "currentColor",
+    strokeWidth: "2",
+    strokeLinecap: "round",
+    strokeLinejoin: "round"
+  }, /*#__PURE__*/React.createElement("polyline", {
+    points: "23 4 23 10 17 10"
+  }), /*#__PURE__*/React.createElement("polyline", {
+    points: "1 20 1 14 7 14"
+  }), /*#__PURE__*/React.createElement("path", {
+    d: "M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"
+  })), "Sincronizar Excel", /*#__PURE__*/React.createElement("input", {
+    type: "file",
+    accept: ".xlsx,.xls",
+    style: {
+      display: "none"
+    },
+    onChange: e => {
+      const file = e.target.files[0];
+      if (!file) return;
+      if (!confirm("Sincronizar vai adicionar pontos novos E remover os que não estão na planilha ou sem data. Confirmar?")) {
+        e.target.value = "";
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = ev => {
+        try {
+          importarExcel(ev.target.result, file.name, true);
+        } catch (err) {
+          showToast("Erro ao sincronizar: " + err.message, "err");
         }
       };
       reader.readAsArrayBuffer(file);
