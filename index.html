@@ -4685,6 +4685,7 @@ function ObrasPage({
   delObra,
   syncEspelho,
   delEspelho,
+  delEspelhoByObraId,
   showToast
 }) {
   const [pdfData, setPdfData] = useState(null);
@@ -4775,9 +4776,11 @@ function ObrasPage({
   };
   const del = id => {
     setObras(p => p.filter(o => o.id !== id));
+    setEspelhos(p => p.filter(e => String(e.obra_id) !== String(id)));
     setConfirm(null);
     showToast("Obra excluída.");
     if (delObra) delObra(id);
+    if (delEspelhoByObraId) delEspelhoByObraId(id);
   };
   const totalOrc = filtered.reduce((s, o) => s + o.orc, 0);
   const totalFat = filtered.reduce((s, o) => s + o.fat, 0);
@@ -9013,7 +9016,7 @@ function ItensPage({
     setCustosInt(p => [...p, novoCusto]);
     showToast("Obra enviada para Custos!");
   };
-  const importarExcel = (arrayBuffer, filename) => {
+  const importarExcel = (arrayBuffer, filename, sincronizar = false) => {
     // Parser XLSX básico usando SheetJS via CDN dinâmico
     const script = document.createElement("script");
     script.src = "https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js";
@@ -9045,7 +9048,6 @@ function ItensPage({
           let ativacao = "";
           if (data && data !== "—" && data !== "") {
             if (typeof data === "number") {
-              // Serial do Excel para data
               const d = new Date((data - 25569) * 86400 * 1000);
               ativacao = d.toISOString().slice(0, 10);
             } else {
@@ -9054,6 +9056,11 @@ function ItensPage({
                 ativacao = `${parts[2].length === 2 ? "20" + parts[2] : parts[2]}-${parts[1].padStart(2, "0")}-${parts[0].padStart(2, "0")}`;
               }
             }
+          }
+          // Ignorar linhas sem data de configuração
+          if (!ativacao) {
+            ignorados++;
+            return;
           }
           // Verificar se OS já existe
           const jaExiste = pontos.some(p => p.os === os);
@@ -9072,10 +9079,42 @@ function ItensPage({
           });
           importados++;
         });
-        if (novos.length > 0) {
+        if (sincronizar) {
+          // Sincronizar: substituir tudo pelos pontos da planilha com data válida
+          // OSs válidas da planilha (com data)
+          const osValidas = new Set([...novos.map(p => p.os), ...pontos.filter(p => {
+            // manter pontos existentes que estão na planilha
+            return false; // serão recalculados abaixo
+          })]);
+          // Pontos existentes que têm OS na planilha (já existentes = não estão em novos)
+          const osNaPlanilha = new Set();
+          rows.slice(1).forEach(row => {
+            const os = String(row[0] || "").trim();
+            const data = row[3];
+            let ativacao = "";
+            if (data && data !== "—" && data !== "") {
+              if (typeof data === "number") {
+                const d = new Date((data - 25569) * 86400 * 1000);
+                ativacao = d.toISOString().slice(0, 10);
+              } else {
+                const parts = String(data).split("/");
+                if (parts.length === 3) ativacao = `${parts[2].length === 2 ? "20" + parts[2] : parts[2]}-${parts[1].padStart(2, "0")}-${parts[0].padStart(2, "0")}`;
+              }
+            }
+            if (os && ativacao) osNaPlanilha.add(os);
+          });
+          // Remover pontos que não estão na planilha ou sem data
+          const removidos = pontos.filter(p => !osNaPlanilha.has(p.os));
+          const mantidos = pontos.filter(p => osNaPlanilha.has(p.os));
+          const tudo = [...mantidos, ...novos];
+          setPontos(tudo);
+          // Sync Supabase
+          if (syncPonto) Promise.all(novos.map(p => syncPonto(p))).catch(() => {});
+          if (delPonto) Promise.all(removidos.map(p => delPonto(p.id))).catch(() => {});
+          showToast(`Sincronizado: ${novos.length} adicionado(s), ${removidos.length} removido(s).`);
+        } else if (novos.length > 0) {
           setPontos(p => [...p, ...novos]);
           showToast(`${importados} ponto(s) importado(s)!${ignorados > 0 ? " " + ignorados + " ignorado(s)." : ""}`);
-          // Salvar no Supabase
           if (syncPonto) {
             Promise.all(novos.map(p => syncPonto(p))).then(() => console.log("Import sync OK: " + novos.length + " pontos")).catch(e => console.error("Import sync erro:", e));
           }
@@ -9661,7 +9700,7 @@ function PontosPage({
     setCustosInt(p => [...p, novoCusto]);
     showToast("Obra enviada para Custos!");
   };
-  const importarExcel = (arrayBuffer, filename) => {
+  const importarExcel = (arrayBuffer, filename, sincronizar = false) => {
     // Parser XLSX básico usando SheetJS via CDN dinâmico
     const script = document.createElement("script");
     script.src = "https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js";
@@ -9693,7 +9732,6 @@ function PontosPage({
           let ativacao = "";
           if (data && data !== "—" && data !== "") {
             if (typeof data === "number") {
-              // Serial do Excel para data
               const d = new Date((data - 25569) * 86400 * 1000);
               ativacao = d.toISOString().slice(0, 10);
             } else {
@@ -9702,6 +9740,11 @@ function PontosPage({
                 ativacao = `${parts[2].length === 2 ? "20" + parts[2] : parts[2]}-${parts[1].padStart(2, "0")}-${parts[0].padStart(2, "0")}`;
               }
             }
+          }
+          // Ignorar linhas sem data de configuração
+          if (!ativacao) {
+            ignorados++;
+            return;
           }
           // Verificar se OS já existe
           const jaExiste = pontos.some(p => p.os === os);
@@ -9720,10 +9763,42 @@ function PontosPage({
           });
           importados++;
         });
-        if (novos.length > 0) {
+        if (sincronizar) {
+          // Sincronizar: substituir tudo pelos pontos da planilha com data válida
+          // OSs válidas da planilha (com data)
+          const osValidas = new Set([...novos.map(p => p.os), ...pontos.filter(p => {
+            // manter pontos existentes que estão na planilha
+            return false; // serão recalculados abaixo
+          })]);
+          // Pontos existentes que têm OS na planilha (já existentes = não estão em novos)
+          const osNaPlanilha = new Set();
+          rows.slice(1).forEach(row => {
+            const os = String(row[0] || "").trim();
+            const data = row[3];
+            let ativacao = "";
+            if (data && data !== "—" && data !== "") {
+              if (typeof data === "number") {
+                const d = new Date((data - 25569) * 86400 * 1000);
+                ativacao = d.toISOString().slice(0, 10);
+              } else {
+                const parts = String(data).split("/");
+                if (parts.length === 3) ativacao = `${parts[2].length === 2 ? "20" + parts[2] : parts[2]}-${parts[1].padStart(2, "0")}-${parts[0].padStart(2, "0")}`;
+              }
+            }
+            if (os && ativacao) osNaPlanilha.add(os);
+          });
+          // Remover pontos que não estão na planilha ou sem data
+          const removidos = pontos.filter(p => !osNaPlanilha.has(p.os));
+          const mantidos = pontos.filter(p => osNaPlanilha.has(p.os));
+          const tudo = [...mantidos, ...novos];
+          setPontos(tudo);
+          // Sync Supabase
+          if (syncPonto) Promise.all(novos.map(p => syncPonto(p))).catch(() => {});
+          if (delPonto) Promise.all(removidos.map(p => delPonto(p.id))).catch(() => {});
+          showToast(`Sincronizado: ${novos.length} adicionado(s), ${removidos.length} removido(s).`);
+        } else if (novos.length > 0) {
           setPontos(p => [...p, ...novos]);
           showToast(`${importados} ponto(s) importado(s)!${ignorados > 0 ? " " + ignorados + " ignorado(s)." : ""}`);
-          // Salvar no Supabase
           if (syncPonto) {
             Promise.all(novos.map(p => syncPonto(p))).then(() => console.log("Import sync OK: " + novos.length + " pontos")).catch(e => console.error("Import sync erro:", e));
           }
@@ -10804,7 +10879,7 @@ function CustosInternoPage({
     setCustosInt(p => [...p, novoCusto]);
     showToast("Obra enviada para Custos!");
   };
-  const importarExcel = (arrayBuffer, filename) => {
+  const importarExcel = (arrayBuffer, filename, sincronizar = false) => {
     // Parser XLSX básico usando SheetJS via CDN dinâmico
     const script = document.createElement("script");
     script.src = "https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js";
@@ -10836,7 +10911,6 @@ function CustosInternoPage({
           let ativacao = "";
           if (data && data !== "—" && data !== "") {
             if (typeof data === "number") {
-              // Serial do Excel para data
               const d = new Date((data - 25569) * 86400 * 1000);
               ativacao = d.toISOString().slice(0, 10);
             } else {
@@ -10845,6 +10919,11 @@ function CustosInternoPage({
                 ativacao = `${parts[2].length === 2 ? "20" + parts[2] : parts[2]}-${parts[1].padStart(2, "0")}-${parts[0].padStart(2, "0")}`;
               }
             }
+          }
+          // Ignorar linhas sem data de configuração
+          if (!ativacao) {
+            ignorados++;
+            return;
           }
           // Verificar se OS já existe
           const jaExiste = pontos.some(p => p.os === os);
@@ -10863,10 +10942,42 @@ function CustosInternoPage({
           });
           importados++;
         });
-        if (novos.length > 0) {
+        if (sincronizar) {
+          // Sincronizar: substituir tudo pelos pontos da planilha com data válida
+          // OSs válidas da planilha (com data)
+          const osValidas = new Set([...novos.map(p => p.os), ...pontos.filter(p => {
+            // manter pontos existentes que estão na planilha
+            return false; // serão recalculados abaixo
+          })]);
+          // Pontos existentes que têm OS na planilha (já existentes = não estão em novos)
+          const osNaPlanilha = new Set();
+          rows.slice(1).forEach(row => {
+            const os = String(row[0] || "").trim();
+            const data = row[3];
+            let ativacao = "";
+            if (data && data !== "—" && data !== "") {
+              if (typeof data === "number") {
+                const d = new Date((data - 25569) * 86400 * 1000);
+                ativacao = d.toISOString().slice(0, 10);
+              } else {
+                const parts = String(data).split("/");
+                if (parts.length === 3) ativacao = `${parts[2].length === 2 ? "20" + parts[2] : parts[2]}-${parts[1].padStart(2, "0")}-${parts[0].padStart(2, "0")}`;
+              }
+            }
+            if (os && ativacao) osNaPlanilha.add(os);
+          });
+          // Remover pontos que não estão na planilha ou sem data
+          const removidos = pontos.filter(p => !osNaPlanilha.has(p.os));
+          const mantidos = pontos.filter(p => osNaPlanilha.has(p.os));
+          const tudo = [...mantidos, ...novos];
+          setPontos(tudo);
+          // Sync Supabase
+          if (syncPonto) Promise.all(novos.map(p => syncPonto(p))).catch(() => {});
+          if (delPonto) Promise.all(removidos.map(p => delPonto(p.id))).catch(() => {});
+          showToast(`Sincronizado: ${novos.length} adicionado(s), ${removidos.length} removido(s).`);
+        } else if (novos.length > 0) {
           setPontos(p => [...p, ...novos]);
           showToast(`${importados} ponto(s) importado(s)!${ignorados > 0 ? " " + ignorados + " ignorado(s)." : ""}`);
-          // Salvar no Supabase
           if (syncPonto) {
             Promise.all(novos.map(p => syncPonto(p))).then(() => console.log("Import sync OK: " + novos.length + " pontos")).catch(e => console.error("Import sync erro:", e));
           }
@@ -11423,6 +11534,8 @@ function CustosInternoPage({
 function FaturamentoInternoPage({
   fats = [],
   setFats,
+  syncFat,
+  delFat,
   showToast
 }) {
   const hoje = new Date();
@@ -11487,11 +11600,13 @@ function FaturamentoInternoPage({
     setFats(p => p.find(f => f.id === n.id) ? p.map(f => f.id === n.id ? n : f) : [...p, n]);
     setModal(null);
     showToast(form.id ? "Lançamento atualizado!" : "Lançamento cadastrado!");
+    if (syncFat) syncFat(n);
   };
   const del = id => {
     setFats(p => p.filter(f => f.id !== id));
     setConfirm(null);
     showToast("Excluído.");
+    if (delFat) delFat(id);
   };
   const SVG_EDIT = /*#__PURE__*/React.createElement("svg", {
     width: "14",
@@ -12148,7 +12263,7 @@ function App() {
   // ── Supabase sync functions ──────────────────────────────────────────────────
   const loadFromSupabase = async () => {
     try {
-      const [dbObras, dbBudgets, dbPontos, dbCustos, dbEspelhos] = await Promise.all([sb.get("sir_obras", "order=cod"), sb.get("sir_orcamentos", "order=ordem"), sb.get("sir_pontos", "order=created_at"), sb.get("sir_custos", "order=data"), sb.get("sir_espelhos", "order=created_at")]);
+      const [dbObras, dbBudgets, dbPontos, dbCustos, dbEspelhos, dbFats] = await Promise.all([sb.get("sir_obras", "order=cod"), sb.get("sir_orcamentos", "order=ordem"), sb.get("sir_pontos", "order=created_at"), sb.get("sir_custos", "order=data"), sb.get("sir_espelhos", "order=created_at"), sb.get("sir_faturamentos", "order=data")]);
 
       // Obras: se Supabase vazio, faz seed com OBRAS_DATA
       if (dbObras && dbObras.length > 0) {
@@ -12176,6 +12291,7 @@ function App() {
         ...e,
         obra_id: String(e.obra_id)
       })));
+      if (dbFats !== null && dbFats !== void 0 && dbFats.length) setFatInt(dbFats);
       console.log("Supabase carregado: obras=" + (dbObras === null || dbObras === void 0 ? void 0 : dbObras.length) + " pontos=" + (dbPontos === null || dbPontos === void 0 ? void 0 : dbPontos.length));
     } catch (e) {
       console.log("Supabase load error:", e.message);
@@ -12212,6 +12328,13 @@ function App() {
   const syncEspelho = async e => {
     const r = await sb.upsert("sir_espelhos", e);
     if (!r) console.error("syncEspelho falhou", e.id);
+  };
+  const syncFat = async f => {
+    const r = await sb.upsert("sir_faturamentos", f);
+    if (!r) console.error("syncFat falhou", f.id);
+  };
+  const delFat = async id => {
+    await sbFetch("sir_faturamentos", "DELETE", null, "id=eq." + id);
   };
   const delEspelho = async id => {
     console.log("Deletando espelho id:", id);
@@ -12293,6 +12416,7 @@ function App() {
           delObra: delObra,
           syncEspelho: syncEspelho,
           delEspelho: delEspelho,
+          delEspelhoByObraId: delEspelhoByObraId,
           showToast: showToast
         });
       case "custos":
@@ -12319,6 +12443,8 @@ function App() {
         return /*#__PURE__*/React.createElement(FaturamentoInternoPage, {
           fats: fatInt,
           setFats: setFatInt,
+          syncFat: syncFat,
+          delFat: delFat,
           showToast: showToast
         });
       case "orcamentos":
