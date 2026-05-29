@@ -9,17 +9,16 @@
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'IBM Plex Sans', system-ui, sans-serif; background: #f3f4f6; }
-    ::-webkit-scrollbar { width: 5px; height: 5px; }
-    ::-webkit-scrollbar-track { background: #f1f1f1; }
-    ::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 99px; }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'IBM Plex Sans',system-ui,sans-serif;background:#f3f4f6}
+    ::-webkit-scrollbar{width:5px;height:5px}
+    ::-webkit-scrollbar-track{background:#f1f1f1}
+    ::-webkit-scrollbar-thumb{background:#d1d5db;border-radius:99px}
   </style>
 </head>
 <body>
   <div id="root"></div>
-  <script>
-function _extends() { return _extends = Object.assign ? Object.assign.bind() : function (n) { for (var e = 1; e < arguments.length; e++) { var t = arguments[e]; for (var r in t) ({}).hasOwnProperty.call(t, r) && (n[r] = t[r]); } return n; }, _extends.apply(null, arguments); }
+  <script>function _extends() { return _extends = Object.assign ? Object.assign.bind() : function (n) { for (var e = 1; e < arguments.length; e++) { var t = arguments[e]; for (var r in t) ({}).hasOwnProperty.call(t, r) && (n[r] = t[r]); } return n; }, _extends.apply(null, arguments); }
 const {
   useState,
   useMemo,
@@ -11624,6 +11623,33 @@ function App() {
     setTimeout(() => setToast(null), 3000);
   };
 
+  // ── Supabase sync functions ──────────────────────────────────────────────────
+  const loadFromSupabase = async () => {
+    try {
+      const [dbObras, dbBudgets, dbPontos, dbCustos, dbEspelhos] = await Promise.all([sb.get("sir_obras", "order=cod"), sb.get("sir_orcamentos", "order=ordem"), sb.get("sir_pontos", "order=created_at"), sb.get("sir_custos", "order=data"), sb.get("sir_espelhos", "order=created_at")]);
+      if (dbObras !== null && dbObras !== void 0 && dbObras.length) setObras(dbObras);
+      if (dbBudgets !== null && dbBudgets !== void 0 && dbBudgets.length) setBudgets(dbBudgets.map(b => ({
+        ...b,
+        historico: b.historico || []
+      })));
+      if (dbPontos !== null && dbPontos !== void 0 && dbPontos.length) setPontos(dbPontos);
+      if (dbCustos !== null && dbCustos !== void 0 && dbCustos.length) setCustosInt(dbCustos);
+      if (dbEspelhos !== null && dbEspelhos !== void 0 && dbEspelhos.length) setEspelhos(dbEspelhos);
+    } catch (e) {
+      console.log("Supabase load error:", e.message);
+    }
+  };
+  const syncObra = o => sb.upsert("sir_obras", o).catch(() => {});
+  const delObra = id => sb.del("sir_obras", id).catch(() => {});
+  const syncBudget = b => sb.upsert("sir_orcamentos", b).catch(() => {});
+  const delBudget = id => sb.del("sir_orcamentos", id).catch(() => {});
+  const syncPonto = p => sb.upsert("sir_pontos", p).catch(() => {});
+  const delPonto = id => sb.del("sir_pontos", id).catch(() => {});
+  const syncCusto = c => sb.upsert("sir_custos", c).catch(() => {});
+  const delCusto = id => sb.del("sir_custos", id).catch(() => {});
+  const syncEspelho = e => sb.upsert("sir_espelhos", e).catch(() => {});
+  const delEspelho = id => sb.del("sir_espelhos", id).catch(() => {});
+
   // Seções colapsáveis — DEVE ficar antes de qualquer return condicional
   const [collapsed, setCollapsed] = useState({});
   const toggleSection = s => setCollapsed(p => ({
@@ -12029,7 +12055,6 @@ class ErrorBoundary extends React.Component {
     return this.props.children;
   }
 }
-ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(ErrorBoundary, null, React.createElement(App)));
-  </script>
+ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(ErrorBoundary, null, React.createElement(App)));</script>
 </body>
 </html>
