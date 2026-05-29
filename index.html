@@ -12210,10 +12210,14 @@ function App() {
     if (!r) console.error("syncEspelho falhou", e.id);
   };
   const delEspelho = async id => {
-    await sbFetch("sir_espelhos", "DELETE", null, "id=eq." + id);
+    console.log("Deletando espelho id:", id);
+    const res = await sbFetch("sir_espelhos", "DELETE", null, "id=eq." + id);
+    console.log("Delete espelho id resultado:", res);
   };
   const delEspelhoByObraId = async obra_id => {
-    await sbFetch("sir_espelhos", "DELETE", null, "obra_id=eq." + obra_id);
+    console.log("Deletando espelho obra_id:", obra_id);
+    const res = await sbFetch("sir_espelhos", "DELETE", null, "obra_id=eq." + obra_id);
+    console.log("Delete espelho resultado:", res);
   };
 
   // Seções colapsáveis — DEVE ficar antes de qualquer return condicional
