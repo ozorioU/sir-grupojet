@@ -1,18 +1,18 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>SIR — Grupo Jet</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
-  <link rel="preconnect" href="https://fonts.googleapis.com"/>
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
-  <style>*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}body{font-family:'IBM Plex Sans',system-ui,sans-serif;background:#f3f4f6}::-webkit-scrollbar{width:5px;height:5px}::-webkit-scrollbar-track{background:#f1f1f1}::-webkit-scrollbar-thumb{background:#d1d5db;border-radius:99px}</style>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SIR — Grupo Jet</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<style>*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}body{font-family:'IBM Plex Sans',system-ui,sans-serif;background:#f3f4f6}::-webkit-scrollbar{width:5px;height:5px}::-webkit-scrollbar-track{background:#f1f1f1}::-webkit-scrollbar-thumb{background:#d1d5db;border-radius:99px}</style>
 </head>
 <body>
-  <div id="root"></div>
-  <script>function _extends() { return _extends = Object.assign ? Object.assign.bind() : function (n) { for (var e = 1; e < arguments.length; e++) { var t = arguments[e]; for (var r in t) ({}).hasOwnProperty.call(t, r) && (n[r] = t[r]); } return n; }, _extends.apply(null, arguments); }
+<div id="root"></div>
+<script>function _extends() { return _extends = Object.assign ? Object.assign.bind() : function (n) { for (var e = 1; e < arguments.length; e++) { var t = arguments[e]; for (var r in t) ({}).hasOwnProperty.call(t, r) && (n[r] = t[r]); } return n; }, _extends.apply(null, arguments); }
 const {
   useState,
   useMemo,
@@ -4771,11 +4771,13 @@ function ObrasPage({
     setObras(p => p.find(o => o.id === novo.id) ? p.map(o => o.id === novo.id ? novo : o) : [...p, novo]);
     setModal(null);
     showToast(form.id ? "Obra atualizada!" : "Obra cadastrada!");
+    if (syncObra) syncObra(novo);
   };
   const del = id => {
     setObras(p => p.filter(o => o.id !== id));
     setConfirm(null);
     showToast("Obra excluída.");
+    if (delObra) delObra(id);
   };
   const totalOrc = filtered.reduce((s, o) => s + o.orc, 0);
   const totalFat = filtered.reduce((s, o) => s + o.fat, 0);
@@ -8023,11 +8025,13 @@ function OrcamentosPage({
     setBudgets(p => p.find(b => b.id === n.id) ? p.map(b => b.id === n.id ? n : b) : [...p, n]);
     setModal(null);
     showToast(form.id ? "Orçamento atualizado!" : "Orçamento criado!");
+    if (syncBudget) syncBudget(n);
   };
   const del = id => {
     setBudgets(p => p.filter(b => b.id !== id));
     setConfirm(null);
     showToast("Excluído.");
+    if (delBudget) delBudget(id);
   };
   const agora = () => new Date().toLocaleString("pt-BR");
 
@@ -9731,11 +9735,13 @@ function PontosPage({
     setPontos(p => p.find(x => x.id === n.id) ? p.map(x => x.id === n.id ? n : x) : [...p, n]);
     setModal(null);
     showToast(form.id ? "Ponto atualizado!" : "Ponto cadastrado!");
+    if (syncPonto) syncPonto(n);
   };
   const del = id => {
     setPontos(p => p.filter(x => x.id !== id));
     setConfirm(null);
     showToast("Ponto excluído.");
+    if (delPonto) delPonto(id);
   };
 
   // Lucro acumulado desde ativação
@@ -10868,6 +10874,7 @@ function CustosInternoPage({
     setCustos(p => p.find(c => c.id === n.id) ? p.map(c => c.id === n.id ? n : c) : [...p, n]);
     setModal(null);
     showToast(form.id ? "Custo atualizado!" : "Custo cadastrado!");
+    if (syncCusto) syncCusto(n);
   };
   const del = id => {
     // Se for recorrente expandido, deletar o custo original
@@ -10876,6 +10883,7 @@ function CustosInternoPage({
       setCustos(p => p.filter(c => c.id !== id));
       setConfirm(null);
       showToast("Excluído.");
+      if (delCusto) delCusto(id);
     }
   };
 
@@ -12583,20 +12591,20 @@ class ErrorBoundary extends React.Component {
     };
   }
   render() {
-    if (this.state.err) return React.createElement('div', {
+    if (this.state.err) return React.createElement("div", {
       style: {
         padding: 40,
-        fontFamily: 'monospace',
-        color: 'red',
-        background: '#fff1f1',
+        color: "red",
+        background: "#fff1f1",
         margin: 20,
         borderRadius: 8,
-        whiteSpace: 'pre-wrap'
+        whiteSpace: "pre-wrap",
+        fontFamily: "monospace"
       }
-    }, 'Erro: ' + this.state.err);
+    }, "Erro: " + this.state.err);
     return this.props.children;
   }
 }
-ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(ErrorBoundary, null, React.createElement(App)));</script>
+ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(ErrorBoundary, null, React.createElement(App)));</script>
 </body>
 </html>
