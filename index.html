@@ -5011,7 +5011,7 @@ function ObrasPage({
       x2: "8",
       y2: "17"
     }))), (user === null || user === void 0 ? void 0 : user.grupo) === "jet" && (() => {
-      const jaEspelhada = espelhos.some(e => e.obra_id === o.id);
+      const jaEspelhada = espelhos.some(e => String(e.obra_id) === String(o.id));
       return /*#__PURE__*/React.createElement("button", {
         style: {
           ...btn(),
@@ -5024,14 +5024,14 @@ function ObrasPage({
         title: jaEspelhada ? "Já enviada para Obras e Custos — clique para remover" : "Enviar para Obras e Custos",
         onClick: () => {
           if (jaEspelhada) {
-            const rem = espelhos.find(e => e.obra_id === o.id);
-            setEspelhos(p => p.filter(e => e.obra_id !== o.id));
+            const rem = espelhos.find(e => String(e.obra_id) === String(o.id));
+            setEspelhos(p => p.filter(e => String(e.obra_id) !== String(o.id)));
             showToast("Espelho removido de Obras e Custos.");
             if (delEspelho && rem) delEspelho(rem.id);
           } else {
             const esp = {
               id: uid(),
-              obra_id: o.id,
+              obra_id: String(o.id),
               enviado_em: new Date().toLocaleDateString("pt-BR"),
               enviado_por: user.nome
             };
@@ -5624,7 +5624,7 @@ function CustosPage({
   }));
 
   // Mostrar obras espelhadas ou (se nenhuma espelhada ainda) as que têm movimento financeiro
-  const rows = espelhos && espelhos.length > 0 ? obras.filter(o => espelhos.some(e => e.obra_id === o.id)) : obras.filter(o => o.custo > 0 || o.fat > 0);
+  const rows = espelhos && espelhos.length > 0 ? obras.filter(o => espelhos.some(e => String(e.obra_id) === String(o.id))) : obras.filter(o => o.custo > 0 || o.fat > 0);
   const tg = rows.reduce((s, o) => s + o.custo, 0);
   const tf = rows.filter(o => o.fat > 0).reduce((s, o) => s + o.fat, 0);
   const l = tf - tg;
@@ -5906,11 +5906,11 @@ function CustosPage({
       onClick: e => {
         e.stopPropagation();
         // Remover do state local
-        if (setEspelhos) setEspelhos(p => p.filter(e2 => e2.obra_id !== o.id));
+        if (setEspelhos) setEspelhos(p => p.filter(e2 => String(e2.obra_id) !== String(o.id)));
         showToast("Obra removida de Obras e Custos.");
         // Deletar no Supabase por obra_id (mais confiável)
         if (delEspelhoByObraId) delEspelhoByObraId(o.id);else if (delEspelho) {
-          const rem = espelhos ? espelhos.find(e2 => e2.obra_id === o.id) : null;
+          const rem = espelhos ? espelhos.find(e2 => String(e2.obra_id) === String(o.id)) : null;
           if (rem) delEspelho(rem.id);
         }
       }
@@ -12171,7 +12171,10 @@ function App() {
       }
       if (dbPontos !== null && dbPontos !== void 0 && dbPontos.length) setPontos(dbPontos);
       if (dbCustos !== null && dbCustos !== void 0 && dbCustos.length) setCustosInt(dbCustos);
-      if (dbEspelhos !== null && dbEspelhos !== void 0 && dbEspelhos.length) setEspelhos(dbEspelhos);
+      if (dbEspelhos !== null && dbEspelhos !== void 0 && dbEspelhos.length) setEspelhos(dbEspelhos.map(e => ({
+        ...e,
+        obra_id: String(e.obra_id)
+      })));
       console.log("Supabase carregado: obras=" + (dbObras === null || dbObras === void 0 ? void 0 : dbObras.length) + " pontos=" + (dbPontos === null || dbPontos === void 0 ? void 0 : dbPontos.length));
     } catch (e) {
       console.log("Supabase load error:", e.message);
@@ -12216,7 +12219,7 @@ function App() {
   };
   const delEspelhoByObraId = async obra_id => {
     console.log("Deletando espelho obra_id:", obra_id);
-    const res = await sbFetch("sir_espelhos", "DELETE", null, "obra_id=eq." + obra_id);
+    const res = await sbFetch("sir_espelhos", "DELETE", null, "obra_id=eq." + String(obra_id));
     console.log("Delete espelho resultado:", res);
   };
 
