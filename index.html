@@ -5612,6 +5612,7 @@ function CustosPage({
   setEspelhos,
   setCustosInt,
   delEspelho,
+  delEspelhoByObraId,
   showToast
 }) {
   const [expand, setExpand] = useState(null);
@@ -5904,11 +5905,14 @@ function CustosPage({
       title: "Remover de Obras e Custos",
       onClick: e => {
         e.stopPropagation();
-        const rem = espelhos ? espelhos.find(e2 => e2.obra_id === o.id) : null;
+        // Remover do state local
         if (setEspelhos) setEspelhos(p => p.filter(e2 => e2.obra_id !== o.id));
-        if (rem && setEspelhos) setEspelhos(p => p.filter(e2 => e2.id !== rem.id));
         showToast("Obra removida de Obras e Custos.");
-        if (rem && delEspelho) delEspelho(rem.id);
+        // Deletar no Supabase por obra_id (mais confiável)
+        if (delEspelhoByObraId) delEspelhoByObraId(o.id);else if (delEspelho) {
+          const rem = espelhos ? espelhos.find(e2 => e2.obra_id === o.id) : null;
+          if (rem) delEspelho(rem.id);
+        }
       }
     }, /*#__PURE__*/React.createElement("svg", {
       width: "13",
@@ -12206,7 +12210,10 @@ function App() {
     if (!r) console.error("syncEspelho falhou", e.id);
   };
   const delEspelho = async id => {
-    await sb.del("sir_espelhos", id);
+    await sbFetch("sir_espelhos", "DELETE", null, "id=eq." + id);
+  };
+  const delEspelhoByObraId = async obra_id => {
+    await sbFetch("sir_espelhos", "DELETE", null, "obra_id=eq." + obra_id);
   };
 
   // Seções colapsáveis — DEVE ficar antes de qualquer return condicional
@@ -12288,6 +12295,7 @@ function App() {
           setEspelhos: setEspelhos,
           setCustosInt: setCustosInt,
           delEspelho: delEspelho,
+          delEspelhoByObraId: delEspelhoByObraId,
           showToast: showToast
         });
       case "custosint":
