@@ -21,7 +21,7 @@ const {
 
 // ─── SUPABASE ─────────────────────────────────────────────────────────────────
 const SB_URL = "https://lddprbkfrqmrvspcstsm.supabase.co";
-const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxkZHByYmtmcnFtcnZzcGNzdHNtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk4NTUzNzksImV4cCI6MjA5NTQzMTM3OX0.raDOLzL-XK4QB-aeRfoHLgZFd5R67SmFL3KhVKIYY7Q";
+const SB_KEY = "sb_publishable_jXZSpv_jNAYIK3c06tdJvw_V_1bIND2";
 async function sbFetch(table, method = "GET", body = null, query = "") {
   const url = SB_URL + "/rest/v1/" + table + (query ? "?" + query : "");
   const res = await fetch(url, {
