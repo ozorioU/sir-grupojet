@@ -3507,23 +3507,39 @@ function App() {
           setUser(u);
           await loadFromSupabase();
           setTimeout(()=>showToast(`Bem-vindo, ${u.nome.split(" ")[0]}!`),100);
+        } else if(users && users.length === 0) {
+          setLoading(false);
+          return "E-mail ou senha incorretos.";
         } else {
-          // Fallback: tentar login local (para desenvolvimento)
+          // Tabela não existe ainda — usar login local
           const local = PROFILES.find(p=>p.email===email);
           if(local) {
             setUser(local);
-            await loadFromSupabase();
+            await loadFromSupabase().catch(()=>{});
             setTimeout(()=>showToast(`Bem-vindo, ${local.nome.split(" ")[0]}!`),100);
           } else {
             setLoading(false);
-            return "E-mail ou senha incorretos.";
+            return "E-mail não encontrado.";
           }
         }
       } catch(e) {
-        // Offline: usar login local
+        // Offline/erro: usar login local com senha padrão
+        const senhasValidas = {
+          'ozorio.neto@grupojet.com.br': ['jet2026','123456'],
+          'ruan.lobo@grupojet.com.br':   ['jet2026','123456'],
+          'operador@grupojet.com.br':    ['jet2026','123456'],
+          'novosnegocios@grupof8.com.br':['f82026','123456'],
+          'fernando@grupof8.com.br':     ['f82026','123456'],
+        };
+        const senhas = senhasValidas[email] || [];
         const local = PROFILES.find(p=>p.email===email);
-        if(local) { setUser(local); setTimeout(()=>showToast(`Bem-vindo (offline), ${local.nome.split(" ")[0]}!`),100); }
-        else { setLoading(false); return "E-mail ou senha incorretos."; }
+        if(local && senhas.includes(senha)) {
+          setUser(local);
+          setTimeout(()=>showToast(`Bem-vindo, ${local.nome.split(" ")[0]}!`),100);
+        } else {
+          setLoading(false);
+          return "E-mail ou senha incorretos.";
+        }
       }
       setLoading(false);
     }}
