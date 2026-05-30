@@ -38,6 +38,51 @@ const TOTAL_IMP_PCT = IMPOSTOS.reduce((s, i) => s + i.pct, 0); // 6.5%
 const calcImpostos = fat => IMPOSTOS.reduce((s, i) => s + fat * i.pct, 0);
 const tooltipImpostos = fat => IMPOSTOS.map(i => `${i.nome}: ${fmt(fat * i.pct)} (${(i.pct * 100).toFixed(2)}%)`).join("\n") + `\nTotal: ${fmt(fat * TOTAL_IMP_PCT)} (6,50%)`;
 
+// ─── CÁLCULO PROPORCIONAL L2L ────────────────────────────────────────────────
+// Retorna o valor proporcional para o primeiro mês de ativação
+// Para os demais meses, retorna o valor cheio
+const calcL2LMes = (valor, ativacao, mesAlvo) => {
+  if (!ativacao) return valor;
+  const ativMes = ativacao.slice(0, 7);
+  if (mesAlvo !== ativMes) return valor; // mês cheio
+  // Primeiro mês: proporcional pelos dias restantes
+  const dataAtiv = new Date(ativacao);
+  const ano = parseInt(ativMes.slice(0, 4));
+  const mes = parseInt(ativMes.slice(5, 7));
+  const diasNoMes = new Date(ano, mes, 0).getDate();
+  const diaAtiv = dataAtiv.getDate();
+  const diasRestantes = diasNoMes - diaAtiv + 1;
+  return parseFloat((valor * diasRestantes / diasNoMes).toFixed(2));
+};
+
+// Retorna custo e fat acumulados de um ponto até hoje
+const calcL2LAcum = p => {
+  if (!p.ativacao) return {
+    fat: parseFloat(p.faturamento) || 0,
+    cus: parseFloat(p.custo) || 0
+  };
+  const hoje = new Date();
+  const ini = new Date(p.ativacao);
+  let fatTotal = 0,
+    cusTotal = 0;
+  let y = ini.getFullYear(),
+    m = ini.getMonth() + 1;
+  while (y < hoje.getFullYear() || y === hoje.getFullYear() && m <= hoje.getMonth() + 1) {
+    const mesKey = `${y}-${String(m).padStart(2, "0")}`;
+    fatTotal += calcL2LMes(parseFloat(p.faturamento) || 0, p.ativacao, mesKey);
+    cusTotal += calcL2LMes(parseFloat(p.custo) || 0, p.ativacao, mesKey);
+    m++;
+    if (m > 12) {
+      m = 1;
+      y++;
+    }
+  }
+  return {
+    fat: fatTotal,
+    cus: cusTotal
+  };
+};
+
 // ─── SUPABASE ─────────────────────────────────────────────────────────────────
 const SB_URL = "https://lddprbkfrqmrvspcstsm.supabase.co";
 const SB_KEY = "sb_publishable_jXZSpv_jNAYIK3c06tdJvw_V_1bIND2";
@@ -3940,30 +3985,16 @@ function Dashboard({
   // L2L faturamento: pontos ativos no mês selecionado
   const fatL2L = React.useMemo(() => {
     if (mesSocietario === "acumulado") {
-      // Acumulado: faturamento × meses ativos de cada ponto
-      return pontos.reduce((s, p) => {
-        if (!p.ativacao) return s + (parseFloat(p.faturamento) || 0);
-        const ini = new Date(p.ativacao);
-        const meses = Math.max(1, (hoje.getFullYear() - ini.getFullYear()) * 12 + (hoje.getMonth() - ini.getMonth()) + 1);
-        return s + (parseFloat(p.faturamento) || 0) * meses;
-      }, 0);
+      return pontos.reduce((s, p) => s + calcL2LAcum(p).fat, 0);
     } else {
-      // Mês específico: pontos ativos naquele mês
-      return pontos.filter(p => !p.ativacao || p.ativacao.slice(0, 7) <= mesSocietario).reduce((s, p) => s + (parseFloat(p.faturamento) || 0), 0);
+      return pontos.filter(p => !p.ativacao || p.ativacao.slice(0, 7) <= mesSocietario).reduce((s, p) => s + calcL2LMes(parseFloat(p.faturamento) || 0, p.ativacao, mesSocietario), 0);
     }
   }, [pontos, mesSocietario]);
-
-  // L2L custo: custo mensal × pontos ativos
   const cusL2L = React.useMemo(() => {
     if (mesSocietario === "acumulado") {
-      return pontos.reduce((s, p) => {
-        if (!p.ativacao) return s + (parseFloat(p.custo) || 0);
-        const ini = new Date(p.ativacao);
-        const meses = Math.max(1, (hoje.getFullYear() - ini.getFullYear()) * 12 + (hoje.getMonth() - ini.getMonth()) + 1);
-        return s + (parseFloat(p.custo) || 0) * meses;
-      }, 0);
+      return pontos.reduce((s, p) => s + calcL2LAcum(p).cus, 0);
     } else {
-      return pontos.filter(p => !p.ativacao || p.ativacao.slice(0, 7) <= mesSocietario).reduce((s, p) => s + (parseFloat(p.custo) || 0), 0);
+      return pontos.filter(p => !p.ativacao || p.ativacao.slice(0, 7) <= mesSocietario).reduce((s, p) => s + calcL2LMes(parseFloat(p.custo) || 0, p.ativacao, mesSocietario), 0);
     }
   }, [pontos, mesSocietario]);
 
@@ -9478,7 +9509,7 @@ function ItensPage({
             descricao: nome,
             velocidade: cap && cap !== "—" ? cap : "300 Mbps",
             custo: 85,
-            faturamento: 109,
+            faturamento: 109.90,
             ativacao
           });
           importados++;
@@ -10169,7 +10200,7 @@ function PontosPage({
             descricao: nome,
             velocidade: cap && cap !== "—" ? cap : "300 Mbps",
             custo: 85,
-            faturamento: 109,
+            faturamento: 109.90,
             ativacao
           });
           importados++;
@@ -10257,15 +10288,15 @@ function PontosPage({
 
   // Lucro acumulado desde ativação
   const lucroAcum = p => {
-    if (!p.ativacao) return p.faturamento - p.custo;
-    const ini = new Date(p.ativacao);
-    const hoje = new Date();
-    const meses = Math.max(1, (hoje.getFullYear() - ini.getFullYear()) * 12 + (hoje.getMonth() - ini.getMonth()) + 1);
-    return (p.faturamento - p.custo) * meses;
+    const {
+      fat,
+      cus
+    } = calcL2LAcum(p);
+    return fat - cus;
   };
   const totalAcum = pontos.reduce((s, p) => s + lucroAcum(p), 0);
-  const totalFat = pontos.reduce((s, p) => s + p.faturamento, 0);
-  const totalCusto = pontos.reduce((s, p) => s + p.custo, 0);
+  const totalFat = pontos.reduce((s, p) => s + calcL2LAcum(p).fat, 0);
+  const totalCusto = pontos.reduce((s, p) => s + calcL2LAcum(p).cus, 0);
   return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
@@ -10452,7 +10483,11 @@ function PontosPage({
     }
   }, h)))), /*#__PURE__*/React.createElement("tbody", null, pontos.map(p => {
     const lm = p.faturamento - p.custo;
-    const la = lucroAcum(p);
+    const {
+      fat: fatAcum,
+      cus: cusAcum
+    } = calcL2LAcum(p);
+    const la = fatAcum - cusAcum;
     return /*#__PURE__*/React.createElement("tr", {
       key: p.id,
       style: {
@@ -11400,7 +11435,7 @@ function CustosInternoPage({
             descricao: nome,
             velocidade: cap && cap !== "—" ? cap : "300 Mbps",
             custo: 85,
-            faturamento: 109,
+            faturamento: 109.90,
             ativacao
           });
           importados++;
