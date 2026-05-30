@@ -4006,12 +4006,43 @@ function Dashboard({
     "CO:Veiculos": "co_veiculos",
     "CO:Combustivel": "co_combustivel"
   };
-  custosInt.forEach(c => {
+  // Expandir custos recorrentes igual à CustosInternoPage
+  const hoje2 = new Date();
+  const custosExpDash = React.useMemo(() => {
+    const lista = [];
+    const mesesDash = [];
+    let y2 = 2026,
+      m2 = 1;
+    while (y2 < hoje2.getFullYear() || y2 === hoje2.getFullYear() && m2 <= hoje2.getMonth() + 1) {
+      mesesDash.push(`${y2}-${String(m2).padStart(2, "0")}`);
+      m2++;
+      if (m2 > 12) {
+        m2 = 1;
+        y2++;
+      }
+    }
+    custosInt.forEach(c => {
+      if (!c.recorrente) {
+        lista.push(c);
+        return;
+      }
+      const inicio = c.data ? c.data.slice(0, 7) : mesesDash[0];
+      mesesDash.forEach(mes => {
+        if (mes >= inicio) lista.push({
+          ...c,
+          id: c.id + "_" + mes,
+          _mes: mes
+        });
+      });
+    });
+    return lista;
+  }, [custosInt]);
+  custosExpDash.forEach(c => {
     if (c.categoria === "Lan 2 Lan") return;
     // Filtrar por mês se necessário
+    const cMesReal = c._mes || (c.data ? c.data.slice(0, 7) : null);
     if (mesSocietario !== "acumulado") {
-      const cMes = c.data ? c.data.slice(0, 7) : null;
-      if (cMes !== mesSocietario) return;
+      if (cMesReal !== mesSocietario) return;
     }
     const subChave = SUB_MAP[c.categoria];
     if (subChave) {
@@ -4768,11 +4799,12 @@ function Dashboard({
       "Outros": "Outros"
     };
     const catKey = CAT_LABEL_MAP[detalheModal.titulo] || detalheModal.titulo;
-    const itens = custosInt.filter(c => {
+    const itens = custosExpDash.filter(c => {
       const match = c.categoria === catKey || catKey === "CO:Pessoal" && c.categoria === "CO:Pessoal" || catKey === "CO:Beneficios" && c.categoria === "CO:Beneficios" || catKey === "CO:Veiculos" && c.categoria === "CO:Veiculos" || catKey === "CO:Combustivel" && c.categoria === "CO:Combustivel";
       if (!match) return false;
       if (detalheModal.mes === "acumulado") return true;
-      return c.data && c.data.slice(0, 7) === detalheModal.mes;
+      const cM = c._mes || (c.data ? c.data.slice(0, 7) : null);
+      return cM === detalheModal.mes;
     });
     const total = itens.reduce((s, c) => s + (c.valor || 0), 0);
     return /*#__PURE__*/React.createElement(Modal, {
