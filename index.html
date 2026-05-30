@@ -39,13 +39,10 @@ const calcImpostos = fat => IMPOSTOS.reduce((s, i) => s + fat * i.pct, 0);
 const tooltipImpostos = fat => IMPOSTOS.map(i => `${i.nome}: ${fmt(fat * i.pct)} (${(i.pct * 100).toFixed(2)}%)`).join("\n") + `\nTotal: ${fmt(fat * TOTAL_IMP_PCT)} (6,50%)`;
 
 // ─── CÁLCULO PROPORCIONAL L2L ────────────────────────────────────────────────
-// Retorna o valor proporcional para o primeiro mês de ativação
-// Para os demais meses, retorna o valor cheio
 const calcL2LMes = (valor, ativacao, mesAlvo) => {
   if (!ativacao) return valor;
   const ativMes = ativacao.slice(0, 7);
-  if (mesAlvo !== ativMes) return valor; // mês cheio
-  // Primeiro mês: proporcional pelos dias restantes
+  if (mesAlvo !== ativMes) return valor;
   const dataAtiv = new Date(ativacao);
   const ano = parseInt(ativMes.slice(0, 4));
   const mes = parseInt(ativMes.slice(5, 7));
@@ -55,22 +52,43 @@ const calcL2LMes = (valor, ativacao, mesAlvo) => {
   return parseFloat((valor * diasRestantes / diasNoMes).toFixed(2));
 };
 
-// Retorna custo e fat acumulados de um ponto até hoje
+// Verifica se um mês/valor já foi processado (dia 10 do mês seguinte já passou)
+const mesJaProcessado = mesKey => {
+  const hoje = new Date();
+  const [y, m] = mesKey.split("-").map(Number);
+  // Dia 10 do mês seguinte
+  const proxMes = m === 12 ? `${y + 1}-01` : `${y}-${String(m + 1).padStart(2, "0")}`;
+  const dia10ProxMes = new Date(`${proxMes}-10`);
+  return hoje >= dia10ProxMes;
+};
+
+// Retorna {fat, cus, fatPend, cusPend} acumulados de um ponto
 const calcL2LAcum = p => {
   if (!p.ativacao) return {
     fat: parseFloat(p.faturamento) || 0,
-    cus: parseFloat(p.custo) || 0
+    cus: parseFloat(p.custo) || 0,
+    fatPend: 0,
+    cusPend: 0
   };
   const hoje = new Date();
   const ini = new Date(p.ativacao);
-  let fatTotal = 0,
-    cusTotal = 0;
+  let fat = 0,
+    cus = 0,
+    fatPend = 0,
+    cusPend = 0;
   let y = ini.getFullYear(),
     m = ini.getMonth() + 1;
   while (y < hoje.getFullYear() || y === hoje.getFullYear() && m <= hoje.getMonth() + 1) {
     const mesKey = `${y}-${String(m).padStart(2, "0")}`;
-    fatTotal += calcL2LMes(parseFloat(p.faturamento) || 0, p.ativacao, mesKey);
-    cusTotal += calcL2LMes(parseFloat(p.custo) || 0, p.ativacao, mesKey);
+    const vFat = calcL2LMes(parseFloat(p.faturamento) || 0, p.ativacao, mesKey);
+    const vCus = calcL2LMes(parseFloat(p.custo) || 0, p.ativacao, mesKey);
+    if (mesJaProcessado(mesKey)) {
+      fat += vFat;
+      cus += vCus;
+    } else {
+      fatPend += vFat;
+      cusPend += vCus;
+    }
     m++;
     if (m > 12) {
       m = 1;
@@ -78,8 +96,10 @@ const calcL2LAcum = p => {
     }
   }
   return {
-    fat: fatTotal,
-    cus: cusTotal
+    fat,
+    cus,
+    fatPend,
+    cusPend
   };
 };
 
@@ -3987,6 +4007,8 @@ function Dashboard({
     if (mesSocietario === "acumulado") {
       return pontos.reduce((s, p) => s + calcL2LAcum(p).fat, 0);
     } else {
+      const processado = mesJaProcessado(mesSocietario);
+      if (!processado) return 0; // mês ainda pendente
       return pontos.filter(p => !p.ativacao || p.ativacao.slice(0, 7) <= mesSocietario).reduce((s, p) => s + calcL2LMes(parseFloat(p.faturamento) || 0, p.ativacao, mesSocietario), 0);
     }
   }, [pontos, mesSocietario]);
@@ -3994,9 +4016,15 @@ function Dashboard({
     if (mesSocietario === "acumulado") {
       return pontos.reduce((s, p) => s + calcL2LAcum(p).cus, 0);
     } else {
+      const processado = mesJaProcessado(mesSocietario);
+      if (!processado) return 0;
       return pontos.filter(p => !p.ativacao || p.ativacao.slice(0, 7) <= mesSocietario).reduce((s, p) => s + calcL2LMes(parseFloat(p.custo) || 0, p.ativacao, mesSocietario), 0);
     }
   }, [pontos, mesSocietario]);
+
+  // Pendentes L2L (meses ainda não processados)
+  const fatL2LPend = React.useMemo(() => pontos.reduce((s, p) => s + calcL2LAcum(p).fatPend, 0), [pontos]);
+  const cusL2LPend = React.useMemo(() => pontos.reduce((s, p) => s + calcL2LAcum(p).cusPend, 0), [pontos]);
 
   // Faturamento por categoria — contratos e outras vêm do FaturamentoInternoPage
   const FAT_CAT_MAP = {
@@ -4488,6 +4516,11 @@ function Dashboard({
     v: cus.l2l,
     sub: false
   }, {
+    l: "↳ Pendente (dia 10)",
+    v: cusL2LPend,
+    sub: true,
+    isPend: true
+  }, {
     l: "Custos Operacionais",
     v: cus.custos_op,
     sub: false,
@@ -4539,7 +4572,8 @@ function Dashboard({
     l,
     v,
     sub,
-    hasDetail
+    hasDetail,
+    isPend
   }) => /*#__PURE__*/React.createElement("div", {
     key: l,
     style: {
@@ -4547,7 +4581,7 @@ function Dashboard({
       justifyContent: "space-between",
       padding: sub ? "4px 8px 4px 18px" : "5px 8px",
       borderRadius: 5,
-      background: sub ? v > 0 ? "#fef7f0" : "transparent" : v > 0 ? "#fef2f2" : "#f9fafb",
+      background: isPend ? "#fffbeb" : sub ? v > 0 ? "#fef7f0" : "transparent" : v > 0 ? "#fef2f2" : "#f9fafb",
       cursor: v > 0 ? "pointer" : "default"
     },
     onClick: () => v > 0 && setDetalheModal({
@@ -4565,10 +4599,10 @@ function Dashboard({
       fontFamily: "monospace",
       fontSize: sub ? 11 : 12,
       fontWeight: sub ? 500 : 600,
-      color: v > 0 ? "#ef4444" : "#d1d5db",
-      textDecoration: v > 0 ? "underline dotted" : "none"
+      color: isPend ? "#d97706" : v > 0 ? "#ef4444" : "#d1d5db",
+      textDecoration: v > 0 && !isPend ? "underline dotted" : "none"
     }
-  }, fmt(v)))))))), /*#__PURE__*/React.createElement("div", {
+  }, isPend ? `${fmt(v)} ⏳` : fmt(v)))))))), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "grid",
       gridTemplateColumns: "1fr 1fr",
@@ -10297,6 +10331,8 @@ function PontosPage({
   const totalAcum = pontos.reduce((s, p) => s + lucroAcum(p), 0);
   const totalFat = pontos.reduce((s, p) => s + calcL2LAcum(p).fat, 0);
   const totalCusto = pontos.reduce((s, p) => s + calcL2LAcum(p).cus, 0);
+  const totalFatPend = pontos.reduce((s, p) => s + calcL2LAcum(p).fatPend, 0);
+  const totalCusPend = pontos.reduce((s, p) => s + calcL2LAcum(p).cusPend, 0);
   return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
