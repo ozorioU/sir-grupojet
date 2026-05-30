@@ -3943,6 +3943,7 @@ function Dashboard({
   const hoje = new Date();
   const mesAtualKeyD = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, "0")}`;
   const [mesSocietario, setMesSocietario] = React.useState("acumulado");
+  const [comPendentes, setComPendentes] = React.useState(false);
   const mesesDisponiveisD = React.useMemo(() => {
     const meses = [];
     let y = 2026,
@@ -4035,7 +4036,7 @@ function Dashboard({
   };
   const fatBase = {
     obras: tf,
-    l2l: fatL2L,
+    l2l: fatL2L + (comPendentes ? fatL2LPend : 0),
     contratos: 0,
     outras: 0
   };
@@ -4095,7 +4096,8 @@ function Dashboard({
     co_outros: 0,
     invest: 0,
     impostos: impObras + impContratos + impPontos,
-    outros: 0
+    outros: 0,
+    l2l: cusL2L + (comPendentes ? cusL2LPend : 0)
   };
   const SUB_MAP = {
     "CO:Pessoal": "co_pessoal",
@@ -4329,7 +4331,18 @@ function Dashboard({
       borderColor: mesSocietario === "acumulado" ? "#e8650a" : "#e5e7eb"
     },
     onClick: () => setMesSocietario(mesSocietario === "acumulado" ? mesAtualKeyD : "acumulado")
-  }, mesSocietario === "acumulado" ? "Ir para mês" : "Acumulado"))), /*#__PURE__*/React.createElement("div", {
+  }, mesSocietario === "acumulado" ? "Ir para mês" : "Acumulado"), /*#__PURE__*/React.createElement("button", {
+    style: {
+      ...btn(),
+      fontSize: 10,
+      padding: "3px 9px",
+      background: comPendentes ? "#fbbf24" : "#fff",
+      color: comPendentes ? "#fff" : "#374151",
+      borderColor: comPendentes ? "#fbbf24" : "#e5e7eb"
+    },
+    title: "Incluir valores pendentes (L2L ainda n\xE3o processados) no total",
+    onClick: () => setComPendentes(p => !p)
+  }, comPendentes ? "⏳ Com pendentes" : "+ Pendentes"))), /*#__PURE__*/React.createElement("div", {
     style: {
       marginBottom: 20,
       paddingBottom: 16,
@@ -4454,7 +4467,7 @@ function Dashboard({
   }, {
     l: "↳ Pendente (dia 10)",
     v: mesSocietario === "acumulado" || mesSocietario === mesAtualKeyD ? fatL2LPend : 0,
-    isPend: true
+    isPend: !comPendentes
   }, {
     l: "Contratos",
     v: fat.contratos
@@ -4534,7 +4547,7 @@ function Dashboard({
     l: "↳ Pendente (dia 10)",
     v: mesSocietario === "acumulado" || mesSocietario === mesAtualKeyD ? cusL2LPend : 0,
     sub: true,
-    isPend: true
+    isPend: !comPendentes
   }, {
     l: "Custos Operacionais",
     v: cus.custos_op,
