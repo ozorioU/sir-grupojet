@@ -4445,14 +4445,22 @@ function Dashboard({
     l: "Lan 2 Lan",
     v: fat.l2l
   }, {
+    l: "↳ Pendente (dia 10)",
+    v: mesSocietario === "acumulado" || mesSocietario === mesAtualKeyD ? fatL2LPend : 0,
+    isPend: true
+  }, {
     l: "Contratos",
     v: fat.contratos
   }, {
     l: "Outras",
     v: fat.outras
-  }].map(({
+  }].filter(({
+    v,
+    isPend
+  }) => !isPend || v > 0).map(({
     l,
-    v
+    v,
+    isPend
   }) => /*#__PURE__*/React.createElement("div", {
     key: l,
     style: {
@@ -4460,21 +4468,21 @@ function Dashboard({
       justifyContent: "space-between",
       padding: "5px 8px",
       borderRadius: 5,
-      background: v > 0 ? "#f0fdf4" : "#f9fafb"
+      background: isPend ? "#fffbeb" : v > 0 ? "#f0fdf4" : "#f9fafb"
     }
   }, /*#__PURE__*/React.createElement("span", {
     style: {
       fontSize: 11,
-      color: "#6b7280"
+      color: isPend ? "#92400e" : "#6b7280"
     }
   }, l), /*#__PURE__*/React.createElement("span", {
     style: {
       fontFamily: "monospace",
       fontSize: 11,
       fontWeight: 600,
-      color: v > 0 ? "#10b981" : "#d1d5db"
+      color: isPend ? "#d97706" : v > 0 ? "#10b981" : "#d1d5db"
     }
-  }, fmt(v)))))), /*#__PURE__*/React.createElement("div", {
+  }, isPend ? `${fmt(v)} ⏳` : fmt(v)))))), /*#__PURE__*/React.createElement("div", {
     style: {
       background: "#e5e7eb",
       borderRadius: 99
@@ -4517,7 +4525,7 @@ function Dashboard({
     sub: false
   }, {
     l: "↳ Pendente (dia 10)",
-    v: cusL2LPend,
+    v: mesSocietario === "acumulado" || mesSocietario === mesAtualKeyD ? cusL2LPend : 0,
     sub: true,
     isPend: true
   }, {
