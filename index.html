@@ -3852,35 +3852,7 @@ function Dashboard({
   setOpenBudgetId
 }) {
   const n = fn => obras.filter(fn).length;
-  const tf = obras.reduce((s, o) => s + o.fat, 0);
-  // Custo real: se há espelhos, usa gasto calculado das obras espelhadas
-  // caso contrário, usa o campo custo original das obras
-  const tc = (() => {
-    if (espelhos.length === 0) return obras.reduce((s, o) => s + o.custo, 0);
-    // Calcular gasto das obras espelhadas via itens do orçamento
-    return espelhos.reduce((total, esp) => {
-      const obra = obras.find(o => o.id === esp.obra_id);
-      if (!obra) return total;
-      const orc_key = OBRA_ORC_MAP[obra.cod];
-      const orc_itens = orc_key ? BUDGET_ITEMS_DATA[orc_key] || [] : [];
-      const gastoCalc = orc_itens.reduce((s, item) => {
-        const itemBase = ALL_ITEMS.find(ai => ai.descricao === item.descricao);
-        const cu = (itemBase === null || itemBase === void 0 ? void 0 : itemBase.cu) || 0;
-        return s + (cu > 0 ? cu * (item.qtd || 1) : 0);
-      }, 0);
-      // Se não há custo unitário cadastrado, cai no custo original da obra
-      return total + (gastoCalc > 0 ? gastoCalc : obra.custo || 0);
-    }, 0);
-  })();
-  const to = obras.reduce((s, o) => s + o.orc, 0);
-  const lc = tf - tc;
-  const lp = tf > 0 ? lc / tf * 100 : 0;
-  const nav = f => {
-    setDashFilter(f);
-    setPage("obras");
-  };
-
-  // Filtro de mês para o Resumo Financeiro Societário
+  // Filtro de mês para o Resumo Financeiro Societário — precisa estar antes de tf/tc
   const hoje = new Date();
   const mesAtualKeyD = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, "0")}`;
   const [mesSocietario, setMesSocietario] = React.useState("acumulado");
@@ -3902,6 +3874,47 @@ function Dashboard({
     month: "long",
     year: "numeric"
   });
+
+  // Filtrar obras por mês (faturado usa env_fat, custo usa conclusao)
+  const obrasFiltradas = React.useMemo(() => {
+    if (mesSocietario === "acumulado") return obras;
+    return obras.filter(o => {
+      const mesFat = o.env_fat ? o.env_fat.slice(0, 7) : null;
+      const mesCus = o.conclusao ? o.conclusao.slice(0, 7) : null;
+      return mesFat === mesSocietario || mesCus === mesSocietario;
+    });
+  }, [obras, mesSocietario]);
+
+  // tf: soma do faturado das obras no mês (por env_fat)
+  const tf = React.useMemo(() => {
+    if (mesSocietario === "acumulado") return obras.reduce((s, o) => s + (o.fat || 0), 0);
+    return obras.filter(o => o.env_fat && o.env_fat.slice(0, 7) === mesSocietario).reduce((s, o) => s + (o.fat || 0), 0);
+  }, [obras, mesSocietario]);
+
+  // tc: soma do custo das obras no mês (por conclusao)
+  const tc = React.useMemo(() => {
+    const obrasParaCusto = mesSocietario === "acumulado" ? obras : obras.filter(o => o.conclusao && o.conclusao.slice(0, 7) === mesSocietario);
+    if (espelhos.length === 0) return obrasParaCusto.reduce((s, o) => s + (o.custo || 0), 0);
+    return espelhos.reduce((total, esp) => {
+      const obra = obrasParaCusto.find(o => String(o.id) === String(esp.obra_id));
+      if (!obra) return total;
+      const orc_key = OBRA_ORC_MAP[obra.cod];
+      const orc_itens = orc_key ? BUDGET_ITEMS_DATA[orc_key] || [] : [];
+      const gastoCalc = orc_itens.reduce((s, item) => {
+        const itemBase = ALL_ITEMS.find(ai => ai.descricao === item.descricao);
+        const cu = (itemBase === null || itemBase === void 0 ? void 0 : itemBase.cu) || 0;
+        return s + (cu > 0 ? cu * (item.qtd || 1) : 0);
+      }, 0);
+      return total + (gastoCalc > 0 ? gastoCalc : obra.custo || 0);
+    }, 0);
+  }, [obras, espelhos, mesSocietario]);
+  const to = obras.reduce((s, o) => s + o.orc, 0);
+  const lc = tf - tc;
+  const lp = tf > 0 ? lc / tf * 100 : 0;
+  const nav = f => {
+    setDashFilter(f);
+    setPage("obras");
+  };
 
   // L2L faturamento: pontos ativos no mês selecionado
   const fatL2L = React.useMemo(() => {
@@ -4732,10 +4745,7 @@ function ObrasPage({
 
   // Enviar obra para aba Custos (lançamento único)
   const onEnviarCusto = o => {
-    if (!setCustosInt) {
-      showToast("Conecte a aba Custos primeiro.", "err");
-      return;
-    }
+    const dataMes = o.conclusao || o.env_fat || new Date().toISOString().slice(0, 10);
     const orc_key = OBRA_ORC_MAP[o.cod];
     const orc_itens = orc_key ? BUDGET_ITEMS_DATA[orc_key] || [] : [];
     const gastoCalc = orc_itens.reduce((s, item) => {
@@ -4744,17 +4754,36 @@ function ObrasPage({
       return s + (cu > 0 ? cu * (item.qtd || 1) : 0);
     }, 0);
     const valorCusto = gastoCalc > 0 ? gastoCalc : o.custo;
-    const novoCusto = {
-      id: uid(),
-      descricao: o.entrega,
-      categoria: "Obras",
-      valor: valorCusto,
-      data: new Date().toISOString().slice(0, 10),
-      observacao: "Lançado automaticamente de Obras e Custos",
-      recorrente: false
-    };
-    setCustosInt(p => [...p, novoCusto]);
-    showToast("Obra enviada para Custos!");
+
+    // Enviar custo
+    if (setCustosInt && valorCusto > 0) {
+      const novoCusto = {
+        id: uid(),
+        descricao: o.entrega,
+        categoria: "Obras",
+        valor: valorCusto,
+        data: dataMes,
+        observacao: "Lançado automaticamente de Obras e Custos",
+        recorrente: false
+      };
+      setCustosInt(p => [...p, novoCusto]);
+      if (syncCusto) syncCusto(novoCusto);
+    }
+
+    // Enviar faturamento
+    if (setFatInt && o.fat > 0) {
+      const novoFat = {
+        id: uid(),
+        descricao: o.entrega,
+        categoria: "Obras",
+        valor: o.fat,
+        data: o.env_fat || dataMes,
+        observacao: "Lançado automaticamente de Obras e Custos"
+      };
+      setFatInt(p => [...p, novoFat]);
+      if (syncFat) syncFat(novoFat);
+    }
+    showToast("Obra enviada para Custos e Faturamento!");
   };
   const save = () => {
     var _form$entrega;
@@ -5616,6 +5645,8 @@ function CustosPage({
   setEspelhos,
   setCustosInt,
   syncCusto,
+  setFatInt,
+  syncFat,
   delEspelho,
   delEspelhoByObraId,
   showToast
@@ -5660,7 +5691,7 @@ function CustosPage({
       descricao: o.entrega,
       categoria: "Obras",
       valor: valorCusto,
-      data: new Date().toISOString().slice(0, 10),
+      data: o.conclusao || new Date().toISOString().slice(0, 10),
       observacao: "Lançado automaticamente de Obras e Custos",
       recorrente: false
     };
@@ -8018,7 +8049,7 @@ function OrcamentosPage({
       descricao: o.entrega,
       categoria: "Obras",
       valor: valorCusto,
-      data: new Date().toISOString().slice(0, 10),
+      data: o.conclusao || new Date().toISOString().slice(0, 10),
       observacao: "Lançado automaticamente de Obras e Custos",
       recorrente: false
     };
@@ -9012,7 +9043,7 @@ function ItensPage({
       descricao: o.entrega,
       categoria: "Obras",
       valor: valorCusto,
-      data: new Date().toISOString().slice(0, 10),
+      data: o.conclusao || new Date().toISOString().slice(0, 10),
       observacao: "Lançado automaticamente de Obras e Custos",
       recorrente: false
     };
@@ -9703,7 +9734,7 @@ function PontosPage({
       descricao: o.entrega,
       categoria: "Obras",
       valor: valorCusto,
-      data: new Date().toISOString().slice(0, 10),
+      data: o.conclusao || new Date().toISOString().slice(0, 10),
       observacao: "Lançado automaticamente de Obras e Custos",
       recorrente: false
     };
@@ -10390,7 +10421,7 @@ function UsuariosPage({
       descricao: o.entrega,
       categoria: "Obras",
       valor: valorCusto,
-      data: new Date().toISOString().slice(0, 10),
+      data: o.conclusao || new Date().toISOString().slice(0, 10),
       observacao: "Lançado automaticamente de Obras e Custos",
       recorrente: false
     };
@@ -10934,7 +10965,7 @@ function CustosInternoPage({
       descricao: o.entrega,
       categoria: "Obras",
       valor: valorCusto,
-      data: new Date().toISOString().slice(0, 10),
+      data: o.conclusao || new Date().toISOString().slice(0, 10),
       observacao: "Lançado automaticamente de Obras e Custos",
       recorrente: false
     };
@@ -12494,6 +12525,8 @@ function App() {
           setEspelhos: setEspelhos,
           setCustosInt: setCustosInt,
           syncCusto: syncCusto,
+          setFatInt: setFatInt,
+          syncFat: syncFat,
           delEspelho: delEspelho,
           delEspelhoByObraId: delEspelhoByObraId,
           showToast: showToast
