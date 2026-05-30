@@ -4073,6 +4073,11 @@ function Dashboard({
     return obras.filter(o => o.env_fat && o.env_fat.slice(0, 7) === mesSocietario).reduce((s, o) => s + calcImpostos(o.fat), 0);
   }, [obras, mesSocietario]);
 
+  // Impostos dos pontos L2L (6.5% do faturamento realizado)
+  const impPontos = React.useMemo(() => {
+    return pontos.reduce((s, p) => s + calcImpostos(calcL2LAcum(p).fat), 0);
+  }, [pontos]);
+
   // Impostos dos contratos (6.5% do valor de contratos na aba Faturamento)
   const impContratos = React.useMemo(() => {
     return fatInt.filter(f => f.categoria === "Contratos" && (mesSocietario === "acumulado" || f.data && f.data.slice(0, 7) === mesSocietario)).reduce((s, f) => s + calcImpostos(f.valor || 0), 0);
@@ -4089,7 +4094,7 @@ function Dashboard({
     co_ferramentas: 0,
     co_outros: 0,
     invest: 0,
-    impostos: impObras + impContratos,
+    impostos: impObras + impContratos + impPontos,
     outros: 0
   };
   const SUB_MAP = {
@@ -4975,6 +4980,18 @@ function Dashboard({
         imp: calcImpostos(f.valor),
         origem: "Contrato"
       }));
+      pontos.filter(p => p.ativacao).forEach(p => {
+        const {
+          fat
+        } = calcL2LAcum(p);
+        if (fat > 0) origens.push({
+          desc: p.descricao,
+          data: p.ativacao || "",
+          base: fat,
+          imp: calcImpostos(fat),
+          origem: "L2L"
+        });
+      });
       return /*#__PURE__*/React.createElement("table", {
         style: {
           width: "100%",
@@ -10343,6 +10360,7 @@ function PontosPage({
   const totalCusto = pontos.reduce((s, p) => s + calcL2LAcum(p).cus, 0);
   const totalFatPend = pontos.reduce((s, p) => s + calcL2LAcum(p).fatPend, 0);
   const totalCusPend = pontos.reduce((s, p) => s + calcL2LAcum(p).cusPend, 0);
+  const totalImpPontos = pontos.reduce((s, p) => s + calcImpostos(calcL2LAcum(p).fat), 0);
   return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
@@ -10515,10 +10533,10 @@ function PontosPage({
       borderBottom: "2px solid #e5e7eb",
       background: "#f9fafb"
     }
-  }, ["OS", "Descrição", "Velocidade", "Custo/mês", "Fat./mês", "Lucro/mês", "Ativação", "Lucro Acumulado", ""].map((h, i) => /*#__PURE__*/React.createElement("th", {
+  }, ["OS", "Descrição", "Velocidade", "Custo/mês", "Fat./mês", "Impostos", "Lucro/mês", "Ativação", "Lucro Acumulado", ""].map((h, i) => /*#__PURE__*/React.createElement("th", {
     key: i,
     style: {
-      textAlign: i > 2 && i < 8 ? "right" : "left",
+      textAlign: i > 2 && i < 9 ? "right" : "left",
       padding: "10px 14px",
       fontWeight: 600,
       color: "#6b7280",
@@ -10582,6 +10600,15 @@ function PontosPage({
         color: "#15803d"
       }
     }, fmt(p.faturamento)), /*#__PURE__*/React.createElement("td", {
+      style: {
+        padding: "11px 14px",
+        textAlign: "right",
+        fontFamily: "monospace",
+        color: "#dc2626",
+        cursor: "help"
+      },
+      title: tooltipImpostos(p.faturamento)
+    }, fmt(calcImpostos(p.faturamento))), /*#__PURE__*/React.createElement("td", {
       style: {
         padding: "11px 14px",
         textAlign: "right",
@@ -10693,7 +10720,7 @@ function PontosPage({
       d: "M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"
     }))))));
   }), pontos.length === 0 && /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("td", {
-    colSpan: 8,
+    colSpan: 9,
     style: {
       textAlign: "center",
       color: "#6b7280",
@@ -10733,6 +10760,15 @@ function PontosPage({
       color: "#15803d"
     }
   }, fmt(totalFat)), /*#__PURE__*/React.createElement("td", {
+    style: {
+      padding: "10px 14px",
+      textAlign: "right",
+      fontFamily: "monospace",
+      fontWeight: 700,
+      color: "#dc2626"
+    },
+    title: `Total impostos acumulados: ${fmt(totalImpPontos)}`
+  }, fmt(pontos.reduce((s, p) => s + calcImpostos(p.faturamento), 0))), /*#__PURE__*/React.createElement("td", {
     style: {
       padding: "10px 14px",
       textAlign: "right",
