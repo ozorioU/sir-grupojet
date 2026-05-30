@@ -2662,6 +2662,7 @@ function LinhaTempoWidget({
     setDashFilter(f);
     setPage("obras");
   };
+  const [detalheModal, setDetalheModal] = React.useState(null);
   const etapas = [{
     key: "ag_orc",
     label: "Aguardando\nOrçamento",
@@ -2875,6 +2876,7 @@ function StatusObrasWidget({
     setDashFilter(f);
     setPage("obras");
   };
+  const [detalheModal, setDetalheModal] = React.useState(null);
   const frowStyle = {
     display: "flex",
     alignItems: "center",
@@ -3915,6 +3917,7 @@ function Dashboard({
     setDashFilter(f);
     setPage("obras");
   };
+  const [detalheModal, setDetalheModal] = React.useState(null);
 
   // L2L faturamento: pontos ativos no mês selecionado
   const fatL2L = React.useMemo(() => {
@@ -3975,6 +3978,10 @@ function Dashboard({
     "Obras": "obras",
     "Lan 2 Lan": "l2l",
     "Custos Operacionais": "custos_op",
+    "CO:Pessoal": "custos_op",
+    "CO:Beneficios": "custos_op",
+    "CO:Veiculos": "custos_op",
+    "CO:Combustivel": "custos_op",
     "Investimentos": "invest",
     "Impostos": "impostos"
   };
@@ -3984,14 +3991,39 @@ function Dashboard({
     obras: tc,
     l2l: cusL2L,
     custos_op: 0,
+    co_pessoal: 0,
+    co_beneficios: 0,
+    co_veiculos: 0,
+    co_combustivel: 0,
+    co_outros: 0,
     invest: 0,
     impostos: 0,
     outros: 0
   };
+  const SUB_MAP = {
+    "CO:Pessoal": "co_pessoal",
+    "CO:Beneficios": "co_beneficios",
+    "CO:Veiculos": "co_veiculos",
+    "CO:Combustivel": "co_combustivel"
+  };
   custosInt.forEach(c => {
-    if (c.categoria === "Lan 2 Lan") return; // L2L já vem dos pontos
-    const chave = CAT_MAP[c.categoria];
-    if (chave && chave !== "obras") cusBase[chave] += c.valor || 0;else if (!chave) cusBase.outros += c.valor || 0;
+    if (c.categoria === "Lan 2 Lan") return;
+    // Filtrar por mês se necessário
+    if (mesSocietario !== "acumulado") {
+      const cMes = c.data ? c.data.slice(0, 7) : null;
+      if (cMes !== mesSocietario) return;
+    }
+    const subChave = SUB_MAP[c.categoria];
+    if (subChave) {
+      cusBase[subChave] += c.valor || 0;
+      cusBase.custos_op += c.valor || 0;
+    } else {
+      const chave = CAT_MAP[c.categoria];
+      if (chave && chave !== "obras") {
+        cusBase[chave] += c.valor || 0;
+        if (chave === "custos_op") cusBase.co_outros += c.valor || 0;
+      } else if (!chave) cusBase.outros += c.valor || 0;
+    }
   });
   const cus = cusBase;
   const fatTotal = Object.values(fat).reduce((s, v) => s + v, 0);
@@ -4354,45 +4386,84 @@ function Dashboard({
     }
   }, [{
     l: "Obras",
-    v: cus.obras
+    v: cus.obras,
+    sub: false
   }, {
     l: "Lan 2 Lan",
-    v: cus.l2l
+    v: cus.l2l,
+    sub: false
   }, {
     l: "Custos Operacionais",
-    v: cus.custos_op
+    v: cus.custos_op,
+    sub: false,
+    hasDetail: true
+  }, {
+    l: "↳ Pessoal",
+    v: cus.co_pessoal,
+    sub: true
+  }, {
+    l: "↳ Benefícios",
+    v: cus.co_beneficios,
+    sub: true
+  }, {
+    l: "↳ Locação Veículos",
+    v: cus.co_veiculos,
+    sub: true
+  }, {
+    l: "↳ Combustível",
+    v: cus.co_combustivel,
+    sub: true
+  }, {
+    l: "↳ Outros Op.",
+    v: cus.co_outros,
+    sub: true
   }, {
     l: "Investimentos",
-    v: cus.invest
+    v: cus.invest,
+    sub: false
   }, {
     l: "Impostos",
-    v: cus.impostos
+    v: cus.impostos,
+    sub: false
   }, {
     l: "Outros",
-    v: cus.outros
-  }].map(({
+    v: cus.outros,
+    sub: false
+  }].filter(({
+    v,
+    sub
+  }) => !sub || v > 0).map(({
     l,
-    v
+    v,
+    sub,
+    hasDetail
   }) => /*#__PURE__*/React.createElement("div", {
     key: l,
     style: {
       display: "flex",
       justifyContent: "space-between",
-      padding: "5px 8px",
+      padding: sub ? "4px 8px 4px 18px" : "5px 8px",
       borderRadius: 5,
-      background: v > 0 ? "#fef2f2" : "#f9fafb"
-    }
+      background: sub ? v > 0 ? "#fef7f0" : "transparent" : v > 0 ? "#fef2f2" : "#f9fafb",
+      cursor: v > 0 ? "pointer" : "default"
+    },
+    onClick: () => v > 0 && setDetalheModal({
+      titulo: l,
+      categoria: l,
+      mes: mesSocietario
+    })
   }, /*#__PURE__*/React.createElement("span", {
     style: {
-      fontSize: 11,
-      color: "#6b7280"
+      fontSize: sub ? 10 : 11,
+      color: sub ? "#9ca3af" : "#6b7280"
     }
   }, l), /*#__PURE__*/React.createElement("span", {
     style: {
       fontFamily: "monospace",
-      fontSize: 11,
-      fontWeight: 600,
-      color: v > 0 ? "#ef4444" : "#d1d5db"
+      fontSize: sub ? 10 : 11,
+      fontWeight: sub ? 500 : 600,
+      color: v > 0 ? "#ef4444" : "#d1d5db",
+      textDecoration: v > 0 ? "underline dotted" : "none"
     }
   }, fmt(v)))))))), /*#__PURE__*/React.createElement("div", {
     style: {
@@ -4682,7 +4753,122 @@ function Dashboard({
         color: c
       }
     }, v)))));
-  })())));
+  })())), detalheModal && (() => {
+    const CAT_LABEL_MAP = {
+      "Obras": "Obras",
+      "Lan 2 Lan": "Lan 2 Lan",
+      "Custos Operacionais": "Custos Operacionais",
+      "↳ Pessoal": "CO:Pessoal",
+      "↳ Benefícios": "CO:Beneficios",
+      "↳ Locação Veículos": "CO:Veiculos",
+      "↳ Combustível": "CO:Combustivel",
+      "↳ Outros Op.": "Custos Operacionais",
+      "Investimentos": "Investimentos",
+      "Impostos": "Impostos",
+      "Outros": "Outros"
+    };
+    const catKey = CAT_LABEL_MAP[detalheModal.titulo] || detalheModal.titulo;
+    const itens = custosInt.filter(c => {
+      const match = c.categoria === catKey || catKey === "CO:Pessoal" && c.categoria === "CO:Pessoal" || catKey === "CO:Beneficios" && c.categoria === "CO:Beneficios" || catKey === "CO:Veiculos" && c.categoria === "CO:Veiculos" || catKey === "CO:Combustivel" && c.categoria === "CO:Combustivel";
+      if (!match) return false;
+      if (detalheModal.mes === "acumulado") return true;
+      return c.data && c.data.slice(0, 7) === detalheModal.mes;
+    });
+    const total = itens.reduce((s, c) => s + (c.valor || 0), 0);
+    return /*#__PURE__*/React.createElement(Modal, {
+      title: `Detalhe — ${detalheModal.titulo}`,
+      onClose: () => setDetalheModal(null),
+      maxWidth: 600
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        marginBottom: 12,
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+        background: "#fef2f2",
+        borderRadius: 8,
+        padding: "10px 14px"
+      }
+    }, /*#__PURE__*/React.createElement("span", {
+      style: {
+        fontWeight: 600,
+        fontSize: 13
+      }
+    }, "Total"), /*#__PURE__*/React.createElement("span", {
+      style: {
+        fontFamily: "monospace",
+        fontWeight: 800,
+        fontSize: 16,
+        color: "#ef4444"
+      }
+    }, fmt(total))), /*#__PURE__*/React.createElement("div", {
+      style: {
+        maxHeight: 400,
+        overflowY: "auto"
+      }
+    }, /*#__PURE__*/React.createElement("table", {
+      style: {
+        width: "100%",
+        borderCollapse: "collapse",
+        fontSize: 12
+      }
+    }, /*#__PURE__*/React.createElement("thead", null, /*#__PURE__*/React.createElement("tr", {
+      style: {
+        background: "#f9fafb",
+        borderBottom: "2px solid #e5e7eb"
+      }
+    }, ["Descrição", "Data", "Valor", "Obs."].map((h, i) => /*#__PURE__*/React.createElement("th", {
+      key: i,
+      style: {
+        padding: "8px 12px",
+        textAlign: i === 2 ? "right" : "left",
+        fontSize: 10,
+        fontWeight: 600,
+        color: "#6b7280",
+        textTransform: "uppercase"
+      }
+    }, h)))), /*#__PURE__*/React.createElement("tbody", null, itens.map(c => /*#__PURE__*/React.createElement("tr", {
+      key: c.id,
+      style: {
+        borderBottom: "1px solid #f3f4f6"
+      }
+    }, /*#__PURE__*/React.createElement("td", {
+      style: {
+        padding: "8px 12px",
+        fontWeight: 500
+      }
+    }, c.descricao), /*#__PURE__*/React.createElement("td", {
+      style: {
+        padding: "8px 12px",
+        color: "#6b7280"
+      }
+    }, c.data || "—"), /*#__PURE__*/React.createElement("td", {
+      style: {
+        padding: "8px 12px",
+        textAlign: "right",
+        fontFamily: "monospace",
+        fontWeight: 700,
+        color: "#ef4444"
+      }
+    }, fmt(c.valor)), /*#__PURE__*/React.createElement("td", {
+      style: {
+        padding: "8px 12px",
+        color: "#9ca3af",
+        fontSize: 10,
+        maxWidth: 120,
+        overflow: "hidden",
+        textOverflow: "ellipsis",
+        whiteSpace: "nowrap"
+      }
+    }, c.observacao || "—"))), itens.length === 0 && /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("td", {
+      colSpan: 4,
+      style: {
+        padding: 32,
+        textAlign: "center",
+        color: "#9ca3af"
+      }
+    }, "Nenhum lan\xE7amento encontrado."))))));
+  })());
 }
 
 // ─── OBRAS ────────────────────────────────────────────────────────────────────
@@ -11558,9 +11744,19 @@ function CustosInternoPage({
     value: "Obras"
   }, "Obras"), /*#__PURE__*/React.createElement("option", {
     value: "Lan 2 Lan"
-  }, "Lan 2 Lan"), /*#__PURE__*/React.createElement("option", {
+  }, "Lan 2 Lan"), /*#__PURE__*/React.createElement("optgroup", {
+    label: "Custos Operacionais"
+  }, /*#__PURE__*/React.createElement("option", {
+    value: "CO:Pessoal"
+  }, "\u21B3 Pessoal (Sal\xE1rios + Impostos)"), /*#__PURE__*/React.createElement("option", {
+    value: "CO:Beneficios"
+  }, "\u21B3 Benef\xEDcios"), /*#__PURE__*/React.createElement("option", {
+    value: "CO:Veiculos"
+  }, "\u21B3 Loca\xE7\xE3o de Ve\xEDculos"), /*#__PURE__*/React.createElement("option", {
+    value: "CO:Combustivel"
+  }, "\u21B3 Combust\xEDvel"), /*#__PURE__*/React.createElement("option", {
     value: "Custos Operacionais"
-  }, "Custos Operacionais"), /*#__PURE__*/React.createElement("option", {
+  }, "\u21B3 Outros Operacionais")), /*#__PURE__*/React.createElement("option", {
     value: "Investimentos"
   }, "Investimentos"), /*#__PURE__*/React.createElement("option", {
     value: "Impostos"
