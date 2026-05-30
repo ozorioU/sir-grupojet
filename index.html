@@ -5678,10 +5678,7 @@ function CustosPage({
 
   // Enviar obra para aba Custos (lançamento único)
   const onEnviarCusto = o => {
-    if (!setCustosInt) {
-      showToast("Conecte a aba Custos primeiro.", "err");
-      return;
-    }
+    const dataMes = o.conclusao || o.env_fat || new Date().toISOString().slice(0, 10);
     const orc_key = OBRA_ORC_MAP[o.cod];
     const orc_itens = orc_key ? BUDGET_ITEMS_DATA[orc_key] || [] : [];
     const gastoCalc = orc_itens.reduce((s, item) => {
@@ -5690,18 +5687,36 @@ function CustosPage({
       return s + (cu > 0 ? cu * (item.qtd || 1) : 0);
     }, 0);
     const valorCusto = gastoCalc > 0 ? gastoCalc : o.custo;
-    const novoCusto = {
-      id: uid(),
-      descricao: o.entrega,
-      categoria: "Obras",
-      valor: valorCusto,
-      data: o.conclusao || new Date().toISOString().slice(0, 10),
-      observacao: "Lançado automaticamente de Obras e Custos",
-      recorrente: false
-    };
-    setCustosInt(p => [...p, novoCusto]);
-    if (syncCusto) syncCusto(novoCusto);
-    showToast("Obra enviada para Custos!");
+
+    // Enviar custo
+    if (setCustosInt && valorCusto > 0) {
+      const novoCusto = {
+        id: uid(),
+        descricao: o.entrega,
+        categoria: "Obras",
+        valor: valorCusto,
+        data: dataMes,
+        observacao: "Lançado automaticamente de Obras e Custos",
+        recorrente: false
+      };
+      setCustosInt(p => [...p, novoCusto]);
+      if (syncCusto) syncCusto(novoCusto);
+    }
+
+    // Enviar faturamento
+    if (setFatInt && o.fat > 0) {
+      const novoFat = {
+        id: uid(),
+        descricao: o.entrega,
+        categoria: "Obras",
+        valor: o.fat,
+        data: o.env_fat || dataMes,
+        observacao: "Lançado automaticamente de Obras e Custos"
+      };
+      setFatInt(p => [...p, novoFat]);
+      if (syncFat) syncFat(novoFat);
+    }
+    showToast("Obra enviada para Custos e Faturamento!");
   };
   const save = () => {
     var _form$entrega2;
