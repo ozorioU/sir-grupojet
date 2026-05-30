@@ -20,6 +20,24 @@ const {
   useEffect
 } = React;
 
+// ─── IMPOSTOS ─────────────────────────────────────────────────────────────────
+const IMPOSTOS = [{
+  nome: "PIS",
+  pct: 0.0065
+}, {
+  nome: "COFINS",
+  pct: 0.0300
+}, {
+  nome: "IRRF",
+  pct: 0.0150
+}, {
+  nome: "CSLL",
+  pct: 0.0100
+}];
+const TOTAL_IMP_PCT = IMPOSTOS.reduce((s, i) => s + i.pct, 0); // 6.5%
+const calcImpostos = fat => IMPOSTOS.reduce((s, i) => s + fat * i.pct, 0);
+const tooltipImpostos = fat => IMPOSTOS.map(i => `${i.nome}: ${fmt(fat * i.pct)} (${(i.pct * 100).toFixed(2)}%)`).join("\n") + `\nTotal: ${fmt(fat * TOTAL_IMP_PCT)} (6,50%)`;
+
 // ─── SUPABASE ─────────────────────────────────────────────────────────────────
 const SB_URL = "https://lddprbkfrqmrvspcstsm.supabase.co";
 const SB_KEY = "sb_publishable_jXZSpv_jNAYIK3c06tdJvw_V_1bIND2";
@@ -3983,10 +4001,16 @@ function Dashboard({
     "CO:Veiculos": "custos_op",
     "CO:Combustivel": "custos_op",
     "Investimentos": "invest",
-    "Impostos": "impostos"
+    "Impostos": "impostos",
+    "CO:Pessoal": "custos_op"
   };
 
   // Calcular custos: base das obras + L2L dos pontos + custosInt por categoria
+  // Impostos das obras (6.5% do faturado por mês)
+  const impObras = React.useMemo(() => {
+    if (mesSocietario === "acumulado") return obras.reduce((s, o) => s + calcImpostos(o.fat), 0);
+    return obras.filter(o => o.env_fat && o.env_fat.slice(0, 7) === mesSocietario).reduce((s, o) => s + calcImpostos(o.fat), 0);
+  }, [obras, mesSocietario]);
   const cusBase = {
     obras: tc,
     l2l: cusL2L,
@@ -3997,7 +4021,7 @@ function Dashboard({
     co_combustivel: 0,
     co_outros: 0,
     invest: 0,
-    impostos: 0,
+    impostos: impObras,
     outros: 0
   };
   const SUB_MAP = {
@@ -4485,13 +4509,13 @@ function Dashboard({
     })
   }, /*#__PURE__*/React.createElement("span", {
     style: {
-      fontSize: sub ? 10 : 11,
+      fontSize: sub ? 11 : 12,
       color: sub ? "#9ca3af" : "#6b7280"
     }
   }, l), /*#__PURE__*/React.createElement("span", {
     style: {
       fontFamily: "monospace",
-      fontSize: sub ? 10 : 11,
+      fontSize: sub ? 11 : 12,
       fontWeight: sub ? 500 : 600,
       color: v > 0 ? "#ef4444" : "#d1d5db",
       textDecoration: v > 0 ? "underline dotted" : "none"
@@ -5886,6 +5910,7 @@ function CustosPage({
   const rows = espelhos ? obras.filter(o => espelhos.some(e => String(e.obra_id) === String(o.id))) : [];
   const tg = rows.reduce((s, o) => s + o.custo, 0);
   const tf = rows.filter(o => o.fat > 0).reduce((s, o) => s + o.fat, 0);
+  const timp = rows.reduce((s, o) => s + calcImpostos(o.fat), 0);
   const l = tf - tg;
   const move = (i, dir) => {
     const arr = [...obras];
@@ -6000,7 +6025,7 @@ function CustosPage({
       fontSize: 11,
       color: "#6b7280",
       display: "grid",
-      gridTemplateColumns: "32px 1fr 110px 110px 110px 70px 90px",
+      gridTemplateColumns: "32px 1fr 110px 110px 110px 110px 70px 90px",
       gap: 6,
       padding: "0 10px 8px",
       borderBottom: "1px solid #e5e7eb",
@@ -6011,6 +6036,10 @@ function CustosPage({
       textAlign: "right"
     }
   }, "Gasto"), /*#__PURE__*/React.createElement("span", {
+    style: {
+      textAlign: "right"
+    }
+  }, "Impostos"), /*#__PURE__*/React.createElement("span", {
     style: {
       textAlign: "right"
     }
@@ -6032,7 +6061,7 @@ function CustosPage({
     }, /*#__PURE__*/React.createElement("div", {
       style: {
         display: "grid",
-        gridTemplateColumns: "32px 1fr 110px 110px 110px 70px 90px",
+        gridTemplateColumns: "32px 1fr 110px 110px 110px 110px 70px 90px",
         gap: 6,
         padding: "10px",
         borderRadius: 7,
