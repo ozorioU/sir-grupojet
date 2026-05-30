@@ -4771,6 +4771,7 @@ function ObrasPage({
     }
 
     // Enviar faturamento
+    console.log("setFatInt:", !!setFatInt, "fat:", o.fat);
     if (setFatInt && o.fat > 0) {
       const novoFat = {
         id: uid(),
@@ -4780,8 +4781,11 @@ function ObrasPage({
         data: o.env_fat || dataMes,
         observacao: "Lançado automaticamente de Obras e Custos"
       };
+      console.log("Lançando faturamento:", novoFat);
       setFatInt(p => [...p, novoFat]);
-      if (syncFat) syncFat(novoFat);
+      if (syncFat) syncFat(novoFat).then(r => console.log("syncFat resultado:", r));
+    } else {
+      console.log("Faturamento não lançado — setFatInt:", !!setFatInt, "fat:", o.fat);
     }
     showToast("Obra enviada para Custos e Faturamento!");
   };
