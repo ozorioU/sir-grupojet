@@ -4834,14 +4834,18 @@ function Dashboard({
       "↳ Benefícios": "CO:Beneficios",
       "↳ Locação Veículos": "CO:Veiculos",
       "↳ Combustível": "CO:Combustivel",
+      "↳ EPI + Uniforme": "CO:EPI",
+      "↳ Ferramentas": "CO:Ferramentas",
       "↳ Outros Op.": "Custos Operacionais",
       "Investimentos": "Investimentos",
       "Impostos": "Impostos",
       "Outros": "Outros"
     };
     const catKey = CAT_LABEL_MAP[detalheModal.titulo] || detalheModal.titulo;
-    const itens = custosExpDash.filter(c => {
-      const match = c.categoria === catKey || catKey === "CO:Pessoal" && c.categoria === "CO:Pessoal" || catKey === "CO:Beneficios" && c.categoria === "CO:Beneficios" || catKey === "CO:Veiculos" && c.categoria === "CO:Veiculos" || catKey === "CO:Combustivel" && c.categoria === "CO:Combustivel";
+    // Para Impostos: mostrar de custosInt + fatInt contratos
+    const isImpostos = detalheModal.titulo === "Impostos";
+    const itens = isImpostos ? [] : custosExpDash.filter(c => {
+      const match = c.categoria === catKey || catKey === "CO:Pessoal" && c.categoria === "CO:Pessoal" || catKey === "CO:Beneficios" && c.categoria === "CO:Beneficios" || catKey === "CO:Veiculos" && c.categoria === "CO:Veiculos" || catKey === "CO:Combustivel" && c.categoria === "CO:Combustivel" || catKey === "CO:EPI" && c.categoria === "CO:EPI" || catKey === "CO:Ferramentas" && c.categoria === "CO:Ferramentas";
       if (!match) return false;
       if (detalheModal.mes === "acumulado") return true;
       const cM = c._mes || (c.data ? c.data.slice(0, 7) : null);
@@ -4879,7 +4883,93 @@ function Dashboard({
         maxHeight: 400,
         overflowY: "auto"
       }
-    }, /*#__PURE__*/React.createElement("table", {
+    }, isImpostos ? (() => {
+      // Montar lista de origens dos impostos
+      const origens = [];
+      obras.filter(o => o.fat > 0 && (detalheModal.mes === "acumulado" || o.env_fat && o.env_fat.slice(0, 7) === detalheModal.mes)).forEach(o => origens.push({
+        desc: o.entrega,
+        data: o.env_fat || "",
+        base: o.fat,
+        imp: calcImpostos(o.fat),
+        origem: "Obra"
+      }));
+      fatInt.filter(f => f.categoria === "Contratos" && f.valor > 0 && (detalheModal.mes === "acumulado" || f.data && f.data.slice(0, 7) === detalheModal.mes)).forEach(f => origens.push({
+        desc: f.descricao,
+        data: f.data || "",
+        base: f.valor,
+        imp: calcImpostos(f.valor),
+        origem: "Contrato"
+      }));
+      return /*#__PURE__*/React.createElement("table", {
+        style: {
+          width: "100%",
+          borderCollapse: "collapse",
+          fontSize: 12
+        }
+      }, /*#__PURE__*/React.createElement("thead", null, /*#__PURE__*/React.createElement("tr", {
+        style: {
+          background: "#f9fafb",
+          borderBottom: "2px solid #e5e7eb"
+        }
+      }, ["Descrição", "Tipo", "Data", "Base", "Impostos (6,5%)"].map((h, i) => /*#__PURE__*/React.createElement("th", {
+        key: i,
+        style: {
+          padding: "8px 12px",
+          textAlign: i > 2 ? "right" : "left",
+          fontSize: 10,
+          fontWeight: 600,
+          color: "#6b7280",
+          textTransform: "uppercase"
+        }
+      }, h)))), /*#__PURE__*/React.createElement("tbody", null, origens.map((o, i) => /*#__PURE__*/React.createElement("tr", {
+        key: i,
+        style: {
+          borderBottom: "1px solid #f3f4f6"
+        }
+      }, /*#__PURE__*/React.createElement("td", {
+        style: {
+          padding: "8px 12px",
+          fontWeight: 500
+        }
+      }, o.desc), /*#__PURE__*/React.createElement("td", {
+        style: {
+          padding: "8px 12px"
+        }
+      }, /*#__PURE__*/React.createElement("span", {
+        style: {
+          ...badgeStyle(o.origem === "Obra" ? "info" : "warn"),
+          fontSize: 9
+        }
+      }, o.origem)), /*#__PURE__*/React.createElement("td", {
+        style: {
+          padding: "8px 12px",
+          color: "#6b7280"
+        }
+      }, o.data || "—"), /*#__PURE__*/React.createElement("td", {
+        style: {
+          padding: "8px 12px",
+          textAlign: "right",
+          fontFamily: "monospace",
+          color: "#6b7280"
+        }
+      }, fmt(o.base)), /*#__PURE__*/React.createElement("td", {
+        style: {
+          padding: "8px 12px",
+          textAlign: "right",
+          fontFamily: "monospace",
+          fontWeight: 700,
+          color: "#ef4444"
+        },
+        title: tooltipImpostos(o.base)
+      }, fmt(o.imp)))), origens.length === 0 && /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("td", {
+        colSpan: 5,
+        style: {
+          padding: 32,
+          textAlign: "center",
+          color: "#9ca3af"
+        }
+      }, "Nenhum imposto encontrado."))));
+    })() : /*#__PURE__*/React.createElement("table", {
       style: {
         width: "100%",
         borderCollapse: "collapse",
