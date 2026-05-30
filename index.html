@@ -80,7 +80,9 @@ const calcL2LAcum = p => {
     m = ini.getMonth() + 1;
   while (y < hoje.getFullYear() || y === hoje.getFullYear() && m <= hoje.getMonth() + 1) {
     const mesKey = `${y}-${String(m).padStart(2, "0")}`;
-    const vFat = calcL2LMes(parseFloat(p.faturamento) || 0, p.ativacao, mesKey);
+    // Faturamento: sempre valor cheio (sem proporcional)
+    const vFat = parseFloat(p.faturamento) || 0;
+    // Custo: proporcional no primeiro mês
     const vCus = calcL2LMes(parseFloat(p.custo) || 0, p.ativacao, mesKey);
     if (mesJaProcessado(mesKey)) {
       fat += vFat;
@@ -4009,7 +4011,7 @@ function Dashboard({
     } else {
       const processado = mesJaProcessado(mesSocietario);
       if (!processado) return 0; // mês ainda pendente
-      return pontos.filter(p => !p.ativacao || p.ativacao.slice(0, 7) <= mesSocietario).reduce((s, p) => s + calcL2LMes(parseFloat(p.faturamento) || 0, p.ativacao, mesSocietario), 0);
+      return pontos.filter(p => !p.ativacao || p.ativacao.slice(0, 7) <= mesSocietario).reduce((s, p) => s + (parseFloat(p.faturamento) || 0), 0);
     }
   }, [pontos, mesSocietario]);
   const cusL2L = React.useMemo(() => {
