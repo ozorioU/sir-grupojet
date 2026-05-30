@@ -4024,6 +4024,8 @@ function Dashboard({
     co_beneficios: 0,
     co_veiculos: 0,
     co_combustivel: 0,
+    co_epi: 0,
+    co_ferramentas: 0,
     co_outros: 0,
     invest: 0,
     impostos: impObras + impContratos,
@@ -4033,7 +4035,9 @@ function Dashboard({
     "CO:Pessoal": "co_pessoal",
     "CO:Beneficios": "co_beneficios",
     "CO:Veiculos": "co_veiculos",
-    "CO:Combustivel": "co_combustivel"
+    "CO:Combustivel": "co_combustivel",
+    "CO:EPI": "co_epi",
+    "CO:Ferramentas": "co_ferramentas"
   };
   // Expandir custos recorrentes igual à CustosInternoPage
   const hoje2 = new Date();
@@ -4472,6 +4476,14 @@ function Dashboard({
   }, {
     l: "↳ Combustível",
     v: cus.co_combustivel,
+    sub: true
+  }, {
+    l: "↳ EPI + Uniforme",
+    v: cus.co_epi,
+    sub: true
+  }, {
+    l: "↳ Ferramentas",
+    v: cus.co_ferramentas,
     sub: true
   }, {
     l: "↳ Outros Op.",
@@ -11821,6 +11833,10 @@ function CustosInternoPage({
   }, "\u21B3 Loca\xE7\xE3o de Ve\xEDculos"), /*#__PURE__*/React.createElement("option", {
     value: "CO:Combustivel"
   }, "\u21B3 Combust\xEDvel"), /*#__PURE__*/React.createElement("option", {
+    value: "CO:EPI"
+  }, "\u21B3 EPI + Uniforme"), /*#__PURE__*/React.createElement("option", {
+    value: "CO:Ferramentas"
+  }, "\u21B3 Ferramentas"), /*#__PURE__*/React.createElement("option", {
     value: "Custos Operacionais"
   }, "\u21B3 Outros Operacionais")), /*#__PURE__*/React.createElement("option", {
     value: "Investimentos"
