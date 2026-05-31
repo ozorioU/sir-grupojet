@@ -4724,11 +4724,36 @@ function Dashboard({
       fontSize: 18,
       color: "#15803d"
     }
-  }, fmt(invUnico))), /*#__PURE__*/React.createElement("div", {
+  }, fmt(invUnico))), investInt.filter(i => i.tipo === "unico").map(i => /*#__PURE__*/React.createElement("div", {
+    key: i.id,
+    style: {
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      padding: "5px 10px 5px 36px",
+      fontSize: 11,
+      borderBottom: "1px solid #f3f4f6",
+      background: "#f9fafb"
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: "#6b7280",
+      overflow: "hidden",
+      textOverflow: "ellipsis",
+      whiteSpace: "nowrap",
+      maxWidth: 140
+    }
+  }, i.descricao), /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontFamily: "monospace",
+      fontWeight: 600,
+      color: "#15803d",
+      flexShrink: 0
+    }
+  }, fmt(i.valor)))), /*#__PURE__*/React.createElement("div", {
     style: {
       ...frowStyle,
-      cursor: "pointer",
-      borderBottom: "none"
+      cursor: "pointer"
     },
     onClick: () => setPage("investint")
   }, /*#__PURE__*/React.createElement("span", {
@@ -4759,7 +4784,33 @@ function Dashboard({
       fontSize: 18,
       color: "#e8650a"
     }
-  }, fmt(invRecorrente))), invTotal === 0 && /*#__PURE__*/React.createElement("div", {
+  }, fmt(invRecorrente))), investInt.filter(i => i.tipo === "recorrente").map(i => /*#__PURE__*/React.createElement("div", {
+    key: i.id,
+    style: {
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      padding: "5px 10px 5px 36px",
+      fontSize: 11,
+      borderBottom: "1px solid #f3f4f6",
+      background: "#fff7f0"
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: "#6b7280",
+      overflow: "hidden",
+      textOverflow: "ellipsis",
+      whiteSpace: "nowrap",
+      maxWidth: 140
+    }
+  }, i.descricao), /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontFamily: "monospace",
+      fontWeight: 600,
+      color: "#e8650a",
+      flexShrink: 0
+    }
+  }, fmt(i.valor)))), invTotal === 0 && /*#__PURE__*/React.createElement("div", {
     style: {
       textAlign: "center",
       color: "#9ca3af",
