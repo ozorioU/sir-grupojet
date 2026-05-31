@@ -2752,11 +2752,6 @@ function LinhaTempoWidget({
     setPage("obras");
   };
   const [detalheModal, setDetalheModal] = React.useState(null);
-
-  // Investimentos futuros
-  const invUnico = investInt.filter(i => i.tipo === "unico").reduce((s, i) => s + (i.valor || 0), 0);
-  const invRecorrente = investInt.filter(i => i.tipo === "recorrente").reduce((s, i) => s + (i.valor || 0), 0);
-  const invTotal = invUnico + invRecorrente;
   const etapas = [{
     key: "ag_orc",
     label: "Aguardando\nOrçamento",
@@ -2971,11 +2966,6 @@ function StatusObrasWidget({
     setPage("obras");
   };
   const [detalheModal, setDetalheModal] = React.useState(null);
-
-  // Investimentos futuros
-  const invUnico = investInt.filter(i => i.tipo === "unico").reduce((s, i) => s + (i.valor || 0), 0);
-  const invRecorrente = investInt.filter(i => i.tipo === "recorrente").reduce((s, i) => s + (i.valor || 0), 0);
-  const invTotal = invUnico + invRecorrente;
   const frowStyle = {
     display: "flex",
     alignItems: "center",
