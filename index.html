@@ -4293,7 +4293,7 @@ function Dashboard({
     disabled: mesSocietario === "acumulado" || mesesDisponiveisD.indexOf(mesSocietario) >= mesesDisponiveisD.length - 1,
     onClick: () => {
       const i = mesesDisponiveisD.indexOf(mesSocietario);
-      setMesSocietario(mesesDisponiveisD[i + 1]);
+      if (i >= 0 && i < mesesDisponiveisD.length - 1) setMesSocietario(mesesDisponiveisD[i + 1]);
     }
   }, "\u25C0"), /*#__PURE__*/React.createElement("div", {
     style: {
@@ -4325,11 +4325,10 @@ function Dashboard({
       gap: 0,
       fontSize: 13
     },
-    disabled: mesSocietario !== "acumulado" && mesesDisponiveisD.indexOf(mesSocietario) <= 0,
+    disabled: mesSocietario === "acumulado" || mesesDisponiveisD.indexOf(mesSocietario) <= 0,
     onClick: () => {
       const i = mesesDisponiveisD.indexOf(mesSocietario);
-      if (i === 0) return;
-      setMesSocietario(mesesDisponiveisD[i - 1]);
+      if (i > 0) setMesSocietario(mesesDisponiveisD[i - 1]);
     }
   }, "\u25B6"), /*#__PURE__*/React.createElement("button", {
     style: {
