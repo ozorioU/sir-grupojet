@@ -11180,9 +11180,12 @@ function PontosPage({
 
 // ─── USUÁRIOS ─────────────────────────────────────────────────────────────────
 function UsuariosPage({
+  users = [],
+  setUsers,
+  syncUsuario,
+  delUsuario,
   showToast
 }) {
-  const [users, setUsers] = useState([...PROFILES]);
   const [modal, setModal] = useState(null);
   const [confirm, setConfirm] = useState(null);
   const [form, setForm] = useState({});
@@ -13539,6 +13542,7 @@ function App() {
   const [custosInt, setCustosInt] = useState([]); // custos da aba Custos Interno
   const [fatInt, setFatInt] = useState([]); // faturamentos internos (contratos, outras)
   const [investInt, setInvestInt] = useState([]); // investimentos futuros
+  const [sbUsers, setSbUsers] = useState([...PROFILES]); // usuários do sistema
 
   const showToast = (msg, type = "ok") => {
     setToast({
@@ -13551,7 +13555,7 @@ function App() {
   // ── Supabase sync functions ──────────────────────────────────────────────────
   const loadFromSupabase = async () => {
     try {
-      const [dbObras, dbBudgets, dbPontos, dbCustos, dbEspelhos, dbFats, dbInvests] = await Promise.all([sb.get("sir_obras", "order=cod"), sb.get("sir_orcamentos", "order=ordem"), sb.get("sir_pontos", "order=created_at"), sb.get("sir_custos", "order=data"), sb.get("sir_espelhos", "order=created_at"), sb.get("sir_faturamentos", "order=data"), sb.get("sir_investimentos", "order=created_at")]);
+      const [dbObras, dbBudgets, dbPontos, dbCustos, dbEspelhos, dbFats, dbInvests, dbUsers] = await Promise.all([sb.get("sir_obras", "order=cod"), sb.get("sir_orcamentos", "order=ordem"), sb.get("sir_pontos", "order=created_at"), sb.get("sir_custos", "order=data"), sb.get("sir_espelhos", "order=created_at"), sb.get("sir_faturamentos", "order=data"), sb.get("sir_investimentos", "order=created_at"), sb.get("sir_usuarios", "order=nome")]);
 
       // Obras: se Supabase vazio, faz seed com OBRAS_DATA
       if (dbObras && dbObras.length > 0) {
@@ -13581,6 +13585,7 @@ function App() {
       })));
       if (dbFats !== null && dbFats !== void 0 && dbFats.length) setFatInt(dbFats);
       if (dbInvests !== null && dbInvests !== void 0 && dbInvests.length) setInvestInt(dbInvests);
+      if (dbUsers !== null && dbUsers !== void 0 && dbUsers.length) setSbUsers(dbUsers);
       console.log("Supabase carregado: obras=" + (dbObras === null || dbObras === void 0 ? void 0 : dbObras.length) + " pontos=" + (dbPontos === null || dbPontos === void 0 ? void 0 : dbPontos.length));
     } catch (e) {
       console.log("Supabase load error:", e.message);
@@ -13624,6 +13629,12 @@ function App() {
   };
   const syncInvest = async i => {
     await sb.upsert("sir_investimentos", i).catch(() => {});
+  };
+  const syncUsuario = async u => {
+    await sb.upsert("sir_usuarios", u).catch(() => {});
+  };
+  const delUsuario = async id => {
+    await sbFetch("sir_usuarios", "DELETE", null, "id=eq." + id);
   };
   const delInvest = async id => {
     await sbFetch("sir_investimentos", "DELETE", null, "id=eq." + id);
@@ -13784,6 +13795,10 @@ function App() {
         });
       case "usuarios":
         return /*#__PURE__*/React.createElement(UsuariosPage, {
+          users: sbUsers,
+          setUsers: setSbUsers,
+          syncUsuario: syncUsuario,
+          delUsuario: delUsuario,
           showToast: showToast
         });
       default:
