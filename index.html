@@ -10270,6 +10270,7 @@ function ItensPage({
     setItems(p => p.find(i => i.id === n.id) ? p.map(i => i.id === n.id ? n : i) : [...p, n]);
     setModal(null);
     showToast(form.id ? "Item atualizado!" : "Item criado!");
+    if (syncItem) syncItem(n);
   };
   const del = id => {
     setItems(p => p.filter(i => i.id !== id));
