@@ -8807,9 +8807,7 @@ function OrcamentosPage({
     setForm({
       ...b
     });
-    const key = BUDGET_ID_MAP[b.id];
-    const itens = key && BUDGET_ITEMS_DATA[key] || [];
-    setEditItens(itens.map(i => ({
+    setEditItens((b.itens || []).map(i => ({
       ...i
     })));
     setAddTipo("servico");
@@ -9527,7 +9525,10 @@ function OrcamentosPage({
     }
   }, "Total: ", fmt(totalEdit))), /*#__PURE__*/React.createElement(MFooter, {
     onCancel: () => setModal(null),
-    onSave: save
+    onSave: () => {
+      console.log("SAVE ORC clicado — syncBudget:", !!syncBudget, "titulo:", form.titulo, "itens:", editItens.length);
+      save();
+    }
   })), (modal === null || modal === void 0 ? void 0 : modal.type) === "aprovar" && (() => {
     const b = modal.budget;
     const etapa = ETAPAS[b.etapa];
@@ -13927,8 +13928,24 @@ function App() {
     await sb.del("sir_obras", id);
   };
   const syncBudget = async b => {
-    const r = await sb.upsert("sir_orcamentos", b);
-    if (!r) console.error("syncBudget falhou", b.id);
+    // Filtrar apenas campos que existem na tabela
+    const payload = {
+      id: b.id,
+      titulo: b.titulo || "",
+      cliente: b.cliente || null,
+      observacoes: b.observacoes || b.obs || null,
+      etapa: b.etapa || "rascunho",
+      created_at: b.created_at || null,
+      updated_at: new Date().toISOString().slice(0, 10),
+      created_by: b.created_by || null,
+      ordem: b.ordem || 0,
+      historico: b.historico || [],
+      itens: b.itens || [],
+      total: b.total || 0
+    };
+    console.log("syncBudget enviando:", JSON.stringify(payload).slice(0, 200));
+    const r = await sb.upsert("sir_orcamentos", payload);
+    if (!r) console.error("syncBudget falhou", b.id);else console.log("syncBudget OK", b.id);
   };
   const delBudget = async id => {
     await sb.del("sir_orcamentos", id);
