@@ -8951,7 +8951,9 @@ function OrcamentosPage({
       ...form,
       id: form.id || uid(),
       etapa: form.etapa || "rascunho",
-      historico: form.historico || []
+      historico: form.historico || [],
+      itens: editItens,
+      total: totalEdit
     };
     setBudgets(p => p.find(b => b.id === n.id) ? p.map(b => b.id === n.id ? n : b) : [...p, n]);
     setModal(null);
