@@ -8736,6 +8736,7 @@ function OrcamentosPage({
   setOpenBudgetId,
   syncBudget,
   delBudget,
+  items = [],
   showToast
 }) {
   const [arquivos, setArquivos] = React.useState({}); // {budget_id: [{id,nome,url,size,tipo}]}
@@ -8821,7 +8822,7 @@ function OrcamentosPage({
       alert("Selecione um item.");
       return;
     }
-    const item = (window.__SIR_ITEMS || ALL_ITEMS).find(i => i.id === addItemId);
+    const item = (items.length > 0 ? items : ALL_ITEMS).find(i => i.id === addItemId);
     if (!item) return;
     const qtd = parseFloat(addQtd) || 1;
     const vt = Math.round(qtd * item.vu * 100) / 100;
@@ -9394,7 +9395,7 @@ function OrcamentosPage({
     onChange: e => setAddItemId(e.target.value)
   }, /*#__PURE__*/React.createElement("option", {
     value: ""
-  }, "Selecione um item..."), (window.__SIR_ITEMS || ALL_ITEMS).filter(i => i.tipo === addTipo).map(i => /*#__PURE__*/React.createElement("option", {
+  }, "Selecione um item..."), (items.length > 0 ? items : ALL_ITEMS).filter(i => i.tipo === addTipo).map(i => /*#__PURE__*/React.createElement("option", {
     key: i.id,
     value: i.id
   }, i.descricao, " \u2014 ", fmt(i.vu), "/", i.unidade)))), /*#__PURE__*/React.createElement("div", {
@@ -14107,6 +14108,7 @@ function App() {
           setOpenBudgetId: setOpenBudgetId,
           syncBudget: syncBudget,
           delBudget: delBudget,
+          items: items,
           showToast: showToast
         });
       case "itens":
