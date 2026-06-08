@@ -8867,6 +8867,79 @@ function OrcamentosPage({
     setCustosInt(p => [...p, novoCusto]);
     showToast("Obra enviada para Custos!");
   };
+
+  // ── Arquivos nos orçamentos ───────────────────────────────────────────────
+  const loadArquivos = async budgetId => {
+    try {
+      const res = await sb.get("sir_arquivos", "budget_id=eq." + budgetId + "&order=created_at");
+      if (res) setArquivos(p => ({
+        ...p,
+        [budgetId]: res
+      }));
+    } catch (e) {}
+  };
+  const handleUpload = async () => {
+    if (!uploadForm.arquivo || !uploadForm.nome.trim()) {
+      alert("Preencha o nome e selecione um arquivo.");
+      return;
+    }
+    setUploading(true);
+    try {
+      const file = uploadForm.arquivo;
+      const path = uploadModal.id + "/" + Date.now() + "_" + file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
+      const url = await uploadArquivo(file, path);
+      if (!url) {
+        showToast("Erro ao enviar arquivo.", "err");
+        setUploading(false);
+        return;
+      }
+      const arq = {
+        id: uid(),
+        budget_id: uploadModal.id,
+        nome: uploadForm.nome.trim(),
+        url,
+        path,
+        size: file.size,
+        tipo: file.type || file.name.split(".").pop(),
+        created_at: new Date().toISOString(),
+        criado_por: (user === null || user === void 0 ? void 0 : user.nome) || ""
+      };
+      await sb.upsert("sir_arquivos", arq);
+      setArquivos(p => ({
+        ...p,
+        [uploadModal.id]: [...(p[uploadModal.id] || []), arq]
+      }));
+      setUploadForm({
+        nome: "",
+        arquivo: null
+      });
+      if (fileInputRef.current) fileInputRef.current.value = "";
+      showToast("Arquivo anexado!");
+    } catch (e) {
+      showToast("Erro: " + e.message, "err");
+    }
+    setUploading(false);
+  };
+  const handleDeleteArq = async (budgetId, arq) => {
+    if (!confirm("Excluir " + arq.nome + "?")) return;
+    await deleteArquivo(arq.path);
+    await sbFetch("sir_arquivos", "DELETE", null, "id=eq." + arq.id);
+    setArquivos(p => ({
+      ...p,
+      [budgetId]: (p[budgetId] || []).filter(a => a.id !== arq.id)
+    }));
+    showToast("Arquivo removido.");
+  };
+  const fmtSize = b => b > 1048576 ? (b / 1048576).toFixed(1) + " MB" : b > 1024 ? (b / 1024).toFixed(0) + " KB" : b + " B";
+  const fmtTipo = t => {
+    if (!t) return "📄";
+    if (t.includes("pdf")) return "📕";
+    if (t.includes("image")) return "🖼️";
+    if (t.includes("word") || t.includes("doc")) return "📘";
+    if (t.includes("sheet") || t.includes("excel") || t.includes("xls")) return "📗";
+    if (t.includes("zip") || t.includes("rar")) return "🗜️";
+    return "📄";
+  };
   const save = () => {
     var _form$titulo;
     if (!((_form$titulo = form.titulo) !== null && _form$titulo !== void 0 && _form$titulo.trim())) {
