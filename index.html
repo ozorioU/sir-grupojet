@@ -8940,7 +8940,8 @@ function OrcamentosPage({
     return "📄";
   };
   const save = () => {
-    var _form$titulo;
+    var _form$titulo, _n$itens;
+    console.log("SAVE() chamado!", form.titulo, "itens:", editItens.length, "syncBudget:", typeof syncBudget);
     if (!((_form$titulo = form.titulo) !== null && _form$titulo !== void 0 && _form$titulo.trim())) {
       alert("Preencha o título.");
       return;
@@ -8953,10 +8954,11 @@ function OrcamentosPage({
       itens: editItens,
       total: totalEdit
     };
+    console.log("Salvando orçamento:", n.id, "itens:", (_n$itens = n.itens) === null || _n$itens === void 0 ? void 0 : _n$itens.length);
     setBudgets(p => p.find(b => b.id === n.id) ? p.map(b => b.id === n.id ? n : b) : [...p, n]);
     setModal(null);
     showToast(form.id ? "Orçamento atualizado!" : "Orçamento criado!");
-    if (syncBudget) syncBudget(n);
+    if (syncBudget) syncBudget(n);else console.error("syncBudget não disponível!");
   };
   const del = id => {
     setBudgets(p => p.filter(b => b.id !== id));
@@ -9620,8 +9622,7 @@ function OrcamentosPage({
     }, "\u2705 Aprovar e Avan\xE7ar")));
   })(), (modal === null || modal === void 0 ? void 0 : modal.type) === "detail" && (_b$historico2 => {
     const b = modal.budget;
-    const key = BUDGET_ID_MAP[b.id];
-    const itens = key && BUDGET_ITEMS_DATA[key] || [];
+    const itens = b.itens || [];
     const servicos = itens.filter(i => i.tipo === "servico");
     const materiais = itens.filter(i => i.tipo === "material");
     const totalServ = servicos.reduce((s, i) => s + i.vt, 0);
