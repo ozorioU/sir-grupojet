@@ -9299,7 +9299,12 @@ function OrcamentosPage({
     }
   }, "Nenhum or\xE7amento encontrado.")), modal === "edit" && /*#__PURE__*/React.createElement(Modal, {
     title: form.id ? "✏️ Editar Orçamento" : "➕ Novo Orçamento",
-    onClose: () => setModal(null),
+    onClose: () => {
+      var _form$titulo2;
+      const temDados = ((_form$titulo2 = form.titulo) === null || _form$titulo2 === void 0 ? void 0 : _form$titulo2.trim()) || editItens.length > 0;
+      if (temDados && !confirm("Tem certeza que quer sair sem salvar? As alterações serão perdidas.")) return;
+      setModal(null);
+    },
     maxWidth: 700
   }, /*#__PURE__*/React.createElement(FRow, null, /*#__PURE__*/React.createElement(Field, {
     label: "T\xEDtulo *"
@@ -9526,7 +9531,12 @@ function OrcamentosPage({
       color: "#1e40af"
     }
   }, "Total: ", fmt(totalEdit))), /*#__PURE__*/React.createElement(MFooter, {
-    onCancel: () => setModal(null),
+    onCancel: () => {
+      var _form$titulo3;
+      const temDados = ((_form$titulo3 = form.titulo) === null || _form$titulo3 === void 0 ? void 0 : _form$titulo3.trim()) || editItens.length > 0;
+      if (temDados && !confirm("Tem certeza que quer sair sem salvar? As alterações serão perdidas.")) return;
+      setModal(null);
+    },
     onSave: () => {
       console.log("SAVE ORC clicado — syncBudget:", !!syncBudget, "titulo:", form.titulo, "itens:", editItens.length);
       save();
