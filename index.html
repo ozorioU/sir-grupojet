@@ -9397,7 +9397,7 @@ function OrcamentosPage({
     onChange: e => setAddItemId(e.target.value)
   }, /*#__PURE__*/React.createElement("option", {
     value: ""
-  }, "Selecione um item..."), (items.length > 0 ? items : ALL_ITEMS).filter(i => i.tipo === addTipo).map(i => /*#__PURE__*/React.createElement("option", {
+  }, "Selecione um item..."), (items.length > 0 ? items : ALL_ITEMS).filter(i => i.tipo === addTipo).sort((a, b) => a.descricao.localeCompare(b.descricao, "pt-BR")).map(i => /*#__PURE__*/React.createElement("option", {
     key: i.id,
     value: i.id
   }, i.descricao, " \u2014 ", fmt(i.vu), "/", i.unidade)))), /*#__PURE__*/React.createElement("div", {
