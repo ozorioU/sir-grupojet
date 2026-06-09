@@ -10099,6 +10099,7 @@ function ItensPage({
   items = [],
   setItems,
   syncItem,
+  delItem,
   showToast,
   user
 }) {
@@ -10281,6 +10282,7 @@ function ItensPage({
     setItems(p => p.filter(i => i.id !== id));
     setConfirm(null);
     showToast("Item excluído.");
+    if (delItem) delItem(id);
   };
   return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     style: {
@@ -13982,6 +13984,9 @@ function App() {
   const syncItem = async i => {
     await sb.upsert("sir_itens", i).catch(() => {});
   };
+  const delItem = async id => {
+    await sbFetch("sir_itens", "DELETE", null, "id=eq." + id);
+  };
   const delUsuario = async id => {
     await sbFetch("sir_usuarios", "DELETE", null, "id=eq." + id);
   };
@@ -14136,6 +14141,7 @@ function App() {
           items: items,
           setItems: setItems,
           syncItem: syncItem,
+          delItem: delItem,
           showToast: showToast,
           user: user
         });
