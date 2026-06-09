@@ -8774,6 +8774,7 @@ function OrcamentosPage({
   const [confirm, setConfirm] = useState(null);
   const [form, setForm] = useState({});
   const [editItens, setEditItens] = useState([]);
+  const [confirmSair, setConfirmSair] = useState(false);
   const [addTipo, setAddTipo] = useState("servico");
   const [addItemId, setAddItemId] = useState("");
   const [addQtd, setAddQtd] = useState("1");
@@ -8789,6 +8790,15 @@ function OrcamentosPage({
     if (user.grupo === "f8") return ms && me && ["f8", "aprovado", "reprovado"].includes(b.etapa);
     return ms && me;
   }), [budgets, search, filtroEtapa, user]);
+  const tentarFechar = () => {
+    var _form$titulo;
+    const temDados = ((_form$titulo = form.titulo) === null || _form$titulo === void 0 ? void 0 : _form$titulo.trim()) || editItens.length > 0;
+    if (temDados) {
+      setConfirmSair(true);
+      return;
+    }
+    setModal(null);
+  };
   const openNew = () => {
     setForm({
       titulo: "",
@@ -8940,9 +8950,9 @@ function OrcamentosPage({
     return "📄";
   };
   const save = () => {
-    var _form$titulo, _n$itens;
+    var _form$titulo2, _n$itens;
     console.log("SAVE() chamado!", form.titulo, "itens:", editItens.length, "syncBudget:", typeof syncBudget);
-    if (!((_form$titulo = form.titulo) !== null && _form$titulo !== void 0 && _form$titulo.trim())) {
+    if (!((_form$titulo2 = form.titulo) !== null && _form$titulo2 !== void 0 && _form$titulo2.trim())) {
       alert("Preencha o título.");
       return;
     }
@@ -9299,12 +9309,7 @@ function OrcamentosPage({
     }
   }, "Nenhum or\xE7amento encontrado.")), modal === "edit" && /*#__PURE__*/React.createElement(Modal, {
     title: form.id ? "✏️ Editar Orçamento" : "➕ Novo Orçamento",
-    onClose: () => {
-      var _form$titulo2;
-      const temDados = ((_form$titulo2 = form.titulo) === null || _form$titulo2 === void 0 ? void 0 : _form$titulo2.trim()) || editItens.length > 0;
-      if (temDados && !confirm("Tem certeza que quer sair sem salvar? As alterações serão perdidas.")) return;
-      setModal(null);
-    },
+    onClose: tentarFechar,
     maxWidth: 700
   }, /*#__PURE__*/React.createElement(FRow, null, /*#__PURE__*/React.createElement(Field, {
     label: "T\xEDtulo *"
@@ -9531,12 +9536,7 @@ function OrcamentosPage({
       color: "#1e40af"
     }
   }, "Total: ", fmt(totalEdit))), /*#__PURE__*/React.createElement(MFooter, {
-    onCancel: () => {
-      var _form$titulo3;
-      const temDados = ((_form$titulo3 = form.titulo) === null || _form$titulo3 === void 0 ? void 0 : _form$titulo3.trim()) || editItens.length > 0;
-      if (temDados && !confirm("Tem certeza que quer sair sem salvar? As alterações serão perdidas.")) return;
-      setModal(null);
-    },
+    onCancel: tentarFechar,
     onSave: () => {
       console.log("SAVE ORC clicado — syncBudget:", !!syncBudget, "titulo:", form.titulo, "itens:", editItens.length);
       save();
@@ -10095,7 +10095,67 @@ function OrcamentosPage({
     },
     onClick: handleUpload,
     disabled: uploading
-  }, uploading ? "Enviando..." : "📎 Anexar"))), confirm && /*#__PURE__*/React.createElement(Confirm, {
+  }, uploading ? "Enviando..." : "📎 Anexar"))), confirmSair && /*#__PURE__*/React.createElement("div", {
+    style: {
+      position: "fixed",
+      inset: 0,
+      background: "rgba(0,0,0,.5)",
+      zIndex: 9999,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: "#fff",
+      borderRadius: 12,
+      padding: 24,
+      maxWidth: 380,
+      width: "90%",
+      boxShadow: "0 20px 60px rgba(0,0,0,.3)"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 20,
+      marginBottom: 8
+    }
+  }, "\u26A0\uFE0F"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontWeight: 700,
+      fontSize: 15,
+      marginBottom: 8
+    }
+  }, "Sair sem salvar?"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 13,
+      color: "#6b7280",
+      marginBottom: 20
+    }
+  }, "Voc\xEA tem altera\xE7\xF5es n\xE3o salvas. Se sair agora, elas ser\xE3o perdidas."), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 8,
+      justifyContent: "flex-end"
+    }
+  }, /*#__PURE__*/React.createElement("button", {
+    style: {
+      ...btn(),
+      padding: "8px 16px"
+    },
+    onClick: () => setConfirmSair(false)
+  }, "Continuar editando"), /*#__PURE__*/React.createElement("button", {
+    style: {
+      ...btn(),
+      padding: "8px 16px",
+      background: "#ef4444",
+      color: "#fff",
+      borderColor: "#ef4444"
+    },
+    onClick: () => {
+      setConfirmSair(false);
+      setModal(null);
+    }
+  }, "Sair sem salvar")))), confirm && /*#__PURE__*/React.createElement(Confirm, {
     msg: `Excluir "${confirm.titulo}"?`,
     onOk: () => del(confirm.id),
     onCancel: () => setConfirm(null)
