@@ -11578,6 +11578,8 @@ function UsuariosPage({
   setUsers,
   syncUsuario,
   delUsuario,
+  user,
+  setUser,
   showToast
 }) {
   const [modal, setModal] = useState(null);
@@ -11640,6 +11642,11 @@ function UsuariosPage({
       modulos: form.modulos || ALL_MODS
     };
     setUsers(p => p.find(u => u.id === n.id) ? p.map(u => u.id === n.id ? n : u) : [...p, n]);
+    // Se for o próprio usuário logado, atualizar o header também
+    if (setUser && user && n.id === user.id) setUser(p => ({
+      ...p,
+      ...n
+    }));
     setModal(null);
     showToast(form.id ? "Usuário atualizado!" : "Usuário criado!");
     if (syncUsuario) syncUsuario(n);
@@ -14235,6 +14242,8 @@ function App() {
           setUsers: setSbUsers,
           syncUsuario: syncUsuario,
           delUsuario: delUsuario,
+          user: user,
+          setUser: setUser,
           showToast: showToast
         });
       default:
