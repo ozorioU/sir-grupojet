@@ -11642,11 +11642,13 @@ function UsuariosPage({
     setUsers(p => p.find(u => u.id === n.id) ? p.map(u => u.id === n.id ? n : u) : [...p, n]);
     setModal(null);
     showToast(form.id ? "Usuário atualizado!" : "Usuário criado!");
+    if (syncUsuario) syncUsuario(n);
   };
   const del = id => {
     setUsers(p => p.filter(u => u.id !== id));
     setConfirm(null);
     showToast("Excluído.");
+    if (delUsuario) delUsuario(id);
   };
 
   // Agrupar módulos por seção para exibir no modal
