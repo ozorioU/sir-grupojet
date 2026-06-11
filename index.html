@@ -13989,7 +13989,18 @@ function App() {
       })));
       if (dbFats !== null && dbFats !== void 0 && dbFats.length) setFatInt(dbFats);
       if (dbInvests !== null && dbInvests !== void 0 && dbInvests.length) setInvestInt(dbInvests);
-      if (dbUsers !== null && dbUsers !== void 0 && dbUsers.length) setSbUsers(dbUsers);
+      if (dbUsers !== null && dbUsers !== void 0 && dbUsers.length) {
+        setSbUsers(dbUsers);
+        // Atualizar o user logado com dados atualizados do Supabase
+        setUser(prev => {
+          if (!prev) return prev;
+          const updated = dbUsers.find(u => u.id === prev.id || u.email === prev.email);
+          return updated ? {
+            ...prev,
+            ...updated
+          } : prev;
+        });
+      }
       if (dbItens && dbItens.length > 0) {
         setItems(dbItens);
       } else if (dbItens && dbItens.length === 0) {
