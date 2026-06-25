@@ -13,8 +13,7 @@
 </head>
 <body>
 <div id="root"></div>
-<script>function _extends() { return _extends = Object.assign ? Object.assign.bind() : function (n) { for (var e = 1; e < arguments.length; e++) { var t = arguments[e]; for (var r in t) ({}).hasOwnProperty.call(t, r) && (n[r] = t[r]); } return n; }, _extends.apply(null, arguments); }
-const {
+<script>const {
   useState,
   useMemo,
   useEffect
@@ -1834,7 +1833,7 @@ function PDFPreview({
         textTransform: "uppercase",
         color: "#374151"
       }
-    }, "SERVI\xC7OS")));
+    }, "SERVIÇOS")));
     serv.forEach(i => tableRows.push(/*#__PURE__*/React.createElement("tr", {
       key: i.id,
       style: {
@@ -1886,7 +1885,7 @@ function PDFPreview({
         textAlign: "right",
         borderBottom: "none"
       }
-    }, "Subtotal Servi\xE7os:"), /*#__PURE__*/React.createElement("td", {
+    }, "Subtotal Serviços:"), /*#__PURE__*/React.createElement("td", {
       style: {
         ...tdS,
         fontWeight: 700,
@@ -2009,7 +2008,7 @@ function PDFPreview({
       fontWeight: 700,
       fontSize: 13
     }
-  }, "\uD83D\uDCC4 ", titulo), /*#__PURE__*/React.createElement("div", {
+  }, "📄 ", titulo), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
       gap: 8,
@@ -2047,7 +2046,7 @@ function PDFPreview({
       document.body.removeChild(a);
       setTimeout(() => URL.revokeObjectURL(url), 1000);
     }
-  }, "\uD83D\uDCBE Baixar Or\xE7amento"), /*#__PURE__*/React.createElement("button", {
+  }, "💾 Baixar Orçamento"), /*#__PURE__*/React.createElement("button", {
     onClick: onClose,
     style: {
       background: "none",
@@ -2057,7 +2056,7 @@ function PDFPreview({
       color: "#6b7280",
       padding: "0 4px"
     }
-  }, "\u2715"))), /*#__PURE__*/React.createElement("div", {
+  }, "✕"))), /*#__PURE__*/React.createElement("div", {
     id: "sir-pdf-content",
     style: {
       flex: 1,
@@ -2088,7 +2087,7 @@ function PDFPreview({
       color: "#888",
       marginTop: 1
     }
-  }, "Sistema de Intelig\xEAncia Regional \u2014 SIR")), /*#__PURE__*/React.createElement("div", {
+  }, "Sistema de Inteligência Regional — SIR")), /*#__PURE__*/React.createElement("div", {
     style: {
       textAlign: "right"
     }
@@ -2098,7 +2097,7 @@ function PDFPreview({
       fontWeight: 700,
       color: "#111"
     }
-  }, "OR\xC7AMENTO"), /*#__PURE__*/React.createElement("div", {
+  }, "ORÇAMENTO"), /*#__PURE__*/React.createElement("div", {
     style: {
       fontSize: 10,
       color: "#888"
@@ -2152,7 +2151,7 @@ function PDFPreview({
       textTransform: "uppercase",
       marginBottom: 3
     }
-  }, "Servi\xE7os (", serv.length, ")"), /*#__PURE__*/React.createElement("div", {
+  }, "Serviços (", serv.length, ")"), /*#__PURE__*/React.createElement("div", {
     style: {
       fontWeight: 700,
       fontFamily: "monospace",
@@ -2208,7 +2207,7 @@ function PDFPreview({
       color: "#9ca3af",
       padding: 32
     }
-  }, "Nenhum item neste or\xE7amento.") : /*#__PURE__*/React.createElement("table", {
+  }, "Nenhum item neste orçamento.") : /*#__PURE__*/React.createElement("table", {
     style: {
       width: "100%",
       borderCollapse: "collapse"
@@ -2218,9 +2217,9 @@ function PDFPreview({
       ...thS,
       width: 55
     }
-  }, "C\xF3digo"), /*#__PURE__*/React.createElement("th", {
+  }, "Código"), /*#__PURE__*/React.createElement("th", {
     style: thS
-  }, "Descri\xE7\xE3o"), /*#__PURE__*/React.createElement("th", {
+  }, "Descrição"), /*#__PURE__*/React.createElement("th", {
     style: {
       ...thS,
       textAlign: "center",
@@ -2276,7 +2275,7 @@ function PDFPreview({
       fontSize: 9,
       color: "#aaa"
     }
-  }, /*#__PURE__*/React.createElement("span", null, "Grupo Jet \u2014 SIR Sistema de Intelig\xEAncia Regional"), /*#__PURE__*/React.createElement("span", null, "Gerado em ", new Date().toLocaleString("pt-BR"))))));
+  }, /*#__PURE__*/React.createElement("span", null, "Grupo Jet — SIR Sistema de Inteligência Regional"), /*#__PURE__*/React.createElement("span", null, "Gerado em ", new Date().toLocaleString("pt-BR"))))));
 }
 
 // Badge styles
@@ -2342,7 +2341,7 @@ function BadgeObra({
   }, s);
   if (s === "Concluida") return /*#__PURE__*/React.createElement("span", {
     style: badgeStyle("success")
-  }, "Conclu\xEDda");
+  }, "Concluída");
   if (s === "Aguardando execução") return /*#__PURE__*/React.createElement("span", {
     style: badgeStyle("warn")
   }, s);
@@ -2478,7 +2477,7 @@ function Toast({
       fontSize: 16,
       color: col
     }
-  }, "\u2715"));
+  }, "✕"));
 }
 
 // ─── MODAL ────────────────────────────────────────────────────────────────────
@@ -2533,7 +2532,7 @@ function Modal({
       color: "#6b7280",
       padding: "2px 6px"
     }
-  }, "\u2715")), children));
+  }, "✕")), children));
 }
 function MFooter({
   onCancel,
@@ -2554,7 +2553,7 @@ function MFooter({
   }, "Cancelar"), /*#__PURE__*/React.createElement("button", {
     style: btn("primary"),
     onClick: onSave
-  }, "\uD83D\uDCBE Salvar"));
+  }, "💾 Salvar"));
 }
 function FRow({
   children,
@@ -2618,13 +2617,13 @@ function Confirm({
       fontSize: 32,
       marginBottom: 10
     }
-  }, "\u26A0\uFE0F"), /*#__PURE__*/React.createElement("div", {
+  }, "⚠️"), /*#__PURE__*/React.createElement("div", {
     style: {
       fontWeight: 700,
       fontSize: 14,
       marginBottom: 8
     }
-  }, "Confirmar exclus\xE3o"), /*#__PURE__*/React.createElement("div", {
+  }, "Confirmar exclusão"), /*#__PURE__*/React.createElement("div", {
     style: {
       color: "#6b7280",
       fontSize: 12,
@@ -2714,7 +2713,7 @@ function LoginPage({
       fontWeight: 700,
       fontSize: 16
     }
-  }, "SIR \u2014 Sistema de Intelig\xEAncia Regional")), /*#__PURE__*/React.createElement("div", {
+  }, "SIR — Sistema de Inteligência Regional")), /*#__PURE__*/React.createElement("div", {
     style: {
       marginBottom: 10
     }
@@ -2746,7 +2745,7 @@ function LoginPage({
   }, "Senha"), /*#__PURE__*/React.createElement("input", {
     style: inp,
     type: "password",
-    placeholder: "\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022",
+    placeholder: "••••••••",
     value: pw,
     onChange: e => setPw(e.target.value),
     onKeyDown: e => e.key === "Enter" && go()
@@ -2838,7 +2837,7 @@ function LinhaTempoWidget({
       fontSize: 13,
       marginBottom: 20
     }
-  }, "\uD83D\uDCC5 Linha do Tempo \u2014 Status das Obras"), /*#__PURE__*/React.createElement("div", {
+  }, "📅 Linha do Tempo — Status das Obras"), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
       alignItems: "flex-start",
@@ -2892,7 +2891,7 @@ function LinhaTempoWidget({
         fontSize: 11,
         color: "#d1d5db"
       }
-    }, "\u2014")), /*#__PURE__*/React.createElement("div", {
+    }, "—")), /*#__PURE__*/React.createElement("div", {
       style: {
         marginTop: 7,
         fontWeight: 700,
@@ -3054,7 +3053,7 @@ function StatusObrasWidget({
       fontSize: 13,
       marginBottom: 12
     }
-  }, "\uD83D\uDCCA Status das Obras"), statusItems.map(item => /*#__PURE__*/React.createElement("div", {
+  }, "📊 Status das Obras"), statusItems.map(item => /*#__PURE__*/React.createElement("div", {
     key: item.l,
     style: frowStyle,
     onClick: () => nav(item.f),
@@ -3185,7 +3184,7 @@ function ResumoFinanceiroWidget({
     },
     disabled: !podePrev,
     onClick: () => setMesSel(todosMeses[idxAtual + 1])
-  }, "\u25C0"), /*#__PURE__*/React.createElement("div", {
+  }, "◀"), /*#__PURE__*/React.createElement("div", {
     style: {
       textAlign: "center"
     }
@@ -3201,7 +3200,7 @@ function ResumoFinanceiroWidget({
       color: "#e8650a",
       fontWeight: 600
     }
-  }, "M\xCAS ATUAL")), /*#__PURE__*/React.createElement("button", {
+  }, "MÊS ATUAL")), /*#__PURE__*/React.createElement("button", {
     style: {
       ...btn(),
       padding: "4px 8px",
@@ -3210,7 +3209,7 @@ function ResumoFinanceiroWidget({
     },
     disabled: !podeNext,
     onClick: () => setMesSel(todosMeses[idxAtual - 1])
-  }, "\u25B6")), /*#__PURE__*/React.createElement("div", {
+  }, "▶")), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
       gap: 10,
@@ -3260,7 +3259,7 @@ function ResumoFinanceiroWidget({
       fontSize: 12,
       color: "#1e40af"
     }
-  }, "V\xEDdeo Monitoramento"), /*#__PURE__*/React.createElement("div", {
+  }, "Vídeo Monitoramento"), /*#__PURE__*/React.createElement("div", {
     style: {
       fontSize: 9,
       color: "#9ca3af"
@@ -3303,7 +3302,7 @@ function ResumoFinanceiroWidget({
       textDecoration: "underline",
       textDecorationStyle: "dotted"
     },
-    title: "Ver obras faturadas neste m\xEAs",
+    title: "Ver obras faturadas neste mês",
     onClick: () => navObras("faturadas")
   }, fmt(fatMesVM)))), /*#__PURE__*/React.createElement("div", {
     style: secStyle
@@ -3326,7 +3325,7 @@ function ResumoFinanceiroWidget({
       fontSize: 18,
       flexShrink: 0
     }
-  }, "\uD83C\uDF10"), /*#__PURE__*/React.createElement("div", {
+  }, "🌐"), /*#__PURE__*/React.createElement("div", {
     style: {
       flex: 1
     }
@@ -3431,7 +3430,7 @@ function ResumoFinanceiroWidget({
       letterSpacing: .5,
       marginBottom: 2
     }
-  }, "Faturamento Total \u2014 ", nomeMes(mesSel).charAt(0).toUpperCase() + nomeMes(mesSel).slice(1)), /*#__PURE__*/React.createElement("div", {
+  }, "Faturamento Total — ", nomeMes(mesSel).charAt(0).toUpperCase() + nomeMes(mesSel).slice(1)), /*#__PURE__*/React.createElement("div", {
     style: {
       fontSize: 9,
       color: "rgba(255,255,255,.6)"
@@ -3561,7 +3560,7 @@ function DashL2L({
       fontWeight: 700,
       fontSize: 13
     }
-  }, "\uD83C\uDF10 Lan 2 Lan"), /*#__PURE__*/React.createElement("button", {
+  }, "🌐 Lan 2 Lan"), /*#__PURE__*/React.createElement("button", {
     style: {
       ...btn(),
       fontSize: 11,
@@ -3578,7 +3577,7 @@ function DashL2L({
     onChange: e => setFiltro(e.target.value)
   }, /*#__PURE__*/React.createElement("option", {
     value: "tudo"
-  }, "\uD83D\uDCCA Todo o hist\xF3rico"), todosMeses.map(m => /*#__PURE__*/React.createElement("option", {
+  }, "📊 Todo o histórico"), todosMeses.map(m => /*#__PURE__*/React.createElement("option", {
     key: m,
     value: m
   }, nomeMes(m)))), pontos.length === 0 ? /*#__PURE__*/React.createElement("div", {
@@ -3640,7 +3639,7 @@ function DashL2L({
       borderBottom: "1px solid #e5e7eb",
       marginBottom: 4
     }
-  }, /*#__PURE__*/React.createElement("span", null, "M\xCAS"), /*#__PURE__*/React.createElement("span", {
+  }, /*#__PURE__*/React.createElement("span", null, "MÊS"), /*#__PURE__*/React.createElement("span", {
     style: {
       textAlign: "center"
     }
@@ -3761,7 +3760,7 @@ function DashL2L({
       fontSize: 11,
       padding: 12
     }
-  }, "Nenhum ponto ativo neste m\xEAs") : dadosFiltro.pontosList.map(p => {
+  }, "Nenhum ponto ativo neste mês") : dadosFiltro.pontosList.map(p => {
     const l = (parseFloat(p.faturamento) || 0) - (parseFloat(p.custo) || 0);
     return /*#__PURE__*/React.createElement("div", {
       key: p.id,
@@ -3783,7 +3782,7 @@ function DashL2L({
         fontSize: 9,
         color: "#9ca3af"
       }
-    }, p.velocidade, " \xB7 desde ", p.ativacao)), /*#__PURE__*/React.createElement("div", {
+    }, p.velocidade, " · desde ", p.ativacao)), /*#__PURE__*/React.createElement("div", {
       style: {
         fontFamily: "monospace",
         fontWeight: 700,
@@ -3804,7 +3803,6 @@ function DashboardPrincipal({
   setDashFilter,
   setOpenBudgetId
 }) {
-  var _user$nome;
   const pendentes = user ? budgets.filter(b => {
     if (b.etapa === "jet_gerente") return user.grupo === "jet" && user.perfil === "gerente";
     if (b.etapa === "jet_diretor") return user.grupo === "jet" && user.perfil === "diretor";
@@ -3827,7 +3825,7 @@ function DashboardPrincipal({
       fontSize: 17,
       fontWeight: 700
     }
-  }, "\uD83D\uDCCA Dashboard")), /*#__PURE__*/React.createElement("div", {
+  }, "📊 Dashboard")), /*#__PURE__*/React.createElement("div", {
     style: {
       ...card,
       marginBottom: 16,
@@ -3851,78 +3849,75 @@ function DashboardPrincipal({
       fontWeight: 700,
       marginBottom: 4
     }
-  }, "Ol\xE1, ", user === null || user === void 0 || (_user$nome = user.nome) === null || _user$nome === void 0 ? void 0 : _user$nome.split(" ")[0], " \uD83D\uDC4B"), pendentes.length === 0 ? /*#__PURE__*/React.createElement("div", {
+  }, "Olá, ", user?.nome?.split(" ")[0], " 👋"), pendentes.length === 0 ? /*#__PURE__*/React.createElement("div", {
     style: {
       fontSize: 13,
       color: "#6b7280"
     }
-  }, "Tudo em dia! N\xE3o h\xE1 or\xE7amentos aguardando a sua aprova\xE7\xE3o.") : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+  }, "Tudo em dia! Não há orçamentos aguardando a sua aprovação.") : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
     style: {
       fontSize: 13,
       color: "#92400e",
       fontWeight: 500,
       marginBottom: 12
     }
-  }, "Voc\xEA possui ", /*#__PURE__*/React.createElement("strong", null, pendentes.length), " ", pendentes.length === 1 ? "orçamento aguardando" : "orçamentos aguardando", " a sua aprova\xE7\xE3o."), /*#__PURE__*/React.createElement("div", {
+  }, "Você possui ", /*#__PURE__*/React.createElement("strong", null, pendentes.length), " ", pendentes.length === 1 ? "orçamento aguardando" : "orçamentos aguardando", " a sua aprovação."), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
       flexDirection: "column",
       gap: 6
     }
-  }, pendentes.map(b => {
-    var _ETAPAS$b$etapa;
-    return /*#__PURE__*/React.createElement("div", {
-      key: b.id,
-      onClick: () => irParaOrcamento(b),
-      style: {
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        padding: "10px 14px",
-        borderRadius: 8,
-        border: "1px solid #fed7aa",
-        background: "#fff",
-        cursor: "pointer",
-        transition: "all .15s"
-      },
-      onMouseEnter: e => {
-        e.currentTarget.style.borderColor = "#e8650a";
-        e.currentTarget.style.background = "#fff7f0";
-      },
-      onMouseLeave: e => {
-        e.currentTarget.style.borderColor = "#fed7aa";
-        e.currentTarget.style.background = "#fff";
-      }
-    }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
-      style: {
-        fontWeight: 600,
-        fontSize: 13
-      }
-    }, b.titulo), /*#__PURE__*/React.createElement("div", {
-      style: {
-        fontSize: 11,
-        color: "#6b7280",
-        marginTop: 2
-      }
-    }, "Cliente: ", b.cliente, " \xB7 ", b.created_at)), /*#__PURE__*/React.createElement("div", {
-      style: {
-        display: "flex",
-        alignItems: "center",
-        gap: 8
-      }
-    }, /*#__PURE__*/React.createElement("span", {
-      style: {
-        ...badgeStyle("warn"),
-        fontSize: 11
-      }
-    }, "\u23F3 ", ((_ETAPAS$b$etapa = ETAPAS[b.etapa]) === null || _ETAPAS$b$etapa === void 0 ? void 0 : _ETAPAS$b$etapa.label) || b.etapa), /*#__PURE__*/React.createElement("span", {
-      style: {
-        fontSize: 11,
-        color: "#e8650a",
-        fontWeight: 600
-      }
-    }, "Ver e Aprovar \u2192")));
-  })))), pendentes.length > 0 && /*#__PURE__*/React.createElement("div", {
+  }, pendentes.map(b => /*#__PURE__*/React.createElement("div", {
+    key: b.id,
+    onClick: () => irParaOrcamento(b),
+    style: {
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "space-between",
+      padding: "10px 14px",
+      borderRadius: 8,
+      border: "1px solid #fed7aa",
+      background: "#fff",
+      cursor: "pointer",
+      transition: "all .15s"
+    },
+    onMouseEnter: e => {
+      e.currentTarget.style.borderColor = "#e8650a";
+      e.currentTarget.style.background = "#fff7f0";
+    },
+    onMouseLeave: e => {
+      e.currentTarget.style.borderColor = "#fed7aa";
+      e.currentTarget.style.background = "#fff";
+    }
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontWeight: 600,
+      fontSize: 13
+    }
+  }, b.titulo), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: "#6b7280",
+      marginTop: 2
+    }
+  }, "Cliente: ", b.cliente, " · ", b.created_at)), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 8
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      ...badgeStyle("warn"),
+      fontSize: 11
+    }
+  }, "⏳ ", ETAPAS[b.etapa]?.label || b.etapa), /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: 11,
+      color: "#e8650a",
+      fontWeight: 600
+    }
+  }, "Ver e Aprovar →"))))))), pendentes.length > 0 && /*#__PURE__*/React.createElement("div", {
     style: {
       flexShrink: 0,
       width: 56,
@@ -3935,7 +3930,7 @@ function DashboardPrincipal({
       justifyContent: "center",
       fontSize: 28
     }
-  }, "\uD83D\uDD14"))), /*#__PURE__*/React.createElement("div", {
+  }, "🔔"))), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "grid",
       gridTemplateColumns: "1fr 1fr",
@@ -4026,7 +4021,7 @@ function Dashboard({
       const orc_itens = orc_key ? BUDGET_ITEMS_DATA[orc_key] || [] : [];
       const gastoCalc = orc_itens.reduce((s, item) => {
         const itemBase = (window.__SIR_ITEMS || ALL_ITEMS).find(ai => ai.descricao === item.descricao);
-        const cu = (itemBase === null || itemBase === void 0 ? void 0 : itemBase.cu) || 0;
+        const cu = itemBase?.cu || 0;
         return s + (cu > 0 ? cu * (item.qtd || 1) : 0);
       }, 0);
       return total + (gastoCalc > 0 ? gastoCalc : obra.custo || 0);
@@ -4308,7 +4303,7 @@ function Dashboard({
       textTransform: "uppercase",
       letterSpacing: "1.5px"
     }
-  }, "Resumo Financeiro Societ\xE1rio"), /*#__PURE__*/React.createElement("div", {
+  }, "Resumo Financeiro Societário"), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
       alignItems: "center",
@@ -4326,7 +4321,7 @@ function Dashboard({
       const i = mesesDisponiveisD.indexOf(mesSocietario);
       if (i >= 0 && i < mesesDisponiveisD.length - 1) setMesSocietario(mesesDisponiveisD[i + 1]);
     }
-  }, "\u25C0"), /*#__PURE__*/React.createElement("div", {
+  }, "◀"), /*#__PURE__*/React.createElement("div", {
     style: {
       textAlign: "center",
       minWidth: 130
@@ -4361,7 +4356,7 @@ function Dashboard({
       const i = mesesDisponiveisD.indexOf(mesSocietario);
       if (i > 0) setMesSocietario(mesesDisponiveisD[i - 1]);
     }
-  }, "\u25B6"), /*#__PURE__*/React.createElement("button", {
+  }, "▶"), /*#__PURE__*/React.createElement("button", {
     style: {
       ...btn(),
       fontSize: 10,
@@ -4380,7 +4375,7 @@ function Dashboard({
       color: comPendentes ? "#fff" : "#374151",
       borderColor: comPendentes ? "#fbbf24" : "#e5e7eb"
     },
-    title: "Incluir valores pendentes (L2L ainda n\xE3o processados) no total",
+    title: "Incluir valores pendentes (L2L ainda não processados) no total",
     onClick: () => setComPendentes(p => !p)
   }, comPendentes ? "⏳ Com pendentes" : "+ Pendentes"))), /*#__PURE__*/React.createElement("div", {
     style: {
@@ -4410,7 +4405,7 @@ function Dashboard({
       color: "#9ca3af",
       fontWeight: 400
     }
-  }, "(faturado \u2212 custos)"), /*#__PURE__*/React.createElement("span", {
+  }, "(faturado − custos)"), /*#__PURE__*/React.createElement("span", {
     style: {
       background: lucro >= 0 ? "#d1fae5" : "#fee2e2",
       color: lucro >= 0 ? "#065f46" : "#991b1b",
@@ -4697,7 +4692,7 @@ function Dashboard({
       fontSize: 13,
       marginBottom: 16
     }
-  }, "\uD83D\uDCC8 Investimentos Futuros"), /*#__PURE__*/React.createElement("div", {
+  }, "📈 Investimentos Futuros"), /*#__PURE__*/React.createElement("div", {
     style: {
       textAlign: "center",
       marginBottom: 18,
@@ -4738,11 +4733,11 @@ function Dashboard({
     style: {
       fontSize: 18
     }
-  }, "\uD83D\uDCB3"), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+  }, "💳"), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     style: {
       fontSize: 12
     }
-  }, "Pagamento \xDAnico"), /*#__PURE__*/React.createElement("div", {
+  }, "Pagamento Único"), /*#__PURE__*/React.createElement("div", {
     style: {
       fontSize: 10,
       color: "#9ca3af"
@@ -4798,11 +4793,11 @@ function Dashboard({
     style: {
       fontSize: 18
     }
-  }, "\uD83D\uDD04"), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+  }, "🔄"), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     style: {
       fontSize: 12
     }
-  }, "Recorrente/m\xEAs"), /*#__PURE__*/React.createElement("div", {
+  }, "Recorrente/mês"), /*#__PURE__*/React.createElement("div", {
     style: {
       fontSize: 10,
       color: "#9ca3af"
@@ -4859,7 +4854,7 @@ function Dashboard({
       ...card,
       padding: "18px 20px"
     }
-  }, ((_acums, _acums2, _acums3, _acums4) => {
+  }, (() => {
     const hoje = new Date();
     const mesAtual = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, "0")}`;
     const nomeMesC = k => new Date(k + "-02").toLocaleString("pt-BR", {
@@ -4978,7 +4973,7 @@ function Dashboard({
         fontWeight: 700,
         fontSize: 13
       }
-    }, "\uD83D\uDCCA Hist\xF3rico & Proje\xE7\xE3o \u2014 Faturado \xD7 Custo"), /*#__PURE__*/React.createElement("div", {
+    }, "📊 Histórico & Projeção — Faturado × Custo"), /*#__PURE__*/React.createElement("div", {
       style: {
         display: "flex",
         gap: 14,
@@ -5038,7 +5033,7 @@ function Dashboard({
         background: "#fef9c3",
         border: "1px solid #fde047"
       }
-    }), "Proje\xE7\xE3o"))), hovDado && /*#__PURE__*/React.createElement("div", {
+    }), "Projeção"))), hovDado && /*#__PURE__*/React.createElement("div", {
       style: {
         display: "flex",
         gap: 16,
@@ -5108,7 +5103,7 @@ function Dashboard({
         color: "#d97706",
         whiteSpace: "nowrap"
       }
-    }, "Proje\xE7\xE3o \u2192")), /*#__PURE__*/React.createElement("div", {
+    }, "Projeção →")), /*#__PURE__*/React.createElement("div", {
       style: {
         position: "absolute",
         inset: 0,
@@ -5193,16 +5188,16 @@ function Dashboard({
       }
     }, [{
       l: "Fat. Acumulado",
-      v: fmt(((_acums = acums[dadosHist.length - 1]) === null || _acums === void 0 ? void 0 : _acums.fat) || 0),
+      v: fmt(acums[dadosHist.length - 1]?.fat || 0),
       c: "#10b981"
     }, {
       l: "Cus. Acumulado",
-      v: fmt(((_acums2 = acums[dadosHist.length - 1]) === null || _acums2 === void 0 ? void 0 : _acums2.cus) || 0),
+      v: fmt(acums[dadosHist.length - 1]?.cus || 0),
       c: "#ef4444"
     }, {
       l: "Lucro Acumulado",
-      v: fmt(((_acums3 = acums[dadosHist.length - 1]) === null || _acums3 === void 0 ? void 0 : _acums3.lucro) || 0),
-      c: (((_acums4 = acums[dadosHist.length - 1]) === null || _acums4 === void 0 ? void 0 : _acums4.lucro) || 0) >= 0 ? "#059669" : "#dc2626"
+      v: fmt(acums[dadosHist.length - 1]?.lucro || 0),
+      c: (acums[dadosHist.length - 1]?.lucro || 0) >= 0 ? "#059669" : "#dc2626"
     }, {
       l: primLucro ? "1º Mês Lucro (proj.)" : "Sem proj. lucro",
       v: primLucro ? nomeMesC(primLucro.mes) : "—",
@@ -5242,7 +5237,7 @@ function Dashboard({
         fontSize: 10,
         color: "#92400e"
       }
-    }, /*#__PURE__*/React.createElement("strong", null, "Proje\xE7\xE3o baseada em:"), " M\xE9dia fat. obras (\xFAltimos 3 meses com valor): ", fmt(mediaFatObras), "/m\xEAs \xB7 L2L: ", fmt(fatL2LMensal), "/m\xEAs \xB7 Custos recorrentes: ", fmt(cusRecMensal), "/m\xEAs \xB7 L2L custo: ", fmt(cusL2LMensal), "/m\xEAs"));
+    }, /*#__PURE__*/React.createElement("strong", null, "Projeção baseada em:"), " Média fat. obras (últimos 3 meses com valor): ", fmt(mediaFatObras), "/mês · L2L: ", fmt(fatL2LMensal), "/mês · Custos recorrentes: ", fmt(cusRecMensal), "/mês · L2L custo: ", fmt(cusL2LMensal), "/mês"));
   })())), detalheModal && (() => {
     const CAT_LABEL_MAP = {
       "Obras": "Obras",
@@ -5460,7 +5455,7 @@ function Dashboard({
         textAlign: "center",
         color: "#9ca3af"
       }
-    }, "Nenhum lan\xE7amento encontrado."))))));
+    }, "Nenhum lançamento encontrado."))))));
   })());
 }
 
@@ -5529,7 +5524,7 @@ function ObrasPage({
     const orc_itens = orc_key ? BUDGET_ITEMS_DATA[orc_key] || [] : [];
     const gastoCalc = orc_itens.reduce((s, item) => {
       const itemBase = (window.__SIR_ITEMS || ALL_ITEMS).find(ai => ai.descricao === item.descricao);
-      const cu = (itemBase === null || itemBase === void 0 ? void 0 : itemBase.cu) || 0;
+      const cu = itemBase?.cu || 0;
       return s + (cu > 0 ? cu * (item.qtd || 1) : 0);
     }, 0);
     const valorCusto = gastoCalc > 0 ? gastoCalc : o.custo;
@@ -5569,8 +5564,7 @@ function ObrasPage({
     showToast("Obra enviada para Custos e Faturamento!");
   };
   const save = () => {
-    var _form$entrega;
-    if (!((_form$entrega = form.entrega) !== null && _form$entrega !== void 0 && _form$entrega.trim())) {
+    if (!form.entrega?.trim()) {
       alert("Preencha a descrição.");
       return;
     }
@@ -5609,7 +5603,7 @@ function ObrasPage({
       fontSize: 17,
       fontWeight: 700
     }
-  }, "\uD83C\uDFD7\uFE0F Controle de Obras"), /*#__PURE__*/React.createElement("div", {
+  }, "🏗️ Controle de Obras"), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
       gap: 6
@@ -5617,7 +5611,7 @@ function ObrasPage({
   }, /*#__PURE__*/React.createElement("button", {
     style: btn(),
     onClick: () => showToast("Excel exportado (simulado).", "info")
-  }, "\uD83D\uDCCA Excel"), /*#__PURE__*/React.createElement("button", {
+  }, "📊 Excel"), /*#__PURE__*/React.createElement("button", {
     style: btn("primary"),
     onClick: () => {
       setForm({
@@ -5625,7 +5619,7 @@ function ObrasPage({
       });
       setModal("edit");
     }
-  }, "\u2795 Nova Obra"))), dashFilter && /*#__PURE__*/React.createElement("div", {
+  }, "➕ Nova Obra"))), dashFilter && /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
       alignItems: "center",
@@ -5637,7 +5631,7 @@ function ObrasPage({
   }, "Filtro: ", dashFilter), /*#__PURE__*/React.createElement("button", {
     style: btn(),
     onClick: () => setDashFilter("")
-  }, "\u2715 Limpar")), /*#__PURE__*/React.createElement("div", {
+  }, "✕ Limpar")), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
       gap: 8,
@@ -5650,7 +5644,7 @@ function ObrasPage({
       ...inp,
       maxWidth: 220
     },
-    placeholder: "\uD83D\uDD0D Buscar obra...",
+    placeholder: "🔍 Buscar obra...",
     value: search,
     onChange: e => setSearch(e.target.value)
   }), /*#__PURE__*/React.createElement("select", {
@@ -5666,15 +5660,15 @@ function ObrasPage({
     value: "aprovadas"
   }, "Aprovadas"), /*#__PURE__*/React.createElement("option", {
     value: "ag_orc"
-  }, "Aguardando Or\xE7amento"), /*#__PURE__*/React.createElement("option", {
+  }, "Aguardando Orçamento"), /*#__PURE__*/React.createElement("option", {
     value: "ag_aprov"
-  }, "Aguardando Aprova\xE7\xE3o"), /*#__PURE__*/React.createElement("option", {
+  }, "Aguardando Aprovação"), /*#__PURE__*/React.createElement("option", {
     value: "ag_exec"
-  }, "Aguard. Execu\xE7\xE3o"), /*#__PURE__*/React.createElement("option", {
+  }, "Aguard. Execução"), /*#__PURE__*/React.createElement("option", {
     value: "em_exec"
-  }, "Em Execu\xE7\xE3o"), /*#__PURE__*/React.createElement("option", {
+  }, "Em Execução"), /*#__PURE__*/React.createElement("option", {
     value: "concluidas"
-  }, "Conclu\xEDdas"), /*#__PURE__*/React.createElement("option", {
+  }, "Concluídas"), /*#__PURE__*/React.createElement("option", {
     value: "faturadas"
   }, "Faturadas")), /*#__PURE__*/React.createElement("div", {
     style: {
@@ -5682,7 +5676,7 @@ function ObrasPage({
       fontSize: 11,
       color: "#6b7280"
     }
-  }, "Or\xE7ado: ", /*#__PURE__*/React.createElement("strong", null, fmt(totalOrc)), " \xA0 Faturado: ", /*#__PURE__*/React.createElement("strong", {
+  }, "Orçado: ", /*#__PURE__*/React.createElement("strong", null, fmt(totalOrc)), " \xA0 Faturado: ", /*#__PURE__*/React.createElement("strong", {
     style: {
       color: "#10b981"
     }
@@ -5798,7 +5792,7 @@ function ObrasPage({
         gap: 0,
         color: "#1e40af"
       },
-      title: "Ver Or\xE7amento",
+      title: "Ver Orçamento",
       onClick: () => setModal({
         type: "orcamento",
         obra: o
@@ -5826,7 +5820,7 @@ function ObrasPage({
       y1: "17",
       x2: "8",
       y2: "17"
-    }))), (user === null || user === void 0 ? void 0 : user.grupo) === "jet" && (() => {
+    }))), user?.grupo === "jet" && (() => {
       const jaEspelhada = espelhos.some(e => String(e.obra_id) === String(o.id));
       return /*#__PURE__*/React.createElement("button", {
         style: {
@@ -5949,7 +5943,7 @@ function ObrasPage({
     title: form.id ? "✏️ Editar Obra" : "➕ Nova Obra",
     onClose: () => setModal(null)
   }, /*#__PURE__*/React.createElement(FRow, null, /*#__PURE__*/React.createElement(Field, {
-    label: "C\xF3digo"
+    label: "Código"
   }, /*#__PURE__*/React.createElement("input", {
     style: inp,
     value: form.cod || "",
@@ -5963,14 +5957,14 @@ function ObrasPage({
   }))), /*#__PURE__*/React.createElement(FRow, {
     full: true
   }, /*#__PURE__*/React.createElement(Field, {
-    label: "Descri\xE7\xE3o / Entrega *"
+    label: "Descrição / Entrega *"
   }, /*#__PURE__*/React.createElement("input", {
     style: inp,
     value: form.entrega || "",
     onChange: upd("entrega"),
     placeholder: "Ex: BRILHA GNA | NOVA OBRA"
   }))), /*#__PURE__*/React.createElement(FRow, null, /*#__PURE__*/React.createElement(Field, {
-    label: "Vlr Or\xE7amento (R$)"
+    label: "Vlr Orçamento (R$)"
   }, /*#__PURE__*/React.createElement("input", {
     style: inp,
     type: "number",
@@ -5984,7 +5978,7 @@ function ObrasPage({
     value: form.fat || "",
     onChange: upd("fat")
   }))), /*#__PURE__*/React.createElement(FRow, null, /*#__PURE__*/React.createElement(Field, {
-    label: "Status Or\xE7amento"
+    label: "Status Orçamento"
   }, /*#__PURE__*/React.createElement("select", {
     style: sel,
     value: form.st_orc || "",
@@ -6008,14 +6002,14 @@ function ObrasPage({
   }, STATUS_FIN.map(s => /*#__PURE__*/React.createElement("option", {
     key: s
   }, s)))), /*#__PURE__*/React.createElement(Field, {
-    label: "Data Conclus\xE3o"
+    label: "Data Conclusão"
   }, /*#__PURE__*/React.createElement("input", {
     style: inp,
     type: "date",
     value: form.conclusao || "",
     onChange: upd("conclusao")
   }))), /*#__PURE__*/React.createElement(FRow, null, /*#__PURE__*/React.createElement(Field, {
-    label: "Servi\xE7o por"
+    label: "Serviço por"
   }, /*#__PURE__*/React.createElement("input", {
     style: inp,
     value: form.serv || "",
@@ -6030,7 +6024,7 @@ function ObrasPage({
   }))), /*#__PURE__*/React.createElement(MFooter, {
     onCancel: () => setModal(null),
     onSave: save
-  })), (modal === null || modal === void 0 ? void 0 : modal.type) === "detail" && /*#__PURE__*/React.createElement(Modal, {
+  })), modal?.type === "detail" && /*#__PURE__*/React.createElement(Modal, {
     title: `Obra #${modal.obra.cod} — ${modal.obra.entrega}`,
     onClose: () => setModal(null),
     maxWidth: 480
@@ -6097,7 +6091,7 @@ function ObrasPage({
       style: btn("primary"),
       onClick: () => setModal(null)
     }, "Fechar")));
-  })()), (modal === null || modal === void 0 ? void 0 : modal.type) === "orcamento" && (() => {
+  })()), modal?.type === "orcamento" && (() => {
     const o = modal.obra;
     const key = OBRA_ORC_MAP[o.cod];
     const itens = key && BUDGET_ITEMS_DATA[key] || [];
@@ -6223,7 +6217,7 @@ function ObrasPage({
         fontWeight: 600,
         fontSize: 13
       }
-    }, "#", o.cod, " \u2014 ", o.entrega)), /*#__PURE__*/React.createElement("div", {
+    }, "#", o.cod, " — ", o.entrega)), /*#__PURE__*/React.createElement("div", {
       style: {
         background: "#f9fafb",
         border: "1px solid #e5e7eb",
@@ -6255,7 +6249,7 @@ function ObrasPage({
         color: "#1e40af",
         marginBottom: 2
       }
-    }, "Total do Or\xE7amento"), /*#__PURE__*/React.createElement("div", {
+    }, "Total do Orçamento"), /*#__PURE__*/React.createElement("div", {
       style: {
         fontWeight: 700,
         fontSize: 16,
@@ -6282,7 +6276,7 @@ function ObrasPage({
         color: "#15803d",
         marginBottom: 2
       }
-    }, "Servi\xE7os (", servicos.length, " itens)"), /*#__PURE__*/React.createElement("div", {
+    }, "Serviços (", servicos.length, " itens)"), /*#__PURE__*/React.createElement("div", {
       style: {
         fontWeight: 700,
         fontFamily: "monospace",
@@ -6363,7 +6357,7 @@ function ObrasPage({
       }
     }, h)))), /*#__PURE__*/React.createElement("tbody", null, /*#__PURE__*/React.createElement(GrpTable, {
       rows: servicos,
-      label: "Servi\xE7os",
+      label: "Serviços",
       sub: totalServ
     }), /*#__PURE__*/React.createElement(GrpTable, {
       rows: materiais,
@@ -6407,7 +6401,7 @@ function ObrasPage({
         itens,
         total
       })
-    }, "\uD83D\uDCC4 Exportar PDF"), /*#__PURE__*/React.createElement("button", {
+    }, "📄 Exportar PDF"), /*#__PURE__*/React.createElement("button", {
       style: btn("primary"),
       onClick: () => setModal(null)
     }, "Fechar")));
@@ -6415,9 +6409,10 @@ function ObrasPage({
     msg: `Excluir obra #${confirm.cod} — ${confirm.entrega}?`,
     onOk: () => del(confirm.id),
     onCancel: () => setConfirm(null)
-  }), pdfData && /*#__PURE__*/React.createElement(PDFPreview, _extends({}, pdfData, {
+  }), pdfData && /*#__PURE__*/React.createElement(PDFPreview, {
+    ...pdfData,
     onClose: () => setPdfData(null)
-  })));
+  }));
 }
 
 // ─── CUSTOS ───────────────────────────────────────────────────────────────────
@@ -6463,7 +6458,7 @@ function CustosPage({
     const orc_itens = orc_key ? BUDGET_ITEMS_DATA[orc_key] || [] : [];
     const gastoCalc = orc_itens.reduce((s, item) => {
       const itemBase = (window.__SIR_ITEMS || ALL_ITEMS).find(ai => ai.descricao === item.descricao);
-      const cu = (itemBase === null || itemBase === void 0 ? void 0 : itemBase.cu) || 0;
+      const cu = itemBase?.cu || 0;
       return s + (cu > 0 ? cu * (item.qtd || 1) : 0);
     }, 0);
     const valorCusto = gastoCalc > 0 ? gastoCalc : o.custo;
@@ -6499,8 +6494,7 @@ function CustosPage({
     showToast("Obra enviada para Custos e Faturamento!");
   };
   const save = () => {
-    var _form$entrega2;
-    if (!((_form$entrega2 = form.entrega) !== null && _form$entrega2 !== void 0 && _form$entrega2.trim())) {
+    if (!form.entrega?.trim()) {
       alert("Preencha o nome.");
       return;
     }
@@ -6524,10 +6518,10 @@ function CustosPage({
       fontSize: 17,
       fontWeight: 700
     }
-  }, "\uD83D\uDCB2 Dashboard de Custos"), /*#__PURE__*/React.createElement("button", {
+  }, "💲 Dashboard de Custos"), /*#__PURE__*/React.createElement("button", {
     style: btn(),
     onClick: () => showToast("Excel exportado.", "info")
-  }, "\uD83D\uDCCA Excel")), /*#__PURE__*/React.createElement("div", {
+  }, "📊 Excel")), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "grid",
       gridTemplateColumns: "repeat(5,1fr)",
@@ -6627,7 +6621,7 @@ function CustosPage({
       },
       disabled: i === 0,
       onClick: () => move(i, "up")
-    }, "\u25B2"), /*#__PURE__*/React.createElement("button", {
+    }, "▲"), /*#__PURE__*/React.createElement("button", {
       style: {
         ...btn(),
         padding: "1px 4px",
@@ -6635,7 +6629,7 @@ function CustosPage({
       },
       disabled: i === rows.length - 1,
       onClick: () => move(i, "down")
-    }, "\u25BC")), /*#__PURE__*/React.createElement("span", {
+    }, "▼")), /*#__PURE__*/React.createElement("span", {
       style: {
         fontWeight: 500,
         fontSize: 12,
@@ -6783,7 +6777,7 @@ function CustosPage({
         fontSize: 11,
         color: "#6b7280"
       }
-    }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("strong", null, "Servi\xE7o por:"), " ", o.serv || "—"), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("strong", null, "Data conclus\xE3o:"), " ", o.conclusao || "—"), /*#__PURE__*/React.createElement("div", {
+    }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("strong", null, "Serviço por:"), " ", o.serv || "—"), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("strong", null, "Data conclusão:"), " ", o.conclusao || "—"), /*#__PURE__*/React.createElement("div", {
       style: {
         display: "flex",
         alignItems: "center",
@@ -6793,7 +6787,7 @@ function CustosPage({
       s: o.st_fin
     }))));
   })), modal === "edit" && /*#__PURE__*/React.createElement(Modal, {
-    title: "\u270F\uFE0F Editar Lan\xE7amento",
+    title: "✏️ Editar Lançamento",
     onClose: () => setModal(null)
   }, /*#__PURE__*/React.createElement(FRow, {
     full: true
@@ -6804,7 +6798,7 @@ function CustosPage({
     value: form.entrega || "",
     onChange: upd("entrega")
   }))), /*#__PURE__*/React.createElement(FRow, null, /*#__PURE__*/React.createElement(Field, {
-    label: "Data Conclus\xE3o"
+    label: "Data Conclusão"
   }, /*#__PURE__*/React.createElement("input", {
     style: inp,
     type: "date",
@@ -8676,7 +8670,7 @@ function EsteiraTimeline({
       color: "#6b7280",
       fontStyle: "italic"
     }
-  }, "Nenhuma movimenta\xE7\xE3o ainda.");
+  }, "Nenhuma movimentação ainda.");
   return /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
@@ -8712,7 +8706,7 @@ function EsteiraTimeline({
       fontWeight: 400,
       color: "#6b7280"
     }
-  }, "\u2014 ", h.descricao)), /*#__PURE__*/React.createElement("div", {
+  }, "— ", h.descricao)), /*#__PURE__*/React.createElement("div", {
     style: {
       fontSize: 10,
       color: "#9ca3af"
@@ -8757,9 +8751,8 @@ function OrcamentosPage({
     if (openBudgetId) {
       const b = budgets.find(x => x.id === openBudgetId);
       if (b) {
-        var _PODE_APROVAR$b$etapa;
         // Abre direto no modal de aprovação se o usuário pode aprovar, senão abre em detalhe
-        const podeAprov = (_PODE_APROVAR$b$etapa = PODE_APROVAR[b.etapa]) === null || _PODE_APROVAR$b$etapa === void 0 ? void 0 : _PODE_APROVAR$b$etapa.call(PODE_APROVAR, user);
+        const podeAprov = PODE_APROVAR[b.etapa]?.(user);
         setModal(podeAprov ? {
           type: "aprovar",
           budget: b
@@ -8791,8 +8784,7 @@ function OrcamentosPage({
     return ms && me;
   }), [budgets, search, filtroEtapa, user]);
   const tentarFechar = () => {
-    var _form$titulo;
-    const temDados = ((_form$titulo = form.titulo) === null || _form$titulo === void 0 ? void 0 : _form$titulo.trim()) || editItens.length > 0;
+    const temDados = form.titulo?.trim() || editItens.length > 0;
     if (temDados) {
       setConfirmSair(true);
       return;
@@ -8848,6 +8840,18 @@ function OrcamentosPage({
     setAddQtd("1");
   };
   const removeItem = id => setEditItens(p => p.filter(i => i.id !== id));
+  const [editingItem, setEditingItem] = React.useState(null); // {id, qtd, vu}
+  const updateItem = (id, qtd, vu) => {
+    const q = parseFloat(qtd) || 1;
+    const v = parseFloat(vu) || 0;
+    setEditItens(p => p.map(i => i.id === id ? {
+      ...i,
+      qtd: q,
+      vu: v,
+      vt: parseFloat((q * v).toFixed(2))
+    } : i));
+    setEditingItem(null);
+  };
   const totalEdit = editItens.reduce((s, i) => s + i.vt, 0);
 
   // Enviar obra para aba Custos (lançamento único)
@@ -8860,7 +8864,7 @@ function OrcamentosPage({
     const orc_itens = orc_key ? BUDGET_ITEMS_DATA[orc_key] || [] : [];
     const gastoCalc = orc_itens.reduce((s, item) => {
       const itemBase = (window.__SIR_ITEMS || ALL_ITEMS).find(ai => ai.descricao === item.descricao);
-      const cu = (itemBase === null || itemBase === void 0 ? void 0 : itemBase.cu) || 0;
+      const cu = itemBase?.cu || 0;
       return s + (cu > 0 ? cu * (item.qtd || 1) : 0);
     }, 0);
     const valorCusto = gastoCalc > 0 ? gastoCalc : o.custo;
@@ -8911,7 +8915,7 @@ function OrcamentosPage({
         size: file.size,
         tipo: file.type || file.name.split(".").pop(),
         created_at: new Date().toISOString(),
-        criado_por: (user === null || user === void 0 ? void 0 : user.nome) || ""
+        criado_por: user?.nome || ""
       };
       await sb.upsert("sir_arquivos", arq);
       setArquivos(p => ({
@@ -8950,9 +8954,8 @@ function OrcamentosPage({
     return "📄";
   };
   const save = () => {
-    var _form$titulo2, _n$itens;
     console.log("SAVE() chamado!", form.titulo, "itens:", editItens.length, "syncBudget:", typeof syncBudget);
-    if (!((_form$titulo2 = form.titulo) !== null && _form$titulo2 !== void 0 && _form$titulo2.trim())) {
+    if (!form.titulo?.trim()) {
       alert("Preencha o título.");
       return;
     }
@@ -8964,7 +8967,7 @@ function OrcamentosPage({
       itens: editItens,
       total: totalEdit
     };
-    console.log("Salvando orçamento:", n.id, "itens:", (_n$itens = n.itens) === null || _n$itens === void 0 ? void 0 : _n$itens.length);
+    console.log("Salvando orçamento:", n.id, "itens:", n.itens?.length);
     setBudgets(p => p.find(b => b.id === n.id) ? p.map(b => b.id === n.id ? n : b) : [...p, n]);
     setModal(null);
     showToast(form.id ? "Orçamento atualizado!" : "Orçamento criado!");
@@ -8998,9 +9001,8 @@ function OrcamentosPage({
 
   // Aprovar etapa atual
   const aprovar = b => {
-    var _ETAPAS$etapaAtual;
     const etapaAtual = b.etapa;
-    const proxEtapa = (_ETAPAS$etapaAtual = ETAPAS[etapaAtual]) === null || _ETAPAS$etapaAtual === void 0 ? void 0 : _ETAPAS$etapaAtual.next;
+    const proxEtapa = ETAPAS[etapaAtual]?.next;
     if (!proxEtapa) return;
     const descricao = proxEtapa === "aprovado" ? "Aprovação final — orçamento APROVADO" : `Aprovado → avançando para ${ETAPAS[proxEtapa].label}`;
     const hist = [...(b.historico || []), {
@@ -9020,7 +9022,7 @@ function OrcamentosPage({
 
   // Reprovar
   const reprovar = (b, motivo) => {
-    if (!(motivo !== null && motivo !== void 0 && motivo.trim())) {
+    if (!motivo?.trim()) {
       alert("Informe o motivo da reprovação.");
       return;
     }
@@ -9039,10 +9041,7 @@ function OrcamentosPage({
     showToast("Orçamento reprovado. Retornado ao operador Jet.", "err");
     setModal(null);
   };
-  const podeAprovarEtapa = b => {
-    var _PODE_APROVAR$b$etapa2;
-    return (_PODE_APROVAR$b$etapa2 = PODE_APROVAR[b.etapa]) === null || _PODE_APROVAR$b$etapa2 === void 0 ? void 0 : _PODE_APROVAR$b$etapa2.call(PODE_APROVAR, user);
-  };
+  const podeAprovarEtapa = b => PODE_APROVAR[b.etapa]?.(user);
   const podeEditar = b => PODE_EDITAR_ORC(user) && (b.etapa === "rascunho" || b.etapa === "reprovado");
   const podeEnviar = b => PODE_EDITAR_ORC(user) && (b.etapa === "rascunho" || b.etapa === "reprovado");
   const podeExcluir = b => PODE_EDITAR_ORC(user) && b.etapa === "rascunho";
@@ -9058,10 +9057,10 @@ function OrcamentosPage({
       fontSize: 17,
       fontWeight: 700
     }
-  }, "\uD83E\uDDFE Or\xE7amentos"), PODE_EDITAR_ORC(user) && /*#__PURE__*/React.createElement("button", {
+  }, "🧾 Orçamentos"), PODE_EDITAR_ORC(user) && /*#__PURE__*/React.createElement("button", {
     style: btn("primary"),
     onClick: openNew
-  }, "\u2795 Novo Or\xE7amento")), /*#__PURE__*/React.createElement("div", {
+  }, "➕ Novo Orçamento")), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
       gap: 8,
@@ -9098,7 +9097,7 @@ function OrcamentosPage({
       padding: "4px 8px"
     },
     onClick: () => setFiltroEtapa("all")
-  }, "\u2715 Limpar filtro")), /*#__PURE__*/React.createElement("div", {
+  }, "✕ Limpar filtro")), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
       gap: 8,
@@ -9110,7 +9109,7 @@ function OrcamentosPage({
       ...inp,
       maxWidth: 260
     },
-    placeholder: "\uD83D\uDD0D Buscar...",
+    placeholder: "🔍 Buscar...",
     value: search,
     onChange: e => setSearch(e.target.value)
   }), /*#__PURE__*/React.createElement("span", {
@@ -9119,205 +9118,202 @@ function OrcamentosPage({
       fontSize: 11,
       color: "#6b7280"
     }
-  }, filtered.length, " or\xE7amentos")), /*#__PURE__*/React.createElement("div", {
+  }, filtered.length, " orçamentos")), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "grid",
       gridTemplateColumns: "repeat(3,1fr)",
       gap: 12
     }
-  }, filtered.map(b => {
-    var _b$historico, _b$historico$slice$re;
+  }, filtered.map(b => /*#__PURE__*/React.createElement("div", {
+    key: b.id,
+    style: {
+      ...card,
+      cursor: "default",
+      transition: "border-color .12s",
+      display: "flex",
+      flexDirection: "column",
+      gap: 0
+    },
+    onMouseEnter: e => e.currentTarget.style.borderColor = "#e8650a",
+    onMouseLeave: e => e.currentTarget.style.borderColor = "#e5e7eb"
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      alignItems: "flex-start",
+      justifyContent: "space-between",
+      marginBottom: 6
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontWeight: 700,
+      fontSize: 13,
+      lineHeight: 1.3,
+      flex: 1,
+      paddingRight: 8
+    }
+  }, b.titulo), /*#__PURE__*/React.createElement(BadgeEtapa, {
+    etapa: b.etapa
+  })), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: "#6b7280",
+      marginBottom: 8
+    }
+  }, "Cliente: ", b.cliente, " · ", b.created_at), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 2,
+      marginBottom: 10
+    }
+  }, ["rascunho", "jet_gerente", "jet_diretor", "f8", "aprovado"].map(k => {
+    const ordem = ["rascunho", "jet_gerente", "jet_diretor", "f8", "aprovado"];
+    const posAtual = ordem.indexOf(b.etapa === "reprovado" ? "rascunho" : b.etapa);
+    const posK = ordem.indexOf(k);
+    const ativo = posK <= posAtual && b.etapa !== "reprovado";
     return /*#__PURE__*/React.createElement("div", {
-      key: b.id,
+      key: k,
       style: {
-        ...card,
-        cursor: "default",
-        transition: "border-color .12s",
-        display: "flex",
-        flexDirection: "column",
-        gap: 0
-      },
-      onMouseEnter: e => e.currentTarget.style.borderColor = "#e8650a",
-      onMouseLeave: e => e.currentTarget.style.borderColor = "#e5e7eb"
-    }, /*#__PURE__*/React.createElement("div", {
-      style: {
-        display: "flex",
-        alignItems: "flex-start",
-        justifyContent: "space-between",
-        marginBottom: 6
-      }
-    }, /*#__PURE__*/React.createElement("div", {
-      style: {
-        fontWeight: 700,
-        fontSize: 13,
-        lineHeight: 1.3,
         flex: 1,
-        paddingRight: 8
+        height: 4,
+        borderRadius: 99,
+        background: ativo ? "#e8650a" : "#e5e7eb",
+        transition: "background .3s"
       }
-    }, b.titulo), /*#__PURE__*/React.createElement(BadgeEtapa, {
-      etapa: b.etapa
-    })), /*#__PURE__*/React.createElement("div", {
-      style: {
-        fontSize: 11,
-        color: "#6b7280",
-        marginBottom: 8
-      }
-    }, "Cliente: ", b.cliente, " \xB7 ", b.created_at), /*#__PURE__*/React.createElement("div", {
-      style: {
-        display: "flex",
-        gap: 2,
-        marginBottom: 10
-      }
-    }, ["rascunho", "jet_gerente", "jet_diretor", "f8", "aprovado"].map(k => {
-      const ordem = ["rascunho", "jet_gerente", "jet_diretor", "f8", "aprovado"];
-      const posAtual = ordem.indexOf(b.etapa === "reprovado" ? "rascunho" : b.etapa);
-      const posK = ordem.indexOf(k);
-      const ativo = posK <= posAtual && b.etapa !== "reprovado";
-      return /*#__PURE__*/React.createElement("div", {
-        key: k,
-        style: {
-          flex: 1,
-          height: 4,
-          borderRadius: 99,
-          background: ativo ? "#e8650a" : "#e5e7eb",
-          transition: "background .3s"
-        }
-      });
-    })), b.etapa === "reprovado" && ((_b$historico = b.historico) === null || _b$historico === void 0 ? void 0 : _b$historico.slice().reverse().find(h => h.acao === "reprovado")) && /*#__PURE__*/React.createElement("div", {
-      style: {
-        background: "#fee2e2",
-        border: "1px solid #fecaca",
-        borderRadius: 6,
-        padding: "6px 10px",
-        fontSize: 11,
-        color: "#991b1b",
-        marginBottom: 8
-      }
-    }, "\u274C Reprovado: ", (_b$historico$slice$re = b.historico.slice().reverse().find(h => h.acao === "reprovado")) === null || _b$historico$slice$re === void 0 ? void 0 : _b$historico$slice$re.motivo), /*#__PURE__*/React.createElement("div", {
-      style: {
-        display: "flex",
-        gap: 5,
-        flexWrap: "wrap",
-        marginTop: "auto"
-      }
-    }, /*#__PURE__*/React.createElement("button", {
-      style: {
-        ...btn(),
-        flex: 1,
-        justifyContent: "center",
-        fontSize: 11,
-        padding: "5px"
-      },
-      onClick: () => setModal({
-        type: "detail",
-        budget: b
-      })
-    }, /*#__PURE__*/React.createElement("svg", {
-      width: "14",
-      height: "14",
-      viewBox: "0 0 24 24",
-      fill: "none",
-      stroke: "currentColor",
-      strokeWidth: "2",
-      strokeLinecap: "round",
-      strokeLinejoin: "round"
-    }, /*#__PURE__*/React.createElement("path", {
-      d: "M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"
-    }), /*#__PURE__*/React.createElement("circle", {
-      cx: "12",
-      cy: "12",
-      r: "3"
-    })), " Ver"), podeEditar(b) && /*#__PURE__*/React.createElement("button", {
-      style: {
-        ...btn(),
-        flex: 1,
-        justifyContent: "center",
-        fontSize: 11,
-        padding: "5px"
-      },
-      onClick: () => openEdit(b)
-    }, /*#__PURE__*/React.createElement("svg", {
-      width: "14",
-      height: "14",
-      viewBox: "0 0 24 24",
-      fill: "none",
-      stroke: "currentColor",
-      strokeWidth: "2",
-      strokeLinecap: "round",
-      strokeLinejoin: "round"
-    }, /*#__PURE__*/React.createElement("path", {
-      d: "M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"
-    }), /*#__PURE__*/React.createElement("path", {
-      d: "M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"
-    })), " Editar"), podeEnviar(b) && /*#__PURE__*/React.createElement("button", {
-      style: {
-        ...btn("primary"),
-        flex: 1,
-        justifyContent: "center",
-        fontSize: 11,
-        padding: "5px"
-      },
-      onClick: () => enviarEsteira(b)
-    }, "\uD83D\uDCE4 Enviar"), podeAprovarEtapa(b) && /*#__PURE__*/React.createElement("button", {
-      style: {
-        ...btn("primary"),
-        flex: 1,
-        justifyContent: "center",
-        fontSize: 11,
-        padding: "5px",
-        background: "#10b981",
-        borderColor: "#10b981"
-      },
-      onClick: () => setModal({
-        type: "aprovar",
-        budget: b
-      })
-    }, "\u2705 Aprovar"), podeExcluir(b) && /*#__PURE__*/React.createElement("button", {
-      style: {
-        ...btn(),
-        color: "#ef4444",
-        padding: "5px 8px",
-        fontSize: 11
-      },
-      onClick: () => setConfirm(b)
-    }, /*#__PURE__*/React.createElement("svg", {
-      width: "14",
-      height: "14",
-      viewBox: "0 0 24 24",
-      fill: "none",
-      stroke: "currentColor",
-      strokeWidth: "2",
-      strokeLinecap: "round",
-      strokeLinejoin: "round"
-    }, /*#__PURE__*/React.createElement("polyline", {
-      points: "3 6 5 6 21 6"
-    }), /*#__PURE__*/React.createElement("path", {
-      d: "M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"
-    }), /*#__PURE__*/React.createElement("path", {
-      d: "M10 11v6"
-    }), /*#__PURE__*/React.createElement("path", {
-      d: "M14 11v6"
-    }), /*#__PURE__*/React.createElement("path", {
-      d: "M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"
-    })))));
-  }), filtered.length === 0 && /*#__PURE__*/React.createElement("div", {
+    });
+  })), b.etapa === "reprovado" && b.historico?.slice().reverse().find(h => h.acao === "reprovado") && /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: "#fee2e2",
+      border: "1px solid #fecaca",
+      borderRadius: 6,
+      padding: "6px 10px",
+      fontSize: 11,
+      color: "#991b1b",
+      marginBottom: 8
+    }
+  }, "❌ Reprovado: ", b.historico.slice().reverse().find(h => h.acao === "reprovado")?.motivo), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 5,
+      flexWrap: "wrap",
+      marginTop: "auto"
+    }
+  }, /*#__PURE__*/React.createElement("button", {
+    style: {
+      ...btn(),
+      flex: 1,
+      justifyContent: "center",
+      fontSize: 11,
+      padding: "5px"
+    },
+    onClick: () => setModal({
+      type: "detail",
+      budget: b
+    })
+  }, /*#__PURE__*/React.createElement("svg", {
+    width: "14",
+    height: "14",
+    viewBox: "0 0 24 24",
+    fill: "none",
+    stroke: "currentColor",
+    strokeWidth: "2",
+    strokeLinecap: "round",
+    strokeLinejoin: "round"
+  }, /*#__PURE__*/React.createElement("path", {
+    d: "M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"
+  }), /*#__PURE__*/React.createElement("circle", {
+    cx: "12",
+    cy: "12",
+    r: "3"
+  })), " Ver"), podeEditar(b) && /*#__PURE__*/React.createElement("button", {
+    style: {
+      ...btn(),
+      flex: 1,
+      justifyContent: "center",
+      fontSize: 11,
+      padding: "5px"
+    },
+    onClick: () => openEdit(b)
+  }, /*#__PURE__*/React.createElement("svg", {
+    width: "14",
+    height: "14",
+    viewBox: "0 0 24 24",
+    fill: "none",
+    stroke: "currentColor",
+    strokeWidth: "2",
+    strokeLinecap: "round",
+    strokeLinejoin: "round"
+  }, /*#__PURE__*/React.createElement("path", {
+    d: "M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"
+  }), /*#__PURE__*/React.createElement("path", {
+    d: "M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"
+  })), " Editar"), podeEnviar(b) && /*#__PURE__*/React.createElement("button", {
+    style: {
+      ...btn("primary"),
+      flex: 1,
+      justifyContent: "center",
+      fontSize: 11,
+      padding: "5px"
+    },
+    onClick: () => enviarEsteira(b)
+  }, "📤 Enviar"), podeAprovarEtapa(b) && /*#__PURE__*/React.createElement("button", {
+    style: {
+      ...btn("primary"),
+      flex: 1,
+      justifyContent: "center",
+      fontSize: 11,
+      padding: "5px",
+      background: "#10b981",
+      borderColor: "#10b981"
+    },
+    onClick: () => setModal({
+      type: "aprovar",
+      budget: b
+    })
+  }, "✅ Aprovar"), podeExcluir(b) && /*#__PURE__*/React.createElement("button", {
+    style: {
+      ...btn(),
+      color: "#ef4444",
+      padding: "5px 8px",
+      fontSize: 11
+    },
+    onClick: () => setConfirm(b)
+  }, /*#__PURE__*/React.createElement("svg", {
+    width: "14",
+    height: "14",
+    viewBox: "0 0 24 24",
+    fill: "none",
+    stroke: "currentColor",
+    strokeWidth: "2",
+    strokeLinecap: "round",
+    strokeLinejoin: "round"
+  }, /*#__PURE__*/React.createElement("polyline", {
+    points: "3 6 5 6 21 6"
+  }), /*#__PURE__*/React.createElement("path", {
+    d: "M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"
+  }), /*#__PURE__*/React.createElement("path", {
+    d: "M10 11v6"
+  }), /*#__PURE__*/React.createElement("path", {
+    d: "M14 11v6"
+  }), /*#__PURE__*/React.createElement("path", {
+    d: "M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"
+  })))))), filtered.length === 0 && /*#__PURE__*/React.createElement("div", {
     style: {
       gridColumn: "1/-1",
       textAlign: "center",
       color: "#6b7280",
       padding: 40
     }
-  }, "Nenhum or\xE7amento encontrado.")), modal === "edit" && /*#__PURE__*/React.createElement(Modal, {
+  }, "Nenhum orçamento encontrado.")), modal === "edit" && /*#__PURE__*/React.createElement(Modal, {
     title: form.id ? "✏️ Editar Orçamento" : "➕ Novo Orçamento",
     onClose: tentarFechar,
     maxWidth: 700
   }, /*#__PURE__*/React.createElement(FRow, null, /*#__PURE__*/React.createElement(Field, {
-    label: "T\xEDtulo *"
+    label: "Título *"
   }, /*#__PURE__*/React.createElement("input", {
     style: inp,
     value: form.titulo || "",
     onChange: upd("titulo"),
-    placeholder: "Ex: BBN C\xC2MERAS - TRECHO 6"
+    placeholder: "Ex: BBN CÂMERAS - TRECHO 6"
   })), /*#__PURE__*/React.createElement(Field, {
     label: "Cliente"
   }, /*#__PURE__*/React.createElement("input", {
@@ -9332,7 +9328,7 @@ function OrcamentosPage({
     value: form.created_at || "",
     onChange: upd("created_at")
   })), /*#__PURE__*/React.createElement(Field, {
-    label: "Observa\xE7\xF5es"
+    label: "Observações"
   }, /*#__PURE__*/React.createElement("input", {
     style: inp,
     value: form.obs || "",
@@ -9382,7 +9378,7 @@ function OrcamentosPage({
     }
   }, /*#__PURE__*/React.createElement("option", {
     value: "servico"
-  }, "Servi\xE7o"), /*#__PURE__*/React.createElement("option", {
+  }, "Serviço"), /*#__PURE__*/React.createElement("option", {
     value: "material"
   }, "Material"))), /*#__PURE__*/React.createElement("div", {
     style: {
@@ -9410,7 +9406,7 @@ function OrcamentosPage({
   }, "Selecione um item..."), (items.length > 0 ? items : ALL_ITEMS).filter(i => i.tipo === addTipo).sort((a, b) => a.descricao.localeCompare(b.descricao, "pt-BR")).map(i => /*#__PURE__*/React.createElement("option", {
     key: i.id,
     value: i.id
-  }, i.descricao, " \u2014 ", fmt(i.vu), "/", i.unidade)))), /*#__PURE__*/React.createElement("div", {
+  }, i.descricao, " — ", fmt(i.vu), "/", i.unidade)))), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
       flexDirection: "column",
@@ -9472,62 +9468,136 @@ function OrcamentosPage({
       borderBottom: "1px solid #e5e7eb",
       whiteSpace: "nowrap"
     }
-  }, h)))), /*#__PURE__*/React.createElement("tbody", null, editItens.map(i => /*#__PURE__*/React.createElement("tr", {
-    key: i.id,
-    style: {
-      borderBottom: "1px solid #e5e7eb"
-    }
-  }, /*#__PURE__*/React.createElement("td", {
-    style: {
-      padding: "7px 10px"
-    }
-  }, /*#__PURE__*/React.createElement("span", {
-    style: {
-      ...badgeStyle(i.tipo === "servico" ? "info" : "gray"),
-      fontSize: 10
-    }
-  }, i.tipo === "servico" ? "Serviço" : "Material")), /*#__PURE__*/React.createElement("td", {
-    style: {
-      padding: "7px 10px",
-      maxWidth: 200,
-      overflow: "hidden",
-      textOverflow: "ellipsis",
-      whiteSpace: "nowrap",
-      fontWeight: 500
-    }
-  }, i.descricao), /*#__PURE__*/React.createElement("td", {
-    style: {
-      padding: "7px 10px",
-      textAlign: "right",
-      fontFamily: "monospace"
-    }
-  }, i.qtd), /*#__PURE__*/React.createElement("td", {
-    style: {
-      padding: "7px 10px",
-      textAlign: "right",
-      fontFamily: "monospace"
-    }
-  }, fmt(i.vu)), /*#__PURE__*/React.createElement("td", {
-    style: {
-      padding: "7px 10px",
-      textAlign: "right",
-      fontFamily: "monospace",
-      fontWeight: 600
-    }
-  }, fmt(i.vt)), /*#__PURE__*/React.createElement("td", {
-    style: {
-      padding: "7px 10px",
-      textAlign: "center"
-    }
-  }, /*#__PURE__*/React.createElement("button", {
-    style: {
-      ...btn(),
-      padding: "2px 7px",
-      fontSize: 11,
-      color: "#ef4444"
-    },
-    onClick: () => removeItem(i.id)
-  }, "\u2715"))))))), /*#__PURE__*/React.createElement("div", {
+  }, h)))), /*#__PURE__*/React.createElement("tbody", null, editItens.map(i => {
+    const isEditing = editingItem?.id === i.id;
+    return /*#__PURE__*/React.createElement("tr", {
+      key: i.id,
+      style: {
+        borderBottom: "1px solid #e5e7eb",
+        background: isEditing ? "#f0f9ff" : ""
+      }
+    }, /*#__PURE__*/React.createElement("td", {
+      style: {
+        padding: "7px 10px"
+      }
+    }, /*#__PURE__*/React.createElement("span", {
+      style: {
+        ...badgeStyle(i.tipo === "servico" ? "info" : "gray"),
+        fontSize: 10
+      }
+    }, i.tipo === "servico" ? "Serviço" : "Material")), /*#__PURE__*/React.createElement("td", {
+      style: {
+        padding: "7px 10px",
+        maxWidth: 180,
+        overflow: "hidden",
+        textOverflow: "ellipsis",
+        whiteSpace: "nowrap",
+        fontWeight: 500,
+        fontSize: 12
+      }
+    }, i.descricao), /*#__PURE__*/React.createElement("td", {
+      style: {
+        padding: "7px 10px",
+        textAlign: "right"
+      }
+    }, isEditing ? /*#__PURE__*/React.createElement("input", {
+      style: {
+        ...inp,
+        width: 60,
+        padding: "2px 6px",
+        textAlign: "right",
+        fontSize: 12
+      },
+      defaultValue: editingItem.qtd,
+      onChange: e => setEditingItem(p => ({
+        ...p,
+        qtd: e.target.value
+      }))
+    }) : /*#__PURE__*/React.createElement("span", {
+      style: {
+        fontFamily: "monospace",
+        fontSize: 12
+      }
+    }, i.qtd)), /*#__PURE__*/React.createElement("td", {
+      style: {
+        padding: "7px 10px",
+        textAlign: "right"
+      }
+    }, isEditing ? /*#__PURE__*/React.createElement("input", {
+      style: {
+        ...inp,
+        width: 90,
+        padding: "2px 6px",
+        textAlign: "right",
+        fontSize: 12
+      },
+      defaultValue: editingItem.vu,
+      onChange: e => setEditingItem(p => ({
+        ...p,
+        vu: e.target.value
+      }))
+    }) : /*#__PURE__*/React.createElement("span", {
+      style: {
+        fontFamily: "monospace",
+        fontSize: 12
+      }
+    }, fmt(i.vu))), /*#__PURE__*/React.createElement("td", {
+      style: {
+        padding: "7px 10px",
+        textAlign: "right",
+        fontFamily: "monospace",
+        fontWeight: 600,
+        fontSize: 12
+      }
+    }, fmt(isEditing ? parseFloat((parseFloat(editingItem.qtd || 1) * parseFloat(editingItem.vu || 0)).toFixed(2)) : i.vt)), /*#__PURE__*/React.createElement("td", {
+      style: {
+        padding: "7px 10px",
+        textAlign: "center"
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        display: "flex",
+        gap: 3,
+        justifyContent: "center"
+      }
+    }, isEditing ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("button", {
+      style: {
+        ...btn(),
+        padding: "2px 7px",
+        fontSize: 11,
+        color: "#10b981",
+        borderColor: "#10b981"
+      },
+      onClick: () => updateItem(i.id, editingItem.qtd, editingItem.vu)
+    }, "✓"), /*#__PURE__*/React.createElement("button", {
+      style: {
+        ...btn(),
+        padding: "2px 7px",
+        fontSize: 11
+      },
+      onClick: () => setEditingItem(null)
+    }, "✕")) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("button", {
+      style: {
+        ...btn(),
+        padding: "2px 7px",
+        fontSize: 11,
+        color: "#3b82f6"
+      },
+      onClick: () => setEditingItem({
+        id: i.id,
+        qtd: String(i.qtd),
+        vu: String(i.vu)
+      })
+    }, "✎"), /*#__PURE__*/React.createElement("button", {
+      style: {
+        ...btn(),
+        padding: "2px 7px",
+        fontSize: 11,
+        color: "#ef4444"
+      },
+      onClick: () => removeItem(i.id)
+    }, "✕")))));
+  })))), /*#__PURE__*/React.createElement("div", {
     style: {
       textAlign: "right",
       padding: "8px 10px",
@@ -9541,7 +9611,7 @@ function OrcamentosPage({
       console.log("SAVE ORC clicado — syncBudget:", !!syncBudget, "titulo:", form.titulo, "itens:", editItens.length);
       save();
     }
-  })), (modal === null || modal === void 0 ? void 0 : modal.type) === "aprovar" && (() => {
+  })), modal?.type === "aprovar" && (() => {
     const b = modal.budget;
     const etapa = ETAPAS[b.etapa];
     return /*#__PURE__*/React.createElement(Modal, {
@@ -9567,7 +9637,7 @@ function OrcamentosPage({
         fontSize: 12,
         color: "#6b7280"
       }
-    }, "Cliente: ", b.cliente, " \xB7 ", b.created_at)), /*#__PURE__*/React.createElement("div", {
+    }, "Cliente: ", b.cliente, " · ", b.created_at)), /*#__PURE__*/React.createElement("div", {
       style: {
         marginBottom: 14
       }
@@ -9577,7 +9647,7 @@ function OrcamentosPage({
         fontSize: 12,
         marginBottom: 8
       }
-    }, "\uD83D\uDCCB Hist\xF3rico da Esteira"), /*#__PURE__*/React.createElement(EsteiraTimeline, {
+    }, "📋 Histórico da Esteira"), /*#__PURE__*/React.createElement(EsteiraTimeline, {
       historico: b.historico
     })), /*#__PURE__*/React.createElement("div", {
       style: {
@@ -9594,9 +9664,9 @@ function OrcamentosPage({
         marginBottom: 6,
         color: "#9a3412"
       }
-    }, "Reprovar (opcional \u2014 informe o motivo)"), /*#__PURE__*/React.createElement("input", {
+    }, "Reprovar (opcional — informe o motivo)"), /*#__PURE__*/React.createElement("input", {
       style: inp,
-      placeholder: "Ex: Valor acima do or\xE7ado, revisar item X...",
+      placeholder: "Ex: Valor acima do orçado, revisar item X...",
       value: motivoReprov,
       onChange: e => setMotivoReprov(e.target.value)
     })), /*#__PURE__*/React.createElement("div", {
@@ -9619,7 +9689,7 @@ function OrcamentosPage({
         reprovar(b, motivoReprov);
         setMotivoReprov("");
       }
-    }, "\u274C Reprovar"), /*#__PURE__*/React.createElement("button", {
+    }, "❌ Reprovar"), /*#__PURE__*/React.createElement("button", {
       style: {
         ...btn("primary"),
         background: "#10b981",
@@ -9629,8 +9699,8 @@ function OrcamentosPage({
         aprovar(b);
         setMotivoReprov("");
       }
-    }, "\u2705 Aprovar e Avan\xE7ar")));
-  })(), (modal === null || modal === void 0 ? void 0 : modal.type) === "detail" && (_b$historico2 => {
+    }, "✅ Aprovar e Avançar")));
+  })(), modal?.type === "detail" && (() => {
     const b = modal.budget;
     const itens = b.itens || [];
     const servicos = itens.filter(i => i.tipo === "servico");
@@ -9789,7 +9859,7 @@ function OrcamentosPage({
         fontFamily: "monospace",
         color: "#1e40af"
       }
-    }, fmt(total)))), ((_b$historico2 = b.historico) === null || _b$historico2 === void 0 ? void 0 : _b$historico2.length) > 0 && /*#__PURE__*/React.createElement("div", {
+    }, fmt(total)))), b.historico?.length > 0 && /*#__PURE__*/React.createElement("div", {
       style: {
         background: "#f9fafb",
         border: "1px solid #e5e7eb",
@@ -9806,11 +9876,11 @@ function OrcamentosPage({
         textTransform: "uppercase",
         letterSpacing: .5
       }
-    }, "Hist\xF3rico da Esteira"), /*#__PURE__*/React.createElement(EsteiraTimeline, {
+    }, "Histórico da Esteira"), /*#__PURE__*/React.createElement(EsteiraTimeline, {
       historico: b.historico
     })), (() => {
       const arqsB = arquivos[b.id] || [];
-      const podeAnexar = (user === null || user === void 0 ? void 0 : user.grupo) === "jet";
+      const podeAnexar = user?.grupo === "jet";
       // Carregar arquivos se ainda não carregados
       if (!arquivos[b.id] && !arquivos["_loading_" + b.id]) {
         setArquivos(p => ({
@@ -9842,7 +9912,7 @@ function OrcamentosPage({
           textTransform: "uppercase",
           letterSpacing: .5
         }
-      }, "\uD83D\uDCCE Arquivos Anexados (", arqsB.length, ")"), podeAnexar && /*#__PURE__*/React.createElement("button", {
+      }, "📎 Arquivos Anexados (", arqsB.length, ")"), podeAnexar && /*#__PURE__*/React.createElement("button", {
         style: {
           ...btn(),
           fontSize: 10,
@@ -9871,73 +9941,70 @@ function OrcamentosPage({
           flexDirection: "column",
           gap: 4
         }
-      }, arqsB.map(arq => {
-        var _arq$created_at;
-        return /*#__PURE__*/React.createElement("div", {
-          key: arq.id,
-          style: {
-            display: "flex",
-            alignItems: "center",
-            gap: 8,
-            padding: "6px 8px",
-            background: "#fff",
-            borderRadius: 6,
-            border: "1px solid #e0f2fe"
-          }
-        }, /*#__PURE__*/React.createElement("span", {
-          style: {
-            fontSize: 16
-          }
-        }, fmtTipo(arq.tipo)), /*#__PURE__*/React.createElement("div", {
-          style: {
-            flex: 1,
-            minWidth: 0
-          }
-        }, /*#__PURE__*/React.createElement("div", {
-          style: {
-            fontWeight: 600,
-            fontSize: 12,
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-            whiteSpace: "nowrap"
-          }
-        }, arq.nome), /*#__PURE__*/React.createElement("div", {
-          style: {
-            fontSize: 10,
-            color: "#9ca3af"
-          }
-        }, fmtSize(arq.size), " \xB7 ", arq.criado_por, " \xB7 ", (_arq$created_at = arq.created_at) === null || _arq$created_at === void 0 ? void 0 : _arq$created_at.slice(0, 10))), /*#__PURE__*/React.createElement("a", {
-          href: arq.url,
-          target: "_blank",
-          rel: "noreferrer",
-          style: {
-            ...btn(),
-            padding: "4px 8px",
-            fontSize: 10,
-            textDecoration: "none",
-            color: "#0369a1"
-          }
-        }, "\u2B07 Baixar"), podeAnexar && /*#__PURE__*/React.createElement("button", {
-          style: {
-            ...btn(),
-            padding: "4px 6px",
-            gap: 0,
-            color: "#ef4444"
-          },
-          onClick: () => handleDeleteArq(b.id, arq)
-        }, /*#__PURE__*/React.createElement("svg", {
-          width: "12",
-          height: "12",
-          viewBox: "0 0 24 24",
-          fill: "none",
-          stroke: "currentColor",
-          strokeWidth: "2"
-        }, /*#__PURE__*/React.createElement("polyline", {
-          points: "3 6 5 6 21 6"
-        }), /*#__PURE__*/React.createElement("path", {
-          d: "M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"
-        }))));
-      })));
+      }, arqsB.map(arq => /*#__PURE__*/React.createElement("div", {
+        key: arq.id,
+        style: {
+          display: "flex",
+          alignItems: "center",
+          gap: 8,
+          padding: "6px 8px",
+          background: "#fff",
+          borderRadius: 6,
+          border: "1px solid #e0f2fe"
+        }
+      }, /*#__PURE__*/React.createElement("span", {
+        style: {
+          fontSize: 16
+        }
+      }, fmtTipo(arq.tipo)), /*#__PURE__*/React.createElement("div", {
+        style: {
+          flex: 1,
+          minWidth: 0
+        }
+      }, /*#__PURE__*/React.createElement("div", {
+        style: {
+          fontWeight: 600,
+          fontSize: 12,
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+          whiteSpace: "nowrap"
+        }
+      }, arq.nome), /*#__PURE__*/React.createElement("div", {
+        style: {
+          fontSize: 10,
+          color: "#9ca3af"
+        }
+      }, fmtSize(arq.size), " · ", arq.criado_por, " · ", arq.created_at?.slice(0, 10))), /*#__PURE__*/React.createElement("a", {
+        href: arq.url,
+        target: "_blank",
+        rel: "noreferrer",
+        style: {
+          ...btn(),
+          padding: "4px 8px",
+          fontSize: 10,
+          textDecoration: "none",
+          color: "#0369a1"
+        }
+      }, "⬇ Baixar"), podeAnexar && /*#__PURE__*/React.createElement("button", {
+        style: {
+          ...btn(),
+          padding: "4px 6px",
+          gap: 0,
+          color: "#ef4444"
+        },
+        onClick: () => handleDeleteArq(b.id, arq)
+      }, /*#__PURE__*/React.createElement("svg", {
+        width: "12",
+        height: "12",
+        viewBox: "0 0 24 24",
+        fill: "none",
+        stroke: "currentColor",
+        strokeWidth: "2"
+      }, /*#__PURE__*/React.createElement("polyline", {
+        points: "3 6 5 6 21 6"
+      }), /*#__PURE__*/React.createElement("path", {
+        d: "M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"
+      })))))));
     })(), itens.length === 0 ? /*#__PURE__*/React.createElement("div", {
       style: {
         textAlign: "center",
@@ -9945,7 +10012,7 @@ function OrcamentosPage({
         padding: 24,
         fontSize: 12
       }
-    }, "Nenhum item cadastrado para este or\xE7amento.") : /*#__PURE__*/React.createElement("div", {
+    }, "Nenhum item cadastrado para este orçamento.") : /*#__PURE__*/React.createElement("div", {
       style: {
         overflowX: "auto",
         maxHeight: "45vh",
@@ -9965,7 +10032,7 @@ function OrcamentosPage({
       }
     }, h)))), /*#__PURE__*/React.createElement("tbody", null, /*#__PURE__*/React.createElement(GrpTable, {
       rows: servicos,
-      label: "SERVI\xC7OS",
+      label: "SERVIÇOS",
       sub: totalServ
     }), /*#__PURE__*/React.createElement(GrpTable, {
       rows: materiais,
@@ -10010,7 +10077,7 @@ function OrcamentosPage({
         type: "aprovar",
         budget: b
       })
-    }, "\u2705 Aprovar"), /*#__PURE__*/React.createElement("button", {
+    }, "✅ Aprovar"), /*#__PURE__*/React.createElement("button", {
       style: btn(),
       onClick: () => setPdfData({
         titulo: b.titulo,
@@ -10019,7 +10086,7 @@ function OrcamentosPage({
         itens,
         total
       })
-    }, "\uD83D\uDCC4 Exportar PDF"), /*#__PURE__*/React.createElement("button", {
+    }, "📄 Exportar PDF"), /*#__PURE__*/React.createElement("button", {
       style: btn("primary"),
       onClick: () => setModal(null)
     }, "Fechar")));
@@ -10055,14 +10122,11 @@ function OrcamentosPage({
       ...inp,
       padding: "6px"
     },
-    onChange: e => setUploadForm(p => {
-      var _e$target$files$;
-      return {
-        ...p,
-        arquivo: e.target.files[0],
-        nome: p.nome || ((_e$target$files$ = e.target.files[0]) === null || _e$target$files$ === void 0 ? void 0 : _e$target$files$.name.split(".")[0]) || ""
-      };
-    })
+    onChange: e => setUploadForm(p => ({
+      ...p,
+      arquivo: e.target.files[0],
+      nome: p.nome || e.target.files[0]?.name.split(".")[0] || ""
+    }))
   }))), uploadForm.arquivo && /*#__PURE__*/React.createElement("div", {
     style: {
       fontSize: 11,
@@ -10119,7 +10183,7 @@ function OrcamentosPage({
       fontSize: 20,
       marginBottom: 8
     }
-  }, "\u26A0\uFE0F"), /*#__PURE__*/React.createElement("div", {
+  }, "⚠️"), /*#__PURE__*/React.createElement("div", {
     style: {
       fontWeight: 700,
       fontSize: 15,
@@ -10131,7 +10195,7 @@ function OrcamentosPage({
       color: "#6b7280",
       marginBottom: 20
     }
-  }, "Voc\xEA tem altera\xE7\xF5es n\xE3o salvas. Se sair agora, elas ser\xE3o perdidas."), /*#__PURE__*/React.createElement("div", {
+  }, "Você tem alterações não salvas. Se sair agora, elas serão perdidas."), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
       gap: 8,
@@ -10159,9 +10223,10 @@ function OrcamentosPage({
     msg: `Excluir "${confirm.titulo}"?`,
     onOk: () => del(confirm.id),
     onCancel: () => setConfirm(null)
-  }), pdfData && /*#__PURE__*/React.createElement(PDFPreview, _extends({}, pdfData, {
+  }), pdfData && /*#__PURE__*/React.createElement(PDFPreview, {
+    ...pdfData,
     onClose: () => setPdfData(null)
-  })));
+  }));
 }
 
 // ─── ITENS ────────────────────────────────────────────────────────────────────
@@ -10198,7 +10263,7 @@ function ItensPage({
     const orc_itens = orc_key ? BUDGET_ITEMS_DATA[orc_key] || [] : [];
     const gastoCalc = orc_itens.reduce((s, item) => {
       const itemBase = (window.__SIR_ITEMS || ALL_ITEMS).find(ai => ai.descricao === item.descricao);
-      const cu = (itemBase === null || itemBase === void 0 ? void 0 : itemBase.cu) || 0;
+      const cu = itemBase?.cu || 0;
       return s + (cu > 0 ? cu * (item.qtd || 1) : 0);
     }, 0);
     const valorCusto = gastoCalc > 0 ? gastoCalc : o.custo;
@@ -10332,8 +10397,7 @@ function ItensPage({
     }
   };
   const save = () => {
-    var _form$descricao;
-    if (!((_form$descricao = form.descricao) !== null && _form$descricao !== void 0 && _form$descricao.trim())) {
+    if (!form.descricao?.trim()) {
       alert("Preencha a descrição.");
       return;
     }
@@ -10366,7 +10430,7 @@ function ItensPage({
       fontSize: 17,
       fontWeight: 700
     }
-  }, "\uD83D\uDCE6 Base de Itens"), /*#__PURE__*/React.createElement("button", {
+  }, "📦 Base de Itens"), /*#__PURE__*/React.createElement("button", {
     style: btn("primary"),
     onClick: () => {
       setForm({
@@ -10378,7 +10442,7 @@ function ItensPage({
       });
       setModal("edit");
     }
-  }, "\u2795 Novo Item")), /*#__PURE__*/React.createElement("div", {
+  }, "➕ Novo Item")), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
       gap: 8,
@@ -10391,7 +10455,7 @@ function ItensPage({
       ...inp,
       maxWidth: 260
     },
-    placeholder: "\uD83D\uDD0D Buscar por descri\xE7\xE3o ou c\xF3digo...",
+    placeholder: "🔍 Buscar por descrição ou código...",
     value: search,
     onChange: e => setSearch(e.target.value)
   }), /*#__PURE__*/React.createElement("select", {
@@ -10405,7 +10469,7 @@ function ItensPage({
     value: "all"
   }, "Todos os tipos"), /*#__PURE__*/React.createElement("option", {
     value: "servico"
-  }, "Servi\xE7os"), /*#__PURE__*/React.createElement("option", {
+  }, "Serviços"), /*#__PURE__*/React.createElement("option", {
     value: "material"
   }, "Materiais")), /*#__PURE__*/React.createElement("span", {
     style: {
@@ -10416,7 +10480,7 @@ function ItensPage({
   }, filtered.length, " de ", items.length, " itens"), /*#__PURE__*/React.createElement("button", {
     style: btn(),
     onClick: () => showToast("Excel exportado (simulado).", "info")
-  }, "\uD83D\uDCCA Exportar Excel")), /*#__PURE__*/React.createElement("div", {
+  }, "📊 Exportar Excel")), /*#__PURE__*/React.createElement("div", {
     style: {
       ...card,
       padding: 0
@@ -10444,7 +10508,7 @@ function ItensPage({
     style: {
       borderBottom: "2px solid #e5e7eb"
     }
-  }, ((user === null || user === void 0 ? void 0 : user.grupo) === "jet" ? ["Código", "Descrição", "Tipo", "Unidade", "Val. Venda", "Custo", "Margem", ""] : ["Código", "Descrição", "Tipo", "Unidade", "Valor Unit.", ""]).map((h, i) => /*#__PURE__*/React.createElement("th", {
+  }, (user?.grupo === "jet" ? ["Código", "Descrição", "Tipo", "Unidade", "Val. Venda", "Custo", "Margem", ""] : ["Código", "Descrição", "Tipo", "Unidade", "Valor Unit.", ""]).map((h, i) => /*#__PURE__*/React.createElement("th", {
     key: i,
     style: {
       textAlign: i > 2 && i < 5 ? "right" : "left",
@@ -10494,7 +10558,7 @@ function ItensPage({
       fontFamily: "monospace",
       fontWeight: 600
     }
-  }, fmt(item.vu)), (user === null || user === void 0 ? void 0 : user.grupo) === "jet" && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("td", {
+  }, fmt(item.vu)), user?.grupo === "jet" && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("td", {
     style: {
       padding: "9px 14px",
       textAlign: "right",
@@ -10507,7 +10571,7 @@ function ItensPage({
       color: "#d1d5db",
       fontSize: 10
     }
-  }, "\u2014")), /*#__PURE__*/React.createElement("td", {
+  }, "—")), /*#__PURE__*/React.createElement("td", {
     style: {
       padding: "9px 14px",
       textAlign: "right"
@@ -10522,7 +10586,7 @@ function ItensPage({
       color: "#d1d5db",
       fontSize: 10
     }
-  }, "\u2014"))), /*#__PURE__*/React.createElement("td", {
+  }, "—"))), /*#__PURE__*/React.createElement("td", {
     style: {
       padding: "9px 14px"
     }
@@ -10595,13 +10659,13 @@ function ItensPage({
   }, /*#__PURE__*/React.createElement(FRow, {
     full: true
   }, /*#__PURE__*/React.createElement(Field, {
-    label: "Descri\xE7\xE3o *"
+    label: "Descrição *"
   }, /*#__PURE__*/React.createElement("input", {
     style: inp,
     value: form.descricao || "",
     onChange: upd("descricao")
   }))), /*#__PURE__*/React.createElement(FRow, null, /*#__PURE__*/React.createElement(Field, {
-    label: "C\xF3digo"
+    label: "Código"
   }, /*#__PURE__*/React.createElement("input", {
     style: inp,
     value: form.codigo || "",
@@ -10614,7 +10678,7 @@ function ItensPage({
     onChange: upd("tipo")
   }, /*#__PURE__*/React.createElement("option", {
     value: "servico"
-  }, "Servi\xE7o"), /*#__PURE__*/React.createElement("option", {
+  }, "Serviço"), /*#__PURE__*/React.createElement("option", {
     value: "material"
   }, "Material")))), /*#__PURE__*/React.createElement(FRow, null, /*#__PURE__*/React.createElement(Field, {
     label: "Unidade"
@@ -10624,17 +10688,17 @@ function ItensPage({
     onChange: upd("unidade"),
     placeholder: "m, un, km..."
   })), /*#__PURE__*/React.createElement(Field, {
-    label: "Valor Unit\xE1rio \u2014 Venda (R$)"
+    label: "Valor Unitário — Venda (R$)"
   }, /*#__PURE__*/React.createElement("input", {
     style: inp,
     type: "number",
     step: "0.01",
     value: form.vu || "",
     onChange: upd("vu")
-  }))), (user === null || user === void 0 ? void 0 : user.grupo) === "jet" && /*#__PURE__*/React.createElement(FRow, {
+  }))), user?.grupo === "jet" && /*#__PURE__*/React.createElement(FRow, {
     full: true
   }, /*#__PURE__*/React.createElement(Field, {
-    label: "Custo Unit\xE1rio \u2014 Compra (R$) \u26A0\uFE0F Vis\xEDvel apenas para Grupo Jet"
+    label: "Custo Unitário — Compra (R$) ⚠️ Visível apenas para Grupo Jet"
   }, /*#__PURE__*/React.createElement("input", {
     style: {
       ...inp,
@@ -10683,7 +10747,7 @@ function ImportarPage({
       fontSize: 17,
       fontWeight: 700
     }
-  }, "\uD83D\uDCE5 Importar Itens")), /*#__PURE__*/React.createElement("div", {
+  }, "📥 Importar Itens")), /*#__PURE__*/React.createElement("div", {
     style: {
       ...card,
       marginBottom: 14
@@ -10694,16 +10758,16 @@ function ImportarPage({
       fontSize: 13,
       marginBottom: 8
     }
-  }, "\uD83D\uDCC4 Formato Esperado"), /*#__PURE__*/React.createElement("p", {
+  }, "📄 Formato Esperado"), /*#__PURE__*/React.createElement("p", {
     style: {
       fontSize: 12,
       color: "#6b7280",
       marginBottom: 10
     }
-  }, "Planilha XLSX com colunas: ", /*#__PURE__*/React.createElement("strong", null, "C\xF3digo, Descri\xE7\xE3o, Tipo (servico/material), Unidade, Valor Unit\xE1rio"), "."), /*#__PURE__*/React.createElement("button", {
+  }, "Planilha XLSX com colunas: ", /*#__PURE__*/React.createElement("strong", null, "Código, Descrição, Tipo (servico/material), Unidade, Valor Unitário"), "."), /*#__PURE__*/React.createElement("button", {
     style: btn(),
     onClick: () => showToast("Download do template em breve.", "info")
-  }, "\uD83D\uDCE5 Baixar template XLSX")), /*#__PURE__*/React.createElement("div", {
+  }, "📥 Baixar template XLSX")), /*#__PURE__*/React.createElement("div", {
     style: {
       ...card,
       marginBottom: 14
@@ -10735,7 +10799,7 @@ function ImportarPage({
       fontSize: 36,
       marginBottom: 8
     }
-  }, "\uD83D\uDCC2"), /*#__PURE__*/React.createElement("div", {
+  }, "📂"), /*#__PURE__*/React.createElement("div", {
     style: {
       fontWeight: 600,
       fontSize: 14,
@@ -10753,7 +10817,7 @@ function ImportarPage({
       fontWeight: 600,
       fontSize: 12
     }
-  }, "\u2705 ", fileName)), /*#__PURE__*/React.createElement("input", {
+  }, "✅ ", fileName)), /*#__PURE__*/React.createElement("input", {
     id: "imp-file",
     type: "file",
     accept: ".xlsx,.xls,.csv",
@@ -10775,7 +10839,7 @@ function ImportarPage({
       fontWeight: 700,
       fontSize: 13
     }
-  }, "\uD83D\uDC40 Pr\xE9-visualiza\xE7\xE3o (", preview.length, " itens)"), /*#__PURE__*/React.createElement("div", {
+  }, "👀 Pré-visualização (", preview.length, " itens)"), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
       gap: 7
@@ -10786,14 +10850,14 @@ function ImportarPage({
       setPreview([]);
       setFileName("");
     }
-  }, "\u2715 Cancelar"), /*#__PURE__*/React.createElement("button", {
+  }, "✕ Cancelar"), /*#__PURE__*/React.createElement("button", {
     style: btn("primary"),
     onClick: () => {
       showToast(`${preview.length} itens importados!`, "ok");
       setPreview([]);
       setFileName("");
     }
-  }, "\u2705 Confirmar Importa\xE7\xE3o"))), /*#__PURE__*/React.createElement("div", {
+  }, "✅ Confirmar Importação"))), /*#__PURE__*/React.createElement("div", {
     style: {
       overflowX: "auto"
     }
@@ -10891,7 +10955,7 @@ function PontosPage({
     const orc_itens = orc_key ? BUDGET_ITEMS_DATA[orc_key] || [] : [];
     const gastoCalc = orc_itens.reduce((s, item) => {
       const itemBase = (window.__SIR_ITEMS || ALL_ITEMS).find(ai => ai.descricao === item.descricao);
-      const cu = (itemBase === null || itemBase === void 0 ? void 0 : itemBase.cu) || 0;
+      const cu = itemBase?.cu || 0;
       return s + (cu > 0 ? cu * (item.qtd || 1) : 0);
     }, 0);
     const valorCusto = gastoCalc > 0 ? gastoCalc : o.custo;
@@ -11025,8 +11089,7 @@ function PontosPage({
     }
   };
   const save = () => {
-    var _form$descricao2;
-    if (!((_form$descricao2 = form.descricao) !== null && _form$descricao2 !== void 0 && _form$descricao2.trim())) {
+    if (!form.descricao?.trim()) {
       alert("Preencha a descrição.");
       return;
     }
@@ -11074,7 +11137,7 @@ function PontosPage({
       fontSize: 17,
       fontWeight: 700
     }
-  }, "\uD83C\uDF10 Lan 2 Lan \u2014 Pontos"), /*#__PURE__*/React.createElement("div", {
+  }, "🌐 Lan 2 Lan — Pontos"), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
       gap: 8
@@ -11161,7 +11224,7 @@ function PontosPage({
       borderColor: "#bfdbfe",
       color: "#1e40af"
     },
-    title: "Adiciona novos com data + remove os que n\xE3o est\xE3o na planilha",
+    title: "Adiciona novos com data + remove os que não estão na planilha",
     onClick: () => fileSyncRef.current && fileSyncRef.current.click()
   }, /*#__PURE__*/React.createElement("svg", {
     width: "14",
@@ -11186,7 +11249,7 @@ function PontosPage({
       });
       setModal("edit");
     }
-  }, "\u2795 Novo Ponto"))), /*#__PURE__*/React.createElement("div", {
+  }, "➕ Novo Ponto"))), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "grid",
       gridTemplateColumns: "repeat(4,1fr)",
@@ -11432,7 +11495,7 @@ function PontosPage({
       fontSize: 32,
       marginBottom: 8
     }
-  }, "\uD83D\uDCE1"), "Nenhum ponto cadastrado. Clique em ", /*#__PURE__*/React.createElement("strong", null, "Novo Ponto"), " para come\xE7ar."))), pontos.length > 0 && /*#__PURE__*/React.createElement("tfoot", null, /*#__PURE__*/React.createElement("tr", {
+  }, "📡"), "Nenhum ponto cadastrado. Clique em ", /*#__PURE__*/React.createElement("strong", null, "Novo Ponto"), " para começar."))), pontos.length > 0 && /*#__PURE__*/React.createElement("tfoot", null, /*#__PURE__*/React.createElement("tr", {
     style: {
       background: "#f9fafb",
       borderTop: "2px solid #e5e7eb"
@@ -11498,7 +11561,7 @@ function PontosPage({
     onChange: upd("os"),
     placeholder: "OS-DMD-JET-2026-XXXX"
   })), /*#__PURE__*/React.createElement(Field, {
-    label: "Descri\xE7\xE3o *"
+    label: "Descrição *"
   }, /*#__PURE__*/React.createElement("input", {
     style: inp,
     value: form.descricao || "",
@@ -11512,7 +11575,7 @@ function PontosPage({
     onChange: upd("velocidade"),
     placeholder: "Ex: 100 Mbps"
   })), /*#__PURE__*/React.createElement(Field, {
-    label: "Data de Ativa\xE7\xE3o"
+    label: "Data de Ativação"
   }, /*#__PURE__*/React.createElement("input", {
     style: inp,
     type: "date",
@@ -11608,7 +11671,7 @@ function UsuariosPage({
     const orc_itens = orc_key ? BUDGET_ITEMS_DATA[orc_key] || [] : [];
     const gastoCalc = orc_itens.reduce((s, item) => {
       const itemBase = (window.__SIR_ITEMS || ALL_ITEMS).find(ai => ai.descricao === item.descricao);
-      const cu = (itemBase === null || itemBase === void 0 ? void 0 : itemBase.cu) || 0;
+      const cu = itemBase?.cu || 0;
       return s + (cu > 0 ? cu * (item.qtd || 1) : 0);
     }, 0);
     const valorCusto = gastoCalc > 0 ? gastoCalc : o.custo;
@@ -11625,8 +11688,7 @@ function UsuariosPage({
     showToast("Obra enviada para Custos!");
   };
   const save = () => {
-    var _form$nome, _form$email;
-    if (!((_form$nome = form.nome) !== null && _form$nome !== void 0 && _form$nome.trim()) || !((_form$email = form.email) !== null && _form$email !== void 0 && _form$email.trim())) {
+    if (!form.nome?.trim() || !form.email?.trim()) {
       alert("Nome e e-mail obrigatórios.");
       return;
     }
@@ -11660,8 +11722,7 @@ function UsuariosPage({
 
   // Agrupar módulos por seção para exibir no modal
   const modPorSecao = ALL_MODS.reduce((acc, m) => {
-    var _MOD_META$m;
-    const sec = ((_MOD_META$m = MOD_META[m]) === null || _MOD_META$m === void 0 ? void 0 : _MOD_META$m.section) || "Outros";
+    const sec = MOD_META[m]?.section || "Outros";
     if (!acc[sec]) acc[sec] = [];
     acc[sec].push(m);
     return acc;
@@ -11678,7 +11739,7 @@ function UsuariosPage({
       fontSize: 17,
       fontWeight: 700
     }
-  }, "\uD83D\uDC65 Usu\xE1rios"), /*#__PURE__*/React.createElement("button", {
+  }, "👥 Usuários"), /*#__PURE__*/React.createElement("button", {
     style: btn("primary"),
     onClick: () => {
       setForm({
@@ -11690,7 +11751,7 @@ function UsuariosPage({
       });
       setModal("edit");
     }
-  }, "\u2795 Novo Usu\xE1rio")), /*#__PURE__*/React.createElement("div", {
+  }, "➕ Novo Usuário")), /*#__PURE__*/React.createElement("div", {
     style: card
   }, /*#__PURE__*/React.createElement("div", {
     style: {
@@ -11789,16 +11850,13 @@ function UsuariosPage({
         ...badgeStyle("success"),
         fontSize: 10
       }
-    }, "\u2705 Todas as abas") : mods.map(m => {
-      var _MOD_META$m2;
-      return /*#__PURE__*/React.createElement("span", {
-        key: m,
-        style: {
-          ...badgeStyle("gray"),
-          fontSize: 10
-        }
-      }, ((_MOD_META$m2 = MOD_META[m]) === null || _MOD_META$m2 === void 0 ? void 0 : _MOD_META$m2.label) || m);
-    }))), /*#__PURE__*/React.createElement("td", {
+    }, "✅ Todas as abas") : mods.map(m => /*#__PURE__*/React.createElement("span", {
+      key: m,
+      style: {
+        ...badgeStyle("gray"),
+        fontSize: 10
+      }
+    }, MOD_META[m]?.label || m)))), /*#__PURE__*/React.createElement("td", {
       style: {
         padding: "10px 12px"
       }
@@ -11894,7 +11952,7 @@ function UsuariosPage({
     style: inp,
     value: form.nome || "",
     onChange: upd("nome"),
-    placeholder: "Ex: Jo\xE3o Silva"
+    placeholder: "Ex: João Silva"
   }))), /*#__PURE__*/React.createElement(FRow, null, /*#__PURE__*/React.createElement(Field, {
     label: "E-mail *"
   }, /*#__PURE__*/React.createElement("input", {
@@ -11918,10 +11976,10 @@ function UsuariosPage({
     }
   }, /*#__PURE__*/React.createElement("option", {
     value: "jet"
-  }, "\uD83D\uDD35 Grupo Jet"), /*#__PURE__*/React.createElement("option", {
+  }, "🔵 Grupo Jet"), /*#__PURE__*/React.createElement("option", {
     value: "f8"
-  }, "\uD83D\uDFE0 Grupo F8")))), /*#__PURE__*/React.createElement(FRow, null, /*#__PURE__*/React.createElement(Field, {
-    label: "Perfil / Fun\xE7\xE3o"
+  }, "🟠 Grupo F8")))), /*#__PURE__*/React.createElement(FRow, null, /*#__PURE__*/React.createElement(Field, {
+    label: "Perfil / Função"
   }, /*#__PURE__*/React.createElement("select", {
     style: sel,
     value: form.perfil || "operador",
@@ -11939,7 +11997,7 @@ function UsuariosPage({
   }, /*#__PURE__*/React.createElement("input", {
     style: inp,
     type: "password",
-    placeholder: "M\xEDnimo 6 caracteres",
+    placeholder: "Mínimo 6 caracteres",
     value: form._senha || "",
     onChange: upd("_senha")
   }))), /*#__PURE__*/React.createElement("div", {
@@ -11961,7 +12019,7 @@ function UsuariosPage({
       fontWeight: 700,
       color: "#374151"
     }
-  }, "Acesso \xE0s Abas"), /*#__PURE__*/React.createElement("div", {
+  }, "Acesso às Abas"), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
       gap: 6
@@ -12007,7 +12065,6 @@ function UsuariosPage({
       flexWrap: "wrap"
     }
   }, mods.map(m => {
-    var _MOD_META$m3;
     const ativo = (form.modulos || []).includes(m);
     return /*#__PURE__*/React.createElement("div", {
       key: m,
@@ -12053,7 +12110,7 @@ function UsuariosPage({
         fontWeight: ativo ? 600 : 400,
         color: ativo ? "#e8650a" : "#374151"
       }
-    }, ((_MOD_META$m3 = MOD_META[m]) === null || _MOD_META$m3 === void 0 ? void 0 : _MOD_META$m3.label) || m));
+    }, MOD_META[m]?.label || m));
   }))))), /*#__PURE__*/React.createElement(MFooter, {
     onCancel: () => setModal(null),
     onSave: save
@@ -12159,7 +12216,7 @@ function CustosInternoPage({
     const orc_itens = orc_key ? BUDGET_ITEMS_DATA[orc_key] || [] : [];
     const gastoCalc = orc_itens.reduce((s, item) => {
       const itemBase = (window.__SIR_ITEMS || ALL_ITEMS).find(ai => ai.descricao === item.descricao);
-      const cu = (itemBase === null || itemBase === void 0 ? void 0 : itemBase.cu) || 0;
+      const cu = itemBase?.cu || 0;
       return s + (cu > 0 ? cu * (item.qtd || 1) : 0);
     }, 0);
     const valorCusto = gastoCalc > 0 ? gastoCalc : o.custo;
@@ -12293,8 +12350,7 @@ function CustosInternoPage({
     }
   };
   const save = () => {
-    var _form$descricao3;
-    if (!((_form$descricao3 = form.descricao) !== null && _form$descricao3 !== void 0 && _form$descricao3.trim())) {
+    if (!form.descricao?.trim()) {
       alert("Preencha a descrição.");
       return;
     }
@@ -12370,7 +12426,7 @@ function CustosInternoPage({
       fontSize: 17,
       fontWeight: 700
     }
-  }, "\uD83D\uDCB0 Custos"), /*#__PURE__*/React.createElement("button", {
+  }, "💰 Custos"), /*#__PURE__*/React.createElement("button", {
     style: btn("primary"),
     onClick: () => {
       setForm({
@@ -12379,7 +12435,7 @@ function CustosInternoPage({
       });
       setModal("edit");
     }
-  }, "\u2795 Novo Custo")), /*#__PURE__*/React.createElement("div", {
+  }, "➕ Novo Custo")), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
       alignItems: "center",
@@ -12399,7 +12455,7 @@ function CustosInternoPage({
     },
     disabled: !podePrev,
     onClick: () => setMesFiltro(todosMeses[idxAtual + 1])
-  }, "\u25C0"), /*#__PURE__*/React.createElement("div", {
+  }, "◀"), /*#__PURE__*/React.createElement("div", {
     style: {
       flex: 1,
       textAlign: "center"
@@ -12409,7 +12465,7 @@ function CustosInternoPage({
       fontWeight: 700,
       fontSize: 12
     }
-  }, "Todo o per\xEDodo") : /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("span", {
+  }, "Todo o período") : /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("span", {
     style: {
       fontWeight: 700,
       fontSize: 12,
@@ -12422,7 +12478,7 @@ function CustosInternoPage({
       fontWeight: 600,
       marginLeft: 6
     }
-  }, "M\xCAS ATUAL"))), /*#__PURE__*/React.createElement("button", {
+  }, "MÊS ATUAL"))), /*#__PURE__*/React.createElement("button", {
     style: {
       ...btn(),
       padding: "4px 8px",
@@ -12431,7 +12487,7 @@ function CustosInternoPage({
     },
     disabled: !podeNext,
     onClick: () => setMesFiltro(todosMeses[idxAtual - 1])
-  }, "\u25B6"), /*#__PURE__*/React.createElement("button", {
+  }, "▶"), /*#__PURE__*/React.createElement("button", {
     style: {
       ...btn(),
       fontSize: 10,
@@ -12464,13 +12520,13 @@ function CustosInternoPage({
       style: {
         fontSize: 18
       }
-    }, "\uD83C\uDF10"), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    }, "🌐"), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
       style: {
         fontWeight: 700,
         fontSize: 12,
         color: "#1e40af"
       }
-    }, "Lan 2 Lan \u2014 Autom\xE1tico"), /*#__PURE__*/React.createElement("div", {
+    }, "Lan 2 Lan — Automático"), /*#__PURE__*/React.createElement("div", {
       style: {
         fontSize: 10,
         color: "#6b7280"
@@ -12632,7 +12688,7 @@ function CustosInternoPage({
       ...badgeStyle("gray"),
       fontSize: 10
     }
-  }, "N\xE3o")), /*#__PURE__*/React.createElement("td", {
+  }, "Não")), /*#__PURE__*/React.createElement("td", {
     style: {
       padding: "10px 14px",
       textAlign: "right",
@@ -12695,7 +12751,7 @@ function CustosInternoPage({
       fontSize: 32,
       marginBottom: 8
     }
-  }, "\uD83D\uDCB0"), mesFiltro === "tudo" ? "Nenhum custo cadastrado." : `Nenhum custo em ${nomeMes(mesFiltro)}.`))), custosFiltrados.length > 0 && /*#__PURE__*/React.createElement("tfoot", null, /*#__PURE__*/React.createElement("tr", {
+  }, "💰"), mesFiltro === "tudo" ? "Nenhum custo cadastrado." : `Nenhum custo em ${nomeMes(mesFiltro)}.`))), custosFiltrados.length > 0 && /*#__PURE__*/React.createElement("tfoot", null, /*#__PURE__*/React.createElement("tr", {
     style: {
       background: "#f9fafb",
       borderTop: "2px solid #e5e7eb"
@@ -12724,12 +12780,12 @@ function CustosInternoPage({
   }, /*#__PURE__*/React.createElement(FRow, {
     full: true
   }, /*#__PURE__*/React.createElement(Field, {
-    label: "Descri\xE7\xE3o *"
+    label: "Descrição *"
   }, /*#__PURE__*/React.createElement("input", {
     style: inp,
     value: form.descricao || "",
     onChange: upd("descricao"),
-    placeholder: "Ex: Aluguel, Combust\xEDvel..."
+    placeholder: "Ex: Aluguel, Combustível..."
   }))), /*#__PURE__*/React.createElement(FRow, null, /*#__PURE__*/React.createElement(Field, {
     label: "Categoria"
   }, /*#__PURE__*/React.createElement("select", {
@@ -12746,26 +12802,26 @@ function CustosInternoPage({
     label: "Custos Operacionais"
   }, /*#__PURE__*/React.createElement("option", {
     value: "CO:Pessoal"
-  }, "\u21B3 Pessoal (Sal\xE1rios + Impostos)"), /*#__PURE__*/React.createElement("option", {
+  }, "↳ Pessoal (Salários + Impostos)"), /*#__PURE__*/React.createElement("option", {
     value: "CO:Beneficios"
-  }, "\u21B3 Benef\xEDcios"), /*#__PURE__*/React.createElement("option", {
+  }, "↳ Benefícios"), /*#__PURE__*/React.createElement("option", {
     value: "CO:Veiculos"
-  }, "\u21B3 Loca\xE7\xE3o de Ve\xEDculos"), /*#__PURE__*/React.createElement("option", {
+  }, "↳ Locação de Veículos"), /*#__PURE__*/React.createElement("option", {
     value: "CO:Combustivel"
-  }, "\u21B3 Combust\xEDvel"), /*#__PURE__*/React.createElement("option", {
+  }, "↳ Combustível"), /*#__PURE__*/React.createElement("option", {
     value: "CO:EPI"
-  }, "\u21B3 EPI + Uniforme"), /*#__PURE__*/React.createElement("option", {
+  }, "↳ EPI + Uniforme"), /*#__PURE__*/React.createElement("option", {
     value: "CO:Ferramentas"
-  }, "\u21B3 Ferramentas"), /*#__PURE__*/React.createElement("option", {
+  }, "↳ Ferramentas"), /*#__PURE__*/React.createElement("option", {
     value: "Custos Operacionais"
-  }, "\u21B3 Outros Operacionais")), /*#__PURE__*/React.createElement("option", {
+  }, "↳ Outros Operacionais")), /*#__PURE__*/React.createElement("option", {
     value: "Investimentos"
   }, "Investimentos"), /*#__PURE__*/React.createElement("option", {
     value: "Impostos"
   }, "Impostos"), /*#__PURE__*/React.createElement("option", {
     value: "Outros"
   }, "Outros"))), /*#__PURE__*/React.createElement(Field, {
-    label: "Data in\xEDcio"
+    label: "Data início"
   }, /*#__PURE__*/React.createElement("input", {
     style: inp,
     type: "date",
@@ -12781,7 +12837,7 @@ function CustosInternoPage({
     onChange: upd("valor"),
     placeholder: "0,00"
   })), /*#__PURE__*/React.createElement(Field, {
-    label: "Observa\xE7\xE3o"
+    label: "Observação"
   }, /*#__PURE__*/React.createElement("input", {
     style: inp,
     value: form.observacao || "",
@@ -12835,7 +12891,7 @@ function CustosInternoPage({
       fontSize: 10,
       color: "#6b7280"
     }
-  }, "Ser\xE1 lan\xE7ado automaticamente todo m\xEAs a partir da data in\xEDcio"))), /*#__PURE__*/React.createElement(MFooter, {
+  }, "Será lançado automaticamente todo mês a partir da data início"))), /*#__PURE__*/React.createElement(MFooter, {
     onCancel: () => setModal(null),
     onSave: save
   })), confirm && /*#__PURE__*/React.createElement(Confirm, {
@@ -12902,8 +12958,7 @@ function FaturamentoInternoPage({
   const podePrev = mesFiltro !== "tudo" && idxAtual < todosMeses.length - 1;
   const podeNext = mesFiltro !== "tudo" && idxAtual > 0;
   const save = () => {
-    var _form$descricao4;
-    if (!((_form$descricao4 = form.descricao) !== null && _form$descricao4 !== void 0 && _form$descricao4.trim())) {
+    if (!form.descricao?.trim()) {
       alert("Preencha a descrição.");
       return;
     }
@@ -12969,7 +13024,7 @@ function FaturamentoInternoPage({
       fontSize: 17,
       fontWeight: 700
     }
-  }, "\uD83D\uDCB5 Faturamento"), /*#__PURE__*/React.createElement("button", {
+  }, "💵 Faturamento"), /*#__PURE__*/React.createElement("button", {
     style: btn("primary"),
     onClick: () => {
       setForm({
@@ -12978,7 +13033,7 @@ function FaturamentoInternoPage({
       });
       setModal("edit");
     }
-  }, "\u2795 Novo Lan\xE7amento")), /*#__PURE__*/React.createElement("div", {
+  }, "➕ Novo Lançamento")), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
       alignItems: "center",
@@ -12998,7 +13053,7 @@ function FaturamentoInternoPage({
     },
     disabled: !podePrev,
     onClick: () => setMesFiltro(todosMeses[idxAtual + 1])
-  }, "\u25C0"), /*#__PURE__*/React.createElement("div", {
+  }, "◀"), /*#__PURE__*/React.createElement("div", {
     style: {
       flex: 1,
       textAlign: "center"
@@ -13008,7 +13063,7 @@ function FaturamentoInternoPage({
       fontWeight: 700,
       fontSize: 12
     }
-  }, "Todo o per\xEDodo") : /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("span", {
+  }, "Todo o período") : /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("span", {
     style: {
       fontWeight: 700,
       fontSize: 12,
@@ -13021,7 +13076,7 @@ function FaturamentoInternoPage({
       fontWeight: 600,
       marginLeft: 6
     }
-  }, "M\xCAS ATUAL"))), /*#__PURE__*/React.createElement("button", {
+  }, "MÊS ATUAL"))), /*#__PURE__*/React.createElement("button", {
     style: {
       ...btn(),
       padding: "4px 8px",
@@ -13030,7 +13085,7 @@ function FaturamentoInternoPage({
     },
     disabled: !podeNext,
     onClick: () => setMesFiltro(todosMeses[idxAtual - 1])
-  }, "\u25B6"), /*#__PURE__*/React.createElement("button", {
+  }, "▶"), /*#__PURE__*/React.createElement("button", {
     style: {
       ...btn(),
       fontSize: 10,
@@ -13238,7 +13293,7 @@ function FaturamentoInternoPage({
       fontSize: 32,
       marginBottom: 8
     }
-  }, "\uD83D\uDCB5"), mesFiltro === "tudo" ? "Nenhum lançamento cadastrado." : `Nenhum lançamento em ${nomeMes(mesFiltro)}.`))), fatsFiltrados.length > 0 && /*#__PURE__*/React.createElement("tfoot", null, /*#__PURE__*/React.createElement("tr", {
+  }, "💵"), mesFiltro === "tudo" ? "Nenhum lançamento cadastrado." : `Nenhum lançamento em ${nomeMes(mesFiltro)}.`))), fatsFiltrados.length > 0 && /*#__PURE__*/React.createElement("tfoot", null, /*#__PURE__*/React.createElement("tr", {
     style: {
       background: "#f9fafb",
       borderTop: "2px solid #e5e7eb"
@@ -13267,7 +13322,7 @@ function FaturamentoInternoPage({
   }, /*#__PURE__*/React.createElement(FRow, {
     full: true
   }, /*#__PURE__*/React.createElement(Field, {
-    label: "Descri\xE7\xE3o *"
+    label: "Descrição *"
   }, /*#__PURE__*/React.createElement("input", {
     style: inp,
     value: form.descricao || "",
@@ -13302,7 +13357,7 @@ function FaturamentoInternoPage({
     onChange: upd("valor"),
     placeholder: "0,00"
   })), /*#__PURE__*/React.createElement(Field, {
-    label: "Observa\xE7\xE3o"
+    label: "Observação"
   }, /*#__PURE__*/React.createElement("input", {
     style: inp,
     value: form.observacao || "",
@@ -13344,8 +13399,7 @@ function InvestimentosPage({
   const totalRecorrente = invests.filter(i => i.tipo === "recorrente").reduce((s, i) => s + (i.valor || 0), 0);
   const total = totalUnico + totalRecorrente;
   const save = () => {
-    var _form$descricao5;
-    if (!((_form$descricao5 = form.descricao) !== null && _form$descricao5 !== void 0 && _form$descricao5.trim())) {
+    if (!form.descricao?.trim()) {
       alert("Preencha a descrição.");
       return;
     }
@@ -13408,7 +13462,7 @@ function InvestimentosPage({
       fontSize: 17,
       fontWeight: 700
     }
-  }, "\uD83D\uDCC8 Investimentos"), /*#__PURE__*/React.createElement("button", {
+  }, "📈 Investimentos"), /*#__PURE__*/React.createElement("button", {
     style: btn("primary"),
     onClick: () => {
       setForm({
@@ -13416,7 +13470,7 @@ function InvestimentosPage({
       });
       setModal("edit");
     }
-  }, "\u2795 Novo Investimento")), /*#__PURE__*/React.createElement("div", {
+  }, "➕ Novo Investimento")), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "grid",
       gridTemplateColumns: "1fr 1fr 1fr",
@@ -13458,7 +13512,7 @@ function InvestimentosPage({
       letterSpacing: .5,
       marginBottom: 2
     }
-  }, "Pagamento \xDAnico"), /*#__PURE__*/React.createElement("div", {
+  }, "Pagamento Único"), /*#__PURE__*/React.createElement("div", {
     style: {
       fontWeight: 800,
       fontSize: 20,
@@ -13479,7 +13533,7 @@ function InvestimentosPage({
       letterSpacing: .5,
       marginBottom: 2
     }
-  }, "Recorrente/m\xEAs"), /*#__PURE__*/React.createElement("div", {
+  }, "Recorrente/mês"), /*#__PURE__*/React.createElement("div", {
     style: {
       fontWeight: 800,
       fontSize: 20,
@@ -13605,7 +13659,7 @@ function InvestimentosPage({
       fontSize: 32,
       marginBottom: 8
     }
-  }, "\uD83D\uDCC8"), "Nenhum investimento cadastrado."))), invests.length > 0 && /*#__PURE__*/React.createElement("tfoot", null, /*#__PURE__*/React.createElement("tr", {
+  }, "📈"), "Nenhum investimento cadastrado."))), invests.length > 0 && /*#__PURE__*/React.createElement("tfoot", null, /*#__PURE__*/React.createElement("tr", {
     style: {
       background: "#f9fafb",
       borderTop: "2px solid #e5e7eb"
@@ -13634,12 +13688,12 @@ function InvestimentosPage({
   }, /*#__PURE__*/React.createElement(FRow, {
     full: true
   }, /*#__PURE__*/React.createElement(Field, {
-    label: "Descri\xE7\xE3o *"
+    label: "Descrição *"
   }, /*#__PURE__*/React.createElement("input", {
     style: inp,
     value: form.descricao || "",
     onChange: upd("descricao"),
-    placeholder: "Ex: Equipamento, Software, Ve\xEDculo..."
+    placeholder: "Ex: Equipamento, Software, Veículo..."
   }))), /*#__PURE__*/React.createElement(FRow, null, /*#__PURE__*/React.createElement(Field, {
     label: "Tipo"
   }, /*#__PURE__*/React.createElement("select", {
@@ -13648,9 +13702,9 @@ function InvestimentosPage({
     onChange: upd("tipo")
   }, /*#__PURE__*/React.createElement("option", {
     value: "unico"
-  }, "\uD83D\uDCB3 Pagamento \xDAnico"), /*#__PURE__*/React.createElement("option", {
+  }, "💳 Pagamento Único"), /*#__PURE__*/React.createElement("option", {
     value: "recorrente"
-  }, "\uD83D\uDD04 Recorrente (mensal)"))), /*#__PURE__*/React.createElement(Field, {
+  }, "🔄 Recorrente (mensal)"))), /*#__PURE__*/React.createElement(Field, {
     label: "Data"
   }, /*#__PURE__*/React.createElement("input", {
     style: inp,
@@ -13667,7 +13721,7 @@ function InvestimentosPage({
     onChange: upd("valor"),
     placeholder: "0,00"
   })), /*#__PURE__*/React.createElement(Field, {
-    label: "Observa\xE7\xE3o"
+    label: "Observação"
   }, /*#__PURE__*/React.createElement("input", {
     style: inp,
     value: form.observacao || "",
@@ -13981,15 +14035,15 @@ function App() {
         setBudgets([...BUDGETS_INIT]);
         Promise.all(BUDGETS_INIT.map(b => sb.upsert("sir_orcamentos", b))).then(rs => console.log("Seed orc: " + rs.filter(Boolean).length + "/" + BUDGETS_INIT.length)).catch(e => console.error("Seed orc erro:", e));
       }
-      if (dbPontos !== null && dbPontos !== void 0 && dbPontos.length) setPontos(dbPontos);
-      if (dbCustos !== null && dbCustos !== void 0 && dbCustos.length) setCustosInt(dbCustos);
-      if (dbEspelhos !== null && dbEspelhos !== void 0 && dbEspelhos.length) setEspelhos(dbEspelhos.map(e => ({
+      if (dbPontos?.length) setPontos(dbPontos);
+      if (dbCustos?.length) setCustosInt(dbCustos);
+      if (dbEspelhos?.length) setEspelhos(dbEspelhos.map(e => ({
         ...e,
         obra_id: String(e.obra_id)
       })));
-      if (dbFats !== null && dbFats !== void 0 && dbFats.length) setFatInt(dbFats);
-      if (dbInvests !== null && dbInvests !== void 0 && dbInvests.length) setInvestInt(dbInvests);
-      if (dbUsers !== null && dbUsers !== void 0 && dbUsers.length) {
+      if (dbFats?.length) setFatInt(dbFats);
+      if (dbInvests?.length) setInvestInt(dbInvests);
+      if (dbUsers?.length) {
         setSbUsers(dbUsers);
         // Atualizar o user logado com dados atualizados do Supabase
         setUser(prev => {
@@ -14008,7 +14062,7 @@ function App() {
         setItems([...ALL_ITEMS]);
         Promise.all(ALL_ITEMS.map(i => sb.upsert("sir_itens", i))).catch(() => {});
       }
-      console.log("Supabase carregado: obras=" + (dbObras === null || dbObras === void 0 ? void 0 : dbObras.length) + " pontos=" + (dbPontos === null || dbPontos === void 0 ? void 0 : dbPontos.length));
+      console.log("Supabase carregado: obras=" + dbObras?.length + " pontos=" + dbPontos?.length);
     } catch (e) {
       console.log("Supabase load error:", e.message);
     }
@@ -14502,7 +14556,7 @@ function App() {
       fontSize: 10,
       marginLeft: 2
     }
-  }, user.grupo === "jet" ? "Jet" : "F8", " \xB7 ", user.perfil))), /*#__PURE__*/React.createElement("main", {
+  }, user.grupo === "jet" ? "Jet" : "F8", " · ", user.perfil))), /*#__PURE__*/React.createElement("main", {
     style: {
       flex: 1,
       overflowY: "auto",
