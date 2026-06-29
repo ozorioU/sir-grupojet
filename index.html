@@ -8771,6 +8771,7 @@ function OrcamentosPage({
   const [addTipo, setAddTipo] = useState("servico");
   const [addItemId, setAddItemId] = useState("");
   const [addQtd, setAddQtd] = useState("1");
+  const [addObs, setAddObs] = useState("");
   const [motivoReprov, setMotivoReprov] = useState("");
   const upd = k => e => setForm(p => ({
     ...p,
@@ -8803,6 +8804,7 @@ function OrcamentosPage({
     setAddTipo("servico");
     setAddItemId("");
     setAddQtd("1");
+    setAddObs("");
     setModal("edit");
   };
   const openEdit = b => {
@@ -8815,6 +8817,7 @@ function OrcamentosPage({
     setAddTipo("servico");
     setAddItemId("");
     setAddQtd("1");
+    setAddObs("");
     setModal("edit");
   };
   const addItem = () => {
@@ -8834,10 +8837,12 @@ function OrcamentosPage({
       unidade: item.unidade,
       qtd,
       vu: item.vu,
-      vt
+      vt,
+      obs: addObs.trim()
     }]);
     setAddItemId("");
     setAddQtd("1");
+    setAddObs("");
   };
   const removeItem = id => setEditItens(p => p.filter(i => i.id !== id));
   const [editingItem, setEditingItem] = React.useState(null); // {id, qtd, vu}
@@ -9488,14 +9493,20 @@ function OrcamentosPage({
     }, i.tipo === "servico" ? "Serviço" : "Material")), /*#__PURE__*/React.createElement("td", {
       style: {
         padding: "7px 10px",
-        maxWidth: 180,
-        overflow: "hidden",
-        textOverflow: "ellipsis",
-        whiteSpace: "nowrap",
-        fontWeight: 500,
         fontSize: 12
       }
-    }, i.descricao), /*#__PURE__*/React.createElement("td", {
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontWeight: 500
+      }
+    }, i.descricao), i.obs && /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontSize: 10,
+        color: "#6b7280",
+        marginTop: 2,
+        fontStyle: "italic"
+      }
+    }, "📝 ", i.obs)), /*#__PURE__*/React.createElement("td", {
       style: {
         padding: "7px 10px",
         textAlign: "right"
