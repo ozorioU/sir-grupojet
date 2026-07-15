@@ -6406,9 +6406,14 @@ function CustosPage({
   syncFat,
   delEspelho,
   delEspelhoByObraId,
+  budgets = [],
+  items = [],
+  syncObra,
   showToast
 }) {
   const [expand, setExpand] = useState(null);
+  const [orcModal, setOrcModal] = useState(null); // {obra, itens com custos}
+  const [orcCustos, setOrcCustos] = useState({}); // {item_id: custo_real}
   const [modal, setModal] = useState(null);
   const [form, setForm] = useState({});
   const upd = k => e => setForm(p => ({
@@ -6655,6 +6660,41 @@ function CustosPage({
       },
       onClick: e => e.stopPropagation()
     }, /*#__PURE__*/React.createElement("button", {
+      style: {
+        ...btn(),
+        padding: "4px 7px",
+        gap: 0,
+        color: "#3b82f6",
+        background: "#eff6ff",
+        borderColor: "#bfdbfe"
+      },
+      title: "Abrir orçamento e lançar custos reais",
+      onClick: e => {
+        e.stopPropagation();
+        const orc = budgets.find(b => b.orc_id === o.id || b.id === o.orc_id);
+        if (!orc) {
+          showToast("Orçamento não encontrado para esta obra.", "err");
+          return;
+        }
+        const itensOrc = (orc.itens || []).map(i => {
+          const base = (window.__SIR_ITEMS || ALL_ITEMS).find(ai => ai.id === i.id || ai.descricao === i.descricao);
+          return {
+            ...i,
+            cu_real: base?.cu > 0 ? parseFloat((base.cu * (i.qtd || 1)).toFixed(2)) : 0
+          };
+        });
+        const cusInit = {};
+        itensOrc.forEach(i => {
+          cusInit[i.id] = String(i.cu_real || 0);
+        });
+        setOrcCustos(cusInit);
+        setOrcModal({
+          obra: o,
+          orc,
+          itens: itensOrc
+        });
+      }
+    }, "📋"), /*#__PURE__*/React.createElement("button", {
       style: {
         ...btn(),
         padding: "4px 7px",
@@ -14434,6 +14474,9 @@ function App() {
           syncFat: syncFat,
           delEspelho: delEspelho,
           delEspelhoByObraId: delEspelhoByObraId,
+          budgets: budgets,
+          items: items,
+          syncObra: syncObra,
           showToast: showToast
         });
       case "custosint":
