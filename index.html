@@ -52,35 +52,7 @@ const calcL2LMes = (valor, ativacao, mesAlvo) => {
 };
 
 // Verifica se um mês/valor já foi processado (dia 10 do mês seguinte já passou)
-// Verifica se o mês já venceu para um ponto — vence no mesmo dia do mês seguinte à ativação
-// Ex: ativado dia 12 → mês de abril vence dia 12/05
-const mesVencido = (mesKey, ativacao) => {
-  const hoje = new Date();
-  if (!ativacao) {
-    // Sem ativação: vence no dia 1 do mês seguinte
-    const [y, m] = mesKey.split("-").map(Number);
-    let vY = y,
-      vM = m + 1;
-    if (vM > 12) {
-      vM = 1;
-      vY++;
-    }
-    return hoje >= new Date(vY, vM - 1, 1);
-  }
-  const diaAtiv = new Date(ativacao).getDate();
-  const [y, m] = mesKey.split("-").map(Number);
-  let vY = y,
-    vM = m + 1;
-  if (vM > 12) {
-    vM = 1;
-    vY++;
-  }
-  const diasNoVencMes = new Date(vY, vM, 0).getDate();
-  const diaVenc = Math.min(diaAtiv, diasNoVencMes);
-  return hoje >= new Date(vY, vM - 1, diaVenc);
-};
-
-// Retorna {fat, cus, fatPend, cusPend} acumulados de um ponto
+// Retorna {fat, cus} acumulados de um ponto — sem lógica de vencimento
 const calcL2LAcum = p => {
   if (!p.ativacao) return {
     fat: parseFloat(p.faturamento) || 0,
@@ -91,22 +63,13 @@ const calcL2LAcum = p => {
   const hoje = new Date();
   const ini = new Date(p.ativacao);
   let fat = 0,
-    cus = 0,
-    fatPend = 0,
-    cusPend = 0;
+    cus = 0;
   let y = ini.getFullYear(),
     m = ini.getMonth() + 1;
   while (y < hoje.getFullYear() || y === hoje.getFullYear() && m <= hoje.getMonth() + 1) {
     const mesKey = `${y}-${String(m).padStart(2, "0")}`;
-    const vFat = parseFloat(p.faturamento) || 0;
-    const vCus = calcL2LMes(parseFloat(p.custo) || 0, p.ativacao, mesKey);
-    if (mesVencido(mesKey, p.ativacao)) {
-      fat += vFat;
-      cus += vCus;
-    } else {
-      fatPend += vFat;
-      cusPend += vCus;
-    }
+    fat += parseFloat(p.faturamento) || 0;
+    cus += calcL2LMes(parseFloat(p.custo) || 0, p.ativacao, mesKey);
     m++;
     if (m > 12) {
       m = 1;
@@ -116,8 +79,8 @@ const calcL2LAcum = p => {
   return {
     fat,
     cus,
-    fatPend,
-    cusPend
+    fatPend: 0,
+    cusPend: 0
   };
 };
 
@@ -4084,21 +4047,22 @@ function Dashboard({
     if (mesSocietario === "acumulado") {
       return pontos.reduce((s, p) => s + calcL2LAcum(p).fat, 0);
     } else {
-      // Usar calcL2LAcum por ponto pois cada um tem sua data de vencimento
-      return pontos.filter(p => !p.ativacao || p.ativacao.slice(0, 7) <= mesSocietario).reduce((s, p) => s + (mesVencido(mesSocietario, p.ativacao) ? parseFloat(p.faturamento) || 0 : 0), 0);
+      // Todos os pontos ativados até aquele mês
+      return pontos.filter(p => !p.ativacao || p.ativacao.slice(0, 7) <= mesSocietario).reduce((s, p) => s + (parseFloat(p.faturamento) || 0), 0);
     }
   }, [pontos, mesSocietario]);
   const cusL2L = React.useMemo(() => {
     if (mesSocietario === "acumulado") {
       return pontos.reduce((s, p) => s + calcL2LAcum(p).cus, 0);
     } else {
-      return pontos.filter(p => !p.ativacao || p.ativacao.slice(0, 7) <= mesSocietario).reduce((s, p) => s + (mesVencido(mesSocietario, p.ativacao) ? calcL2LMes(parseFloat(p.custo) || 0, p.ativacao, mesSocietario) : 0), 0);
+      // Todos os pontos ativos no mês (custo proporcional no primeiro mês)
+      return pontos.filter(p => !p.ativacao || p.ativacao.slice(0, 7) <= mesSocietario).reduce((s, p) => s + calcL2LMes(parseFloat(p.custo) || 0, p.ativacao, mesSocietario), 0);
     }
   }, [pontos, mesSocietario]);
 
   // Pendentes L2L (meses ainda não processados)
-  const fatL2LPend = React.useMemo(() => pontos.reduce((s, p) => s + calcL2LAcum(p).fatPend, 0), [pontos]);
-  const cusL2LPend = React.useMemo(() => pontos.reduce((s, p) => s + calcL2LAcum(p).cusPend, 0), [pontos]);
+  const fatL2LPend = 0;
+  const cusL2LPend = 0;
 
   // Faturamento por categoria — contratos e outras vêm do FaturamentoInternoPage
   const FAT_CAT_MAP = {
@@ -4401,18 +4365,7 @@ function Dashboard({
       borderColor: mesSocietario === "acumulado" ? "#e8650a" : "#e5e7eb"
     },
     onClick: () => setMesSocietario(mesSocietario === "acumulado" ? mesAtualKeyD : "acumulado")
-  }, mesSocietario === "acumulado" ? "Ir para mês" : "Acumulado"), /*#__PURE__*/React.createElement("button", {
-    style: {
-      ...btn(),
-      fontSize: 10,
-      padding: "3px 9px",
-      background: comPendentes ? "#fbbf24" : "#fff",
-      color: comPendentes ? "#fff" : "#374151",
-      borderColor: comPendentes ? "#fbbf24" : "#e5e7eb"
-    },
-    title: "Incluir valores pendentes (L2L ainda não processados) no total",
-    onClick: () => setComPendentes(p => !p)
-  }, comPendentes ? "⏳ Com pendentes" : "+ Pendentes"))), /*#__PURE__*/React.createElement("div", {
+  }, mesSocietario === "acumulado" ? "Ir para mês" : "Acumulado"))), /*#__PURE__*/React.createElement("div", {
     style: {
       marginBottom: 20,
       paddingBottom: 16,
@@ -4535,10 +4488,6 @@ function Dashboard({
     l: "Lan 2 Lan",
     v: fat.l2l
   }, {
-    l: "↳ Pendente (vencimento)",
-    v: mesSocietario === "acumulado" || mesSocietario === mesAtualKeyD ? fatL2LPend : 0,
-    isPend: !comPendentes
-  }, {
     l: "Contratos",
     v: fat.contratos
   }, {
@@ -4613,11 +4562,6 @@ function Dashboard({
     l: "Lan 2 Lan",
     v: cus.l2l,
     sub: false
-  }, {
-    l: "↳ Pendente (vencimento)",
-    v: mesSocietario === "acumulado" || mesSocietario === mesAtualKeyD ? cusL2LPend : 0,
-    sub: true,
-    isPend: !comPendentes
   }, {
     l: "Custos Operacionais",
     v: cus.custos_op,
@@ -12618,7 +12562,7 @@ function CustosInternoPage({
   })(), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "grid",
-      gridTemplateColumns: "1fr 1fr 1fr",
+      gridTemplateColumns: "1fr",
       gap: 12,
       marginBottom: 14
     }
