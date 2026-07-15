@@ -52,13 +52,32 @@ const calcL2LMes = (valor, ativacao, mesAlvo) => {
 };
 
 // Verifica se um mês/valor já foi processado (dia 10 do mês seguinte já passou)
-const mesJaProcessado = mesKey => {
+// Verifica se o mês já venceu para um ponto — vence no mesmo dia do mês seguinte à ativação
+// Ex: ativado dia 12 → mês de abril vence dia 12/05
+const mesVencido = (mesKey, ativacao) => {
   const hoje = new Date();
+  if (!ativacao) {
+    // Sem ativação: vence no dia 1 do mês seguinte
+    const [y, m] = mesKey.split("-").map(Number);
+    let vY = y,
+      vM = m + 1;
+    if (vM > 12) {
+      vM = 1;
+      vY++;
+    }
+    return hoje >= new Date(vY, vM - 1, 1);
+  }
+  const diaAtiv = new Date(ativacao).getDate();
   const [y, m] = mesKey.split("-").map(Number);
-  // Dia 10 do mês seguinte
-  const proxMes = m === 12 ? `${y + 1}-01` : `${y}-${String(m + 1).padStart(2, "0")}`;
-  const dia10ProxMes = new Date(`${proxMes}-10`);
-  return hoje >= dia10ProxMes;
+  let vY = y,
+    vM = m + 1;
+  if (vM > 12) {
+    vM = 1;
+    vY++;
+  }
+  const diasNoVencMes = new Date(vY, vM, 0).getDate();
+  const diaVenc = Math.min(diaAtiv, diasNoVencMes);
+  return hoje >= new Date(vY, vM - 1, diaVenc);
 };
 
 // Retorna {fat, cus, fatPend, cusPend} acumulados de um ponto
@@ -79,11 +98,9 @@ const calcL2LAcum = p => {
     m = ini.getMonth() + 1;
   while (y < hoje.getFullYear() || y === hoje.getFullYear() && m <= hoje.getMonth() + 1) {
     const mesKey = `${y}-${String(m).padStart(2, "0")}`;
-    // Faturamento: sempre valor cheio (sem proporcional)
     const vFat = parseFloat(p.faturamento) || 0;
-    // Custo: proporcional no primeiro mês
     const vCus = calcL2LMes(parseFloat(p.custo) || 0, p.ativacao, mesKey);
-    if (mesJaProcessado(mesKey)) {
+    if (mesVencido(mesKey, p.ativacao)) {
       fat += vFat;
       cus += vCus;
     } else {
@@ -4068,16 +4085,14 @@ function Dashboard({
       return pontos.reduce((s, p) => s + calcL2LAcum(p).fat, 0);
     } else {
       // Usar calcL2LAcum por ponto pois cada um tem sua data de vencimento
-      if (false) return 0; // placeholder
-      return pontos.filter(p => !p.ativacao || p.ativacao.slice(0, 7) <= mesSocietario).reduce((s, p) => s + (parseFloat(p.faturamento) || 0), 0);
+      return pontos.filter(p => !p.ativacao || p.ativacao.slice(0, 7) <= mesSocietario).reduce((s, p) => s + (mesVencido(mesSocietario, p.ativacao) ? parseFloat(p.faturamento) || 0 : 0), 0);
     }
   }, [pontos, mesSocietario]);
   const cusL2L = React.useMemo(() => {
     if (mesSocietario === "acumulado") {
       return pontos.reduce((s, p) => s + calcL2LAcum(p).cus, 0);
     } else {
-      if (false) return 0; // placeholder
-      return pontos.filter(p => !p.ativacao || p.ativacao.slice(0, 7) <= mesSocietario).reduce((s, p) => s + calcL2LMes(parseFloat(p.custo) || 0, p.ativacao, mesSocietario), 0);
+      return pontos.filter(p => !p.ativacao || p.ativacao.slice(0, 7) <= mesSocietario).reduce((s, p) => s + (mesVencido(mesSocietario, p.ativacao) ? calcL2LMes(parseFloat(p.custo) || 0, p.ativacao, mesSocietario) : 0), 0);
     }
   }, [pontos, mesSocietario]);
 
@@ -4926,10 +4941,10 @@ function Dashboard({
     const dadosHist = mesesHist.map(mes => {
       const fatObras = obras.filter(o => o.env_fat && o.env_fat.slice(0, 7) === mes).reduce((s, o) => s + (o.fat || 0), 0);
       const fatContratos = fatInt.filter(f => f.categoria === "Contratos" && f.data && f.data.slice(0, 7) === mes).reduce((s, f) => s + (f.valor || 0), 0);
-      const fatL2L = pontos.filter(p => p.ativacao && p.ativacao.slice(0, 7) <= mes && mesJaProcessado(mes)).reduce((s, p) => s + (parseFloat(p.faturamento) || 0), 0);
+      const fatL2L = pontos.filter(p => !p.ativacao || p.ativacao.slice(0, 7) <= mes).reduce((s, p) => s + (mesVencido(mes, p.ativacao) ? parseFloat(p.faturamento) || 0 : 0), 0);
       const fat = fatObras + fatContratos + fatL2L;
       const cusObras = obras.filter(o => o.conclusao && o.conclusao.slice(0, 7) === mes).reduce((s, o) => s + (o.custo || 0), 0);
-      const cusL2L = pontos.filter(p => p.ativacao && p.ativacao.slice(0, 7) <= mes && mesJaProcessado(mes)).reduce((s, p) => s + calcL2LMes(parseFloat(p.custo) || 0, p.ativacao, mes), 0);
+      const cusL2L = pontos.filter(p => !p.ativacao || p.ativacao.slice(0, 7) <= mes).reduce((s, p) => s + (mesVencido(mes, p.ativacao) ? calcL2LMes(parseFloat(p.custo) || 0, p.ativacao, mes) : 0), 0);
       const cusCadastrado = custosInt.filter(c => !c.recorrente && c.data && c.data.slice(0, 7) === mes).reduce((s, c) => s + (c.valor || 0), 0);
       const cusRec = custosInt.filter(c => c.recorrente && (!c.data || c.data.slice(0, 7) <= mes)).reduce((s, c) => s + (c.valor || 0), 0);
       const imp = calcImpostos(fat);
