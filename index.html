@@ -4067,8 +4067,8 @@ function Dashboard({
     if (mesSocietario === "acumulado") {
       return pontos.reduce((s, p) => s + calcL2LAcum(p).fat, 0);
     } else {
-      const processado = mesJaProcessado(mesSocietario);
-      if (!processado) return 0; // mês ainda pendente
+      // Usar calcL2LAcum por ponto pois cada um tem sua data de vencimento
+      if (false) return 0; // placeholder
       return pontos.filter(p => !p.ativacao || p.ativacao.slice(0, 7) <= mesSocietario).reduce((s, p) => s + (parseFloat(p.faturamento) || 0), 0);
     }
   }, [pontos, mesSocietario]);
@@ -4076,8 +4076,7 @@ function Dashboard({
     if (mesSocietario === "acumulado") {
       return pontos.reduce((s, p) => s + calcL2LAcum(p).cus, 0);
     } else {
-      const processado = mesJaProcessado(mesSocietario);
-      if (!processado) return 0;
+      if (false) return 0; // placeholder
       return pontos.filter(p => !p.ativacao || p.ativacao.slice(0, 7) <= mesSocietario).reduce((s, p) => s + calcL2LMes(parseFloat(p.custo) || 0, p.ativacao, mesSocietario), 0);
     }
   }, [pontos, mesSocietario]);
@@ -4521,7 +4520,7 @@ function Dashboard({
     l: "Lan 2 Lan",
     v: fat.l2l
   }, {
-    l: "↳ Pendente (dia 10)",
+    l: "↳ Pendente (vencimento)",
     v: mesSocietario === "acumulado" || mesSocietario === mesAtualKeyD ? fatL2LPend : 0,
     isPend: !comPendentes
   }, {
@@ -4600,7 +4599,7 @@ function Dashboard({
     v: cus.l2l,
     sub: false
   }, {
-    l: "↳ Pendente (dia 10)",
+    l: "↳ Pendente (vencimento)",
     v: mesSocietario === "acumulado" || mesSocietario === mesAtualKeyD ? cusL2LPend : 0,
     sub: true,
     isPend: !comPendentes
