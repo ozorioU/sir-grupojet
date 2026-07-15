@@ -4885,10 +4885,10 @@ function Dashboard({
     const dadosHist = mesesHist.map(mes => {
       const fatObras = obras.filter(o => o.env_fat && o.env_fat.slice(0, 7) === mes).reduce((s, o) => s + (o.fat || 0), 0);
       const fatContratos = fatInt.filter(f => f.categoria === "Contratos" && f.data && f.data.slice(0, 7) === mes).reduce((s, f) => s + (f.valor || 0), 0);
-      const fatL2L = pontos.filter(p => !p.ativacao || p.ativacao.slice(0, 7) <= mes).reduce((s, p) => s + (mesVencido(mes, p.ativacao) ? parseFloat(p.faturamento) || 0 : 0), 0);
+      const fatL2L = pontos.filter(p => !p.ativacao || p.ativacao.slice(0, 7) <= mes).reduce((s, p) => s + (parseFloat(p.faturamento) || 0), 0);
       const fat = fatObras + fatContratos + fatL2L;
       const cusObras = obras.filter(o => o.conclusao && o.conclusao.slice(0, 7) === mes).reduce((s, o) => s + (o.custo || 0), 0);
-      const cusL2L = pontos.filter(p => !p.ativacao || p.ativacao.slice(0, 7) <= mes).reduce((s, p) => s + (mesVencido(mes, p.ativacao) ? calcL2LMes(parseFloat(p.custo) || 0, p.ativacao, mes) : 0), 0);
+      const cusL2L = pontos.filter(p => !p.ativacao || p.ativacao.slice(0, 7) <= mes).reduce((s, p) => s + calcL2LMes(parseFloat(p.custo) || 0, p.ativacao, mes), 0);
       const cusCadastrado = custosInt.filter(c => !c.recorrente && c.data && c.data.slice(0, 7) === mes).reduce((s, c) => s + (c.valor || 0), 0);
       const cusRec = custosInt.filter(c => c.recorrente && (!c.data || c.data.slice(0, 7) <= mes)).reduce((s, c) => s + (c.valor || 0), 0);
       const imp = calcImpostos(fat);
