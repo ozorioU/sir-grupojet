@@ -8710,6 +8710,9 @@ function OrcamentosPage({
   syncBudget,
   delBudget,
   items = [],
+  obras = [],
+  setObras,
+  syncObra,
   showToast
 }) {
   const [arquivos, setArquivos] = React.useState({}); // {budget_id: [{id,nome,url,size,tipo}]}
@@ -8986,6 +8989,33 @@ function OrcamentosPage({
   };
 
   // Aprovar etapa atual
+  // Cria obra automaticamente ao aprovar orçamento
+  const criarObraDoOrcamento = b => {
+    if (!setObras || !syncObra) return;
+    // Verificar se já existe obra com esse orçamento
+    const jaExiste = obras.some(o => o.orc_id === b.id);
+    if (jaExiste) return;
+    const novaObra = {
+      id: uid(),
+      orc_id: b.id,
+      cod: String(obras.length + 1),
+      entrega: b.titulo,
+      cliente: b.cliente || "",
+      orc: b.total || 0,
+      fat: 0,
+      custo: 0,
+      st_orc: "Obra aprovada",
+      st_obra: "Em andamento",
+      st_fin: "Pendente",
+      conclusao: "",
+      env_fat: "",
+      serv: "",
+      created_at: new Date().toISOString().slice(0, 10)
+    };
+    setObras(p => [...p, novaObra]);
+    syncObra(novaObra);
+    showToast("Obra criada automaticamente na aba Obras!");
+  };
   const aprovar = b => {
     const etapaAtual = b.etapa;
     const proxEtapa = ETAPAS[etapaAtual]?.next;
@@ -8997,11 +9027,14 @@ function OrcamentosPage({
       descricao,
       data: agora()
     }];
-    setBudgets(p => p.map(x => x.id === b.id ? {
-      ...x,
+    const updated = {
+      ...b,
       etapa: proxEtapa,
       historico: hist
-    } : x));
+    };
+    setBudgets(p => p.map(x => x.id === b.id ? updated : x));
+    if (syncBudget) syncBudget(updated);
+    if (proxEtapa === "aprovado") criarObraDoOrcamento(b);
     showToast(proxEtapa === "aprovado" ? "✅ Orçamento totalmente aprovado!" : "✅ Etapa aprovada, avançando...");
     setModal(null);
   };
@@ -10297,6 +10330,7 @@ function OrcamentosPage({
       };
       setBudgets(p => p.map(b => b.id === n.id ? n : b));
       if (syncBudget) syncBudget(n);
+      criarObraDoOrcamento(aprovDiretaModal);
       setAprovDiretaModal(null);
       showToast("Orçamento aprovado diretamente!");
     }
@@ -14419,6 +14453,9 @@ function App() {
           syncBudget: syncBudget,
           delBudget: delBudget,
           items: items,
+          obras: obras,
+          setObras: setObras,
+          syncObra: syncObra,
           showToast: showToast
         });
       case "itens":
