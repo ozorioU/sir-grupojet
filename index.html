@@ -10148,7 +10148,25 @@ function OrcamentosPage({
         type: "aprovar",
         budget: b
       })
-    }, "✅ Aprovar"), /*#__PURE__*/React.createElement("button", {
+    }, "✅ Aprovar"), b.etapa === "aprovado" && !obras.some(o => o.orc_id === b.id) && user?.grupo === "jet" && /*#__PURE__*/React.createElement("button", {
+      style: {
+        ...btn("primary"),
+        background: "#e8650a",
+        borderColor: "#e8650a"
+      },
+      onClick: () => {
+        criarObraDoOrcamento(b);
+        setModal(null);
+      }
+    }, "🏗️ Criar Obra"), b.etapa === "aprovado" && obras.some(o => o.orc_id === b.id) && /*#__PURE__*/React.createElement("span", {
+      style: {
+        fontSize: 11,
+        color: "#10b981",
+        display: "flex",
+        alignItems: "center",
+        gap: 4
+      }
+    }, "✅ Obra já criada"), /*#__PURE__*/React.createElement("button", {
       style: btn(),
       onClick: () => setPdfData({
         titulo: b.titulo,
