@@ -5453,6 +5453,7 @@ function ObrasPage({
   syncEspelho,
   delEspelho,
   delEspelhoByObraId,
+  budgets = [],
   showToast
 }) {
   const [pdfData, setPdfData] = useState(null);
@@ -5764,7 +5765,7 @@ function ObrasPage({
       cx: "12",
       cy: "12",
       r: "3"
-    }))), OBRA_ORC_MAP[o.cod] && /*#__PURE__*/React.createElement("button", {
+    }))), (o.orc_id || OBRA_ORC_MAP[o.cod]) && /*#__PURE__*/React.createElement("button", {
       style: {
         ...btn(),
         padding: "5px 8px",
@@ -6072,8 +6073,17 @@ function ObrasPage({
     }, "Fechar")));
   })()), modal?.type === "orcamento" && (() => {
     const o = modal.obra;
-    const key = OBRA_ORC_MAP[o.cod];
-    const itens = key && BUDGET_ITEMS_DATA[key] || [];
+    // Buscar orçamento real vinculado por orc_id (fonte de verdade)
+    const orcReal = o.orc_id ? budgets.find(b => b.id === o.orc_id) : null;
+    // Se a obra tem orc_id, usa SEMPRE o orçamento real (nunca o hardcoded)
+    // Só cai no hardcoded se a obra NÃO tiver orc_id nenhum
+    let itens;
+    if (o.orc_id) {
+      itens = orcReal ? orcReal.itens || [] : [];
+    } else {
+      const key = OBRA_ORC_MAP[o.cod];
+      itens = key && BUDGET_ITEMS_DATA[key] || [];
+    }
     const servicos = itens.filter(i => i.tipo === "servico");
     const materiais = itens.filter(i => i.tipo === "material");
     const totalServ = servicos.reduce((s, i) => s + i.vt, 0);
@@ -9036,13 +9046,9 @@ function OrcamentosPage({
   // Cria obra automaticamente ao aprovar orçamento
   const criarObraDoOrcamento = b => {
     if (!setObras || !syncObra) return;
-    console.log("criarObraDoOrcamento recebeu:", b.id, b.titulo, "itens:", (b.itens || []).length, "total:", b.total);
     // Verificar se já existe obra com esse orçamento
     const jaExiste = obras.some(o => o.orc_id === b.id);
-    if (jaExiste) {
-      console.log("Obra já existe para orc_id", b.id);
-      return;
-    }
+    if (jaExiste) return;
 
     // Calcular custo real automaticamente a partir dos itens com cu cadastrado
     const itensOrc = b.itens || [];
@@ -10216,7 +10222,6 @@ function OrcamentosPage({
         borderColor: "#e8650a"
       },
       onClick: () => {
-        console.log("CRIAR OBRA do orçamento:", b.id, b.titulo, "total:", b.total, "itens:", b.itens?.length);
         criarObraDoOrcamento(b);
         setModal(null);
       }
@@ -14664,7 +14669,23 @@ function App() {
     }
   };
   const syncObra = async o => {
-    const r = await sb.upsert("sir_obras", o);
+    const payload = {
+      id: o.id,
+      cod: o.cod || "",
+      entrega: o.entrega || "",
+      cliente: o.cliente || "",
+      orc: o.orc || 0,
+      fat: o.fat || 0,
+      custo: o.custo || 0,
+      st_orc: o.st_orc || "",
+      st_obra: o.st_obra || "",
+      st_fin: o.st_fin || "",
+      conclusao: o.conclusao || "",
+      env_fat: o.env_fat || "",
+      serv: o.serv || "",
+      orc_id: o.orc_id || null
+    };
+    const r = await sb.upsert("sir_obras", payload);
     if (!r) console.error("syncObra falhou", o.id);
   };
   const delObra = async id => {
@@ -14824,6 +14845,7 @@ function App() {
           syncEspelho: syncEspelho,
           delEspelho: delEspelho,
           delEspelhoByObraId: delEspelhoByObraId,
+          budgets: budgets,
           showToast: showToast
         });
       case "custos":
