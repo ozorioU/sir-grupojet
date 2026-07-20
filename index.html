@@ -8984,11 +8984,22 @@ function OrcamentosPage({
   };
   const save = () => {
     console.log("SAVE() chamado!", form.titulo, "itens:", editItens.length, "syncBudget:", typeof syncBudget);
+    console.log("editItens[0]:", JSON.stringify(editItens[0]));
     if (!form.titulo?.trim()) {
       alert("Preencha o título.");
       return;
     }
-    const itensParaSalvar = [...editItens];
+    const itensParaSalvar = editItens.map(i => ({
+      id: i.id,
+      descricao: i.descricao,
+      codigo: i.codigo || "",
+      tipo: i.tipo,
+      unidade: i.unidade || "un",
+      qtd: i.qtd || 1,
+      vu: i.vu || 0,
+      vt: i.vt || 0,
+      obs: i.obs || ""
+    }));
     const n = {
       ...form,
       id: form.id || uid(),
