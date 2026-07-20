@@ -11765,6 +11765,10 @@ function PontosPage({
     return fat - cus;
   };
   const totalAcum = pontos.reduce((s, p) => s + lucroAcum(p), 0);
+  // Totais MENSAIS (valor de um mês, não acumulado)
+  const totalFatMensal = pontos.reduce((s, p) => s + (parseFloat(p.faturamento) || 0), 0);
+  const totalCustoMensal = pontos.reduce((s, p) => s + (parseFloat(p.custo) || 0), 0);
+  // Totais ACUMULADOS (desde a ativação de cada ponto)
   const totalFat = pontos.reduce((s, p) => s + calcL2LAcum(p).fat, 0);
   const totalCusto = pontos.reduce((s, p) => s + calcL2LAcum(p).cus, 0);
   const totalFatPend = pontos.reduce((s, p) => s + calcL2LAcum(p).fatPend, 0);
@@ -11901,7 +11905,7 @@ function PontosPage({
       gap: 12,
       marginBottom: 16
     }
-  }, [["Pontos Ativos", pontos.length, "#374151", ""], ["Fat. Mensal Total", fmt(totalFat), "#15803d", "#f0fdf4"], ["Custo Mensal Total", fmt(totalCusto), "#dc2626", "#fef2f2"], ["Lucro Acumulado", fmt(totalAcum), totalAcum >= 0 ? "#15803d" : "#dc2626", totalAcum >= 0 ? "#f0fdf4" : "#fef2f2"]].map(([l, v, c, bg]) => /*#__PURE__*/React.createElement("div", {
+  }, [["Pontos Ativos", pontos.length, "#374151", ""], ["Fat. Mensal Total", fmt(totalFatMensal), "#15803d", "#f0fdf4"], ["Custo Mensal Total", fmt(totalCustoMensal), "#dc2626", "#fef2f2"], ["Lucro Acumulado", fmt(totalAcum), totalAcum >= 0 ? "#15803d" : "#dc2626", totalAcum >= 0 ? "#f0fdf4" : "#fef2f2"]].map(([l, v, c, bg]) => /*#__PURE__*/React.createElement("div", {
     key: l,
     style: {
       background: bg || "#f9fafb",
