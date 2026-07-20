@@ -6929,7 +6929,7 @@ function CustosPage({
     return /*#__PURE__*/React.createElement(Modal, {
       title: `📋 Orçamento — ${obra.entrega}`,
       onClose: () => setOrcModal(null),
-      maxWidth: 860
+      maxWidth: 920
     }, /*#__PURE__*/React.createElement("div", {
       style: {
         display: "flex",
@@ -7018,10 +7018,10 @@ function CustosPage({
         background: "#f9fafb",
         borderBottom: "2px solid #e5e7eb"
       }
-    }, ["Tipo", "Descrição", "Obs.", "Qtd", "Val.Venda", "Custo Unit. (R$)", "Custo Total"].map((h, i) => /*#__PURE__*/React.createElement("th", {
+    }, ["Tipo", "Descrição", "Obs.", "Qtd", "V.Unit.Venda", "V.Total Venda", "Custo Unit. (R$)", "Custo Total"].map((h, i) => /*#__PURE__*/React.createElement("th", {
       key: i,
       style: {
-        padding: "8px 12px",
+        padding: "8px 10px",
         textAlign: i > 3 ? "right" : "left",
         fontSize: 10,
         fontWeight: 600,
@@ -7040,7 +7040,7 @@ function CustosPage({
         onMouseLeave: e => e.currentTarget.style.background = ""
       }, /*#__PURE__*/React.createElement("td", {
         style: {
-          padding: "8px 12px"
+          padding: "8px 10px"
         }
       }, /*#__PURE__*/React.createElement("span", {
         style: {
@@ -7049,46 +7049,54 @@ function CustosPage({
         }
       }, i.tipo === "servico" ? "Serv." : "Mat.")), /*#__PURE__*/React.createElement("td", {
         style: {
-          padding: "8px 12px",
+          padding: "8px 10px",
           fontWeight: 500,
-          maxWidth: 200,
+          maxWidth: 180,
           overflow: "hidden",
           textOverflow: "ellipsis",
           whiteSpace: "nowrap"
         }
       }, i.descricao), /*#__PURE__*/React.createElement("td", {
         style: {
-          padding: "8px 12px",
+          padding: "8px 10px",
           fontSize: 11,
           color: "#6b7280",
           fontStyle: "italic",
-          maxWidth: 110,
+          maxWidth: 100,
           overflow: "hidden",
           textOverflow: "ellipsis",
           whiteSpace: "nowrap"
         }
       }, i.obs || "—"), /*#__PURE__*/React.createElement("td", {
         style: {
-          padding: "8px 12px",
+          padding: "8px 10px",
           textAlign: "right",
           fontFamily: "monospace"
         }
       }, i.qtd), /*#__PURE__*/React.createElement("td", {
         style: {
-          padding: "8px 12px",
+          padding: "8px 10px",
           textAlign: "right",
           fontFamily: "monospace",
           color: "#15803d"
         }
+      }, fmt(i.vu)), /*#__PURE__*/React.createElement("td", {
+        style: {
+          padding: "8px 10px",
+          textAlign: "right",
+          fontFamily: "monospace",
+          color: "#15803d",
+          fontWeight: 600
+        }
       }, fmt(i.vt)), /*#__PURE__*/React.createElement("td", {
         style: {
-          padding: "8px 12px",
+          padding: "8px 10px",
           textAlign: "right"
         }
       }, /*#__PURE__*/React.createElement("input", {
         style: {
           ...inp,
-          width: 110,
+          width: 100,
           padding: "4px 8px",
           textAlign: "right",
           fontFamily: "monospace"
@@ -7104,7 +7112,7 @@ function CustosPage({
         }))
       })), /*#__PURE__*/React.createElement("td", {
         style: {
-          padding: "8px 12px",
+          padding: "8px 10px",
           textAlign: "right",
           fontFamily: "monospace",
           fontWeight: 700,
@@ -7112,7 +7120,7 @@ function CustosPage({
         }
       }, fmt(cuTotal)));
     }), itens.length === 0 && /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("td", {
-      colSpan: 7,
+      colSpan: 8,
       style: {
         textAlign: "center",
         padding: 32,
@@ -7124,7 +7132,7 @@ function CustosPage({
         borderTop: "2px solid #e5e7eb"
       }
     }, /*#__PURE__*/React.createElement("td", {
-      colSpan: 6,
+      colSpan: 7,
       style: {
         padding: "10px 12px",
         fontWeight: 700,
