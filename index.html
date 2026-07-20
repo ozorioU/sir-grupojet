@@ -6676,10 +6676,12 @@ function CustosPage({
         if (!orc) {
           // Sem vínculo — sempre mostrar lista para o usuário escolher
           const todos = budgets;
+          console.log("budgets total:", todos.length, "orc_id:", o.orc_id);
           if (todos.length === 0) {
             showToast("Nenhum orçamento encontrado.", "err");
             return;
           }
+          console.log("setOrcModal escolher:", todos.length);
           setOrcModal({
             obra: o,
             orc: null,
