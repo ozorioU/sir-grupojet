@@ -6418,6 +6418,8 @@ function CustosPage({
   delEspelhoByObraId,
   budgets = [],
   items = [],
+  setItems,
+  syncItem,
   syncObra,
   showToast
 }) {
@@ -6879,12 +6881,12 @@ function CustosPage({
           const base = (window.__SIR_ITEMS || ALL_ITEMS).find(ai => ai.id === i.id || ai.descricao === i.descricao);
           return {
             ...i,
-            cu_real: base?.cu > 0 ? parseFloat((base.cu * (i.qtd || 1)).toFixed(2)) : 0
+            cu_unit: base?.cu > 0 ? parseFloat(base.cu) : 0
           };
         });
         const cusInit = {};
         itensOrc.forEach(i => {
-          cusInit[i.id] = String(i.cu_real || 0);
+          cusInit[i.id] = i.cu_unit > 0 ? String(i.cu_unit) : "";
         });
         setOrcCustos(cusInit);
         const obraAtualizada = {
@@ -6920,12 +6922,14 @@ function CustosPage({
       style: btn(),
       onClick: () => setOrcModal(null)
     }, "Cancelar")));
-    const totalCusto = itens.reduce((s, i) => s + (parseFloat(orcCustos[i.id]) || 0), 0);
+
+    // orcCustos guarda o CUSTO UNITÁRIO de cada item
+    const totalCusto = itens.reduce((s, i) => s + (parseFloat(orcCustos[i.id]) || 0) * (i.qtd || 1), 0);
     const totalVenda = itens.reduce((s, i) => s + (i.vt || 0), 0);
     return /*#__PURE__*/React.createElement(Modal, {
       title: `📋 Orçamento — ${obra.entrega}`,
       onClose: () => setOrcModal(null),
-      maxWidth: 820
+      maxWidth: 860
     }, /*#__PURE__*/React.createElement("div", {
       style: {
         display: "flex",
@@ -7014,7 +7018,7 @@ function CustosPage({
         background: "#f9fafb",
         borderBottom: "2px solid #e5e7eb"
       }
-    }, ["Tipo", "Descrição", "Obs.", "Qtd", "Val.Venda", "Custo Total (R$)", ""].map((h, i) => /*#__PURE__*/React.createElement("th", {
+    }, ["Tipo", "Descrição", "Obs.", "Qtd", "Val.Venda", "Custo Unit. (R$)", "Custo Total"].map((h, i) => /*#__PURE__*/React.createElement("th", {
       key: i,
       style: {
         padding: "8px 12px",
@@ -7025,7 +7029,8 @@ function CustosPage({
         textTransform: "uppercase"
       }
     }, h)))), /*#__PURE__*/React.createElement("tbody", null, itens.map(i => {
-      const cuTotal = parseFloat(orcCustos[i.id]) || 0;
+      const cuUnit = parseFloat(orcCustos[i.id]) || 0;
+      const cuTotal = cuUnit * (i.qtd || 1);
       return /*#__PURE__*/React.createElement("tr", {
         key: i.id,
         style: {
@@ -7057,7 +7062,7 @@ function CustosPage({
           fontSize: 11,
           color: "#6b7280",
           fontStyle: "italic",
-          maxWidth: 120,
+          maxWidth: 110,
           overflow: "hidden",
           textOverflow: "ellipsis",
           whiteSpace: "nowrap"
@@ -7083,7 +7088,7 @@ function CustosPage({
       }, /*#__PURE__*/React.createElement("input", {
         style: {
           ...inp,
-          width: 120,
+          width: 110,
           padding: "4px 8px",
           textAlign: "right",
           fontFamily: "monospace"
@@ -7092,6 +7097,7 @@ function CustosPage({
         step: "0.01",
         min: "0",
         value: orcCustos[i.id] || "",
+        placeholder: "0,00",
         onChange: e => setOrcCustos(p => ({
           ...p,
           [i.id]: e.target.value
@@ -7118,7 +7124,7 @@ function CustosPage({
         borderTop: "2px solid #e5e7eb"
       }
     }, /*#__PURE__*/React.createElement("td", {
-      colSpan: 5,
+      colSpan: 6,
       style: {
         padding: "10px 12px",
         fontWeight: 700,
@@ -7126,7 +7132,6 @@ function CustosPage({
         fontSize: 12
       }
     }, "TOTAL CUSTO:"), /*#__PURE__*/React.createElement("td", {
-      colSpan: 2,
       style: {
         padding: "10px 12px",
         textAlign: "right",
@@ -7136,6 +7141,13 @@ function CustosPage({
         color: "#dc2626"
       }
     }, fmt(totalCusto)))))), /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontSize: 10,
+        color: "#6b7280",
+        marginTop: 6,
+        fontStyle: "italic"
+      }
+    }, "💡 Ao salvar, os custos unitários informados são guardados no cadastro de Itens para os próximos orçamentos."), /*#__PURE__*/React.createElement("div", {
       style: {
         display: "flex",
         justifyContent: "space-between",
@@ -7153,7 +7165,8 @@ function CustosPage({
         obra,
         orc: null,
         itens: [],
-        escolher: budgets
+        escolher: budgets,
+        orcIdAtual: obra.orc_id
       })
     }, "🔄 Trocar Orçamento"), /*#__PURE__*/React.createElement("div", {
       style: {
@@ -7166,14 +7179,37 @@ function CustosPage({
     }, "Fechar"), /*#__PURE__*/React.createElement("button", {
       style: btn("primary"),
       onClick: () => {
+        // 1. Salvar custo total na obra
         const novaObra = {
           ...obra,
-          custo: totalCusto
+          custo: parseFloat(totalCusto.toFixed(2))
         };
         setObras(p => p.map(o2 => o2.id === obra.id ? novaObra : o2));
         if (syncObra) syncObra(novaObra);
-        setOrcModal(null);
-        showToast("Custo da obra atualizado: " + fmt(totalCusto));
+        // 2. Salvar custo unitário no cadastro de itens (para próximos orçamentos)
+        if (setItems && syncItem) {
+          let atualizados = 0;
+          itens.forEach(it => {
+            const cuUnit = parseFloat(orcCustos[it.id]) || 0;
+            if (cuUnit > 0) {
+              const itemBase = items.find(x => x.id === it.id || x.descricao === it.descricao);
+              if (itemBase && parseFloat(itemBase.cu || 0) !== cuUnit) {
+                const itemAtual = {
+                  ...itemBase,
+                  cu: cuUnit
+                };
+                setItems(p => p.map(x => x.id === itemBase.id ? itemAtual : x));
+                syncItem(itemAtual);
+                atualizados++;
+              }
+            }
+          });
+          setOrcModal(null);
+          showToast(`Custo salvo: ${fmt(totalCusto)}${atualizados > 0 ? ` · ${atualizados} item(ns) atualizado(s) no cadastro` : ""}`);
+        } else {
+          setOrcModal(null);
+          showToast("Custo da obra atualizado: " + fmt(totalCusto));
+        }
       }
     }, "💾 Salvar Custo da Obra"))));
   })());
@@ -14744,7 +14780,17 @@ function App() {
     await sb.upsert("sir_usuarios", u).catch(() => {});
   };
   const syncItem = async i => {
-    await sb.upsert("sir_itens", i).catch(() => {});
+    const payload = {
+      id: i.id,
+      codigo: i.codigo || "",
+      descricao: i.descricao || "",
+      unidade: i.unidade || "un",
+      tipo: i.tipo || "servico",
+      vu: parseFloat(i.vu) || 0,
+      cu: parseFloat(i.cu) || 0
+    };
+    const r = await sb.upsert("sir_itens", payload);
+    if (!r) console.error("syncItem falhou", i.id);
   };
   const delItem = async id => {
     await sbFetch("sir_itens", "DELETE", null, "id=eq." + id);
@@ -14862,6 +14908,8 @@ function App() {
           delEspelhoByObraId: delEspelhoByObraId,
           budgets: budgets,
           items: items,
+          setItems: setItems,
+          syncItem: syncItem,
           syncObra: syncObra,
           showToast: showToast
         });
