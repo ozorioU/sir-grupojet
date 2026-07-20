@@ -8988,15 +8988,16 @@ function OrcamentosPage({
       alert("Preencha o título.");
       return;
     }
+    const itensParaSalvar = [...editItens];
     const n = {
       ...form,
       id: form.id || uid(),
       etapa: form.etapa || "rascunho",
       historico: form.historico || [],
-      itens: editItens,
+      itens: itensParaSalvar,
       total: totalEdit
     };
-    console.log("Salvando orçamento:", n.id, "itens:", n.itens?.length);
+    console.log("Salvando orçamento:", n.id, "itens:", n.itens?.length, "total:", n.total);
     setBudgets(p => p.find(b => b.id === n.id) ? p.map(b => b.id === n.id ? n : b) : [...p, n]);
     setModal(null);
     showToast(form.id ? "Orçamento atualizado!" : "Orçamento criado!");
