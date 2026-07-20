@@ -6675,16 +6675,16 @@ function CustosPage({
         const orc = o.orc_id ? budgets.find(b => b.id === o.orc_id) : null;
         if (!orc) {
           // Sem vínculo — sempre mostrar lista para o usuário escolher
-          const aprovados = budgets.filter(b => b.etapa === "aprovado");
-          if (aprovados.length === 0) {
-            showToast("Nenhum orçamento aprovado encontrado.", "err");
+          const todos = budgets;
+          if (todos.length === 0) {
+            showToast("Nenhum orçamento encontrado.", "err");
             return;
           }
           setOrcModal({
             obra: o,
             orc: null,
             itens: [],
-            escolher: aprovados
+            escolher: todos
           });
           return;
         }
