@@ -6671,39 +6671,19 @@ function CustosPage({
       title: "Abrir orçamento e lançar custos reais",
       onClick: e => {
         e.stopPropagation();
-        // Só usa orc_id se estiver explicitamente vinculado — nunca adivinhar
-        const orc = o.orc_id ? budgets.find(b => b.id === o.orc_id) : null;
-        if (!orc) {
-          // Sem vínculo — sempre mostrar lista para o usuário escolher
-          const todos = budgets;
-          if (todos.length === 0) {
-            showToast("Nenhum orçamento encontrado.", "err");
-            return;
-          }
-          setOrcModal({
-            obra: o,
-            orc: null,
-            itens: [],
-            escolher: todos
-          });
+        // Sempre mostrar lista para escolher — nunca abrir automático
+        const todos = budgets;
+        if (todos.length === 0) {
+          showToast("Nenhum orçamento encontrado.", "err");
           return;
         }
-        const itensOrc = (orc.itens || []).map(i => {
-          const base = (window.__SIR_ITEMS || ALL_ITEMS).find(ai => ai.id === i.id || ai.descricao === i.descricao);
-          return {
-            ...i,
-            cu_real: base?.cu > 0 ? parseFloat((base.cu * (i.qtd || 1)).toFixed(2)) : 0
-          };
-        });
-        const cusInit = {};
-        itensOrc.forEach(i => {
-          cusInit[i.id] = String(i.cu_real || 0);
-        });
-        setOrcCustos(cusInit);
+        // Se já tem vínculo, destacar o vinculado na lista mas deixar escolher
         setOrcModal({
           obra: o,
-          orc,
-          itens: itensOrc
+          orc: null,
+          itens: [],
+          escolher: todos,
+          orcIdAtual: o.orc_id
         });
       }
     }, "📋"), /*#__PURE__*/React.createElement("button", {
@@ -12395,8 +12375,11 @@ function UsuariosPage({
       itens,
       escolher
     } = orcModal;
+    const {
+      orcIdAtual
+    } = orcModal;
     if (escolher) return /*#__PURE__*/React.createElement(Modal, {
-      title: `📋 Vincular Orçamento — ${obra.entrega}`,
+      title: `📋 Selecionar Orçamento — ${obra.entrega}`,
       onClose: () => setOrcModal(null),
       maxWidth: 600
     }, /*#__PURE__*/React.createElement("div", {
@@ -12405,7 +12388,7 @@ function UsuariosPage({
         color: "#6b7280",
         marginBottom: 12
       }
-    }, "Selecione o orçamento aprovado que corresponde a esta obra:"), /*#__PURE__*/React.createElement("div", {
+    }, "Selecione o orçamento correto para esta obra:"), /*#__PURE__*/React.createElement("div", {
       style: {
         display: "flex",
         flexDirection: "column",
@@ -12418,10 +12401,12 @@ function UsuariosPage({
       style: {
         ...card,
         padding: "10px 14px",
-        cursor: "pointer"
+        cursor: "pointer",
+        borderColor: b.id === orcIdAtual ? "#3b82f6" : "#e5e7eb",
+        background: b.id === orcIdAtual ? "#eff6ff" : "#fff"
       },
       onMouseEnter: e => e.currentTarget.style.borderColor = "#3b82f6",
-      onMouseLeave: e => e.currentTarget.style.borderColor = "#e5e7eb",
+      onMouseLeave: e => e.currentTarget.style.borderColor = b.id === orcIdAtual ? "#3b82f6" : "#e5e7eb",
       onClick: () => {
         const itensOrc = (b.itens || []).map(i => {
           const base = (window.__SIR_ITEMS || ALL_ITEMS).find(ai => ai.id === i.id || ai.descricao === i.descricao);
