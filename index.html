@@ -6671,12 +6671,10 @@ function CustosPage({
       title: "Abrir orçamento e lançar custos reais",
       onClick: e => {
         e.stopPropagation();
-        // Buscar por orc_id, ou pelo título similar, ou orçamentos aprovados do mesmo cliente
-        let orc = budgets.find(b => b.orc_id === o.id || b.id === o.orc_id);
-        if (!orc) orc = budgets.find(b => b.etapa === "aprovado" && b.titulo === o.entrega);
-        if (!orc) orc = budgets.find(b => b.etapa === "aprovado" && b.cliente === o.cliente && b.titulo?.includes(o.entrega?.split(" ")[0]));
+        // Só usa orc_id se estiver explicitamente vinculado — nunca adivinhar
+        const orc = o.orc_id ? budgets.find(b => b.id === o.orc_id) : null;
         if (!orc) {
-          // Mostrar lista de orçamentos aprovados para escolher
+          // Sem vínculo — sempre mostrar lista para o usuário escolher
           const aprovados = budgets.filter(b => b.etapa === "aprovado");
           if (aprovados.length === 0) {
             showToast("Nenhum orçamento aprovado encontrado.", "err");
