@@ -9036,9 +9036,13 @@ function OrcamentosPage({
   // Cria obra automaticamente ao aprovar orçamento
   const criarObraDoOrcamento = b => {
     if (!setObras || !syncObra) return;
+    console.log("criarObraDoOrcamento recebeu:", b.id, b.titulo, "itens:", (b.itens || []).length, "total:", b.total);
     // Verificar se já existe obra com esse orçamento
     const jaExiste = obras.some(o => o.orc_id === b.id);
-    if (jaExiste) return;
+    if (jaExiste) {
+      console.log("Obra já existe para orc_id", b.id);
+      return;
+    }
 
     // Calcular custo real automaticamente a partir dos itens com cu cadastrado
     const itensOrc = b.itens || [];
@@ -10212,6 +10216,7 @@ function OrcamentosPage({
         borderColor: "#e8650a"
       },
       onClick: () => {
+        console.log("CRIAR OBRA do orçamento:", b.id, b.titulo, "total:", b.total, "itens:", b.itens?.length);
         criarObraDoOrcamento(b);
         setModal(null);
       }
