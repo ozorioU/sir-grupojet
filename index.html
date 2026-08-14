@@ -3965,6 +3965,7 @@ function Dashboard({
   fatInt = [],
   investInt = [],
   espelhos = [],
+  l2lReal = [],
   user,
   setPage,
   setDashFilter,
@@ -4069,23 +4070,83 @@ function Dashboard({
     return total;
   };
 
+  // Helper: retorna o valor REAL do L2L para um mês se existir, senão null
+  const l2lRealMes = (mesKey, campo) => {
+    const r = l2lReal.find(x => x.mes === mesKey);
+    if (!r) return null;
+    const v = parseFloat(campo === "fat" ? r.fat_real : r.cus_real);
+    return v && v > 0 ? v : null;
+  };
+  // Calculado mensal do L2L (pontos ativos até o mês)
+  const l2lCalcMes = (mesKey, campo) => {
+    return pontos.filter(p => !p.ativacao || p.ativacao.slice(0, 7) <= mesKey).reduce((s, p) => s + (parseFloat(campo === "fat" ? p.faturamento : p.custo) || 0), 0);
+  };
+
   // L2L faturamento: pontos ativos no mês selecionado
   const fatL2L = React.useMemo(() => {
     if (mesSocietario === "acumulado") {
-      if (excluirMesAtual) return pontos.reduce((s, p) => s + calcL2LAcumSemMesAtual(p, "fat"), 0);
-      return pontos.reduce((s, p) => s + calcL2LAcum(p).fat, 0);
+      // Soma mês a mês: usa real se existir, senão calculado
+      const hj = new Date();
+      let total = 0,
+        yy = 2026,
+        mm = 1;
+      while (yy < hj.getFullYear() || yy === hj.getFullYear() && mm <= hj.getMonth() + 1) {
+        const mk = `${yy}-${String(mm).padStart(2, "0")}`;
+        if (excluirMesAtual && mk >= mesAtualKeyD) {
+          mm++;
+          if (mm > 12) {
+            mm = 1;
+            yy++;
+          }
+          continue;
+        }
+        const real = l2lRealMes(mk, "fat");
+        total += real !== null ? real : l2lCalcMes(mk, "fat");
+        mm++;
+        if (mm > 12) {
+          mm = 1;
+          yy++;
+        }
+      }
+      return total;
     } else {
+      // Mensal: usa real se existir para o mês, senão calculado
+      const real = l2lRealMes(mesSocietario, "fat");
+      if (real !== null) return real;
       return pontos.filter(p => !p.ativacao || p.ativacao.slice(0, 7) <= mesSocietario).reduce((s, p) => s + (parseFloat(p.faturamento) || 0), 0);
     }
-  }, [pontos, mesSocietario, excluirMesAtual]);
+  }, [pontos, mesSocietario, excluirMesAtual, l2lReal]);
   const cusL2L = React.useMemo(() => {
     if (mesSocietario === "acumulado") {
-      if (excluirMesAtual) return pontos.reduce((s, p) => s + calcL2LAcumSemMesAtual(p, "cus"), 0);
-      return pontos.reduce((s, p) => s + calcL2LAcum(p).cus, 0);
+      const hj = new Date();
+      let total = 0,
+        yy = 2026,
+        mm = 1;
+      while (yy < hj.getFullYear() || yy === hj.getFullYear() && mm <= hj.getMonth() + 1) {
+        const mk = `${yy}-${String(mm).padStart(2, "0")}`;
+        if (excluirMesAtual && mk >= mesAtualKeyD) {
+          mm++;
+          if (mm > 12) {
+            mm = 1;
+            yy++;
+          }
+          continue;
+        }
+        const real = l2lRealMes(mk, "cus");
+        total += real !== null ? real : pontos.filter(p => !p.ativacao || p.ativacao.slice(0, 7) <= mk).reduce((s, p) => s + calcL2LMes(parseFloat(p.custo) || 0, p.ativacao, mk), 0);
+        mm++;
+        if (mm > 12) {
+          mm = 1;
+          yy++;
+        }
+      }
+      return total;
     } else {
+      const real = l2lRealMes(mesSocietario, "cus");
+      if (real !== null) return real;
       return pontos.filter(p => !p.ativacao || p.ativacao.slice(0, 7) <= mesSocietario).reduce((s, p) => s + calcL2LMes(parseFloat(p.custo) || 0, p.ativacao, mesSocietario), 0);
     }
-  }, [pontos, mesSocietario, excluirMesAtual]);
+  }, [pontos, mesSocietario, excluirMesAtual, l2lReal]);
 
   // Pendentes L2L (meses ainda não processados)
   const fatL2LPend = 0;
@@ -11624,6 +11685,9 @@ function PontosPage({
   setPontos,
   syncPonto,
   delPonto,
+  l2lReal = [],
+  setL2lReal,
+  syncL2lReal,
   showToast
 }) {
   const fileImportRef = React.useRef(null);
@@ -12366,7 +12430,197 @@ function PontosPage({
       fontSize: 14,
       color: totalAcum >= 0 ? "#15803d" : "#dc2626"
     }
-  }, fmt(totalAcum)), /*#__PURE__*/React.createElement("td", null)))))), modal === "edit" && /*#__PURE__*/React.createElement(Modal, {
+  }, fmt(totalAcum)), /*#__PURE__*/React.createElement("td", null)))))), (() => {
+    const hj = new Date();
+    const meses = [];
+    let yy = 2026,
+      mm = 1;
+    while (yy < hj.getFullYear() || yy === hj.getFullYear() && mm <= hj.getMonth() + 1) {
+      meses.push(`${yy}-${String(mm).padStart(2, "0")}`);
+      mm++;
+      if (mm > 12) {
+        mm = 1;
+        yy++;
+      }
+    }
+    meses.reverse();
+    const calcMes = mesKey => {
+      const ativos = pontos.filter(p => !p.ativacao || p.ativacao.slice(0, 7) <= mesKey);
+      const fat = ativos.reduce((s, p) => s + (parseFloat(p.faturamento) || 0), 0);
+      const cus = ativos.reduce((s, p) => s + (parseFloat(p.custo) || 0), 0);
+      return {
+        fat,
+        cus
+      };
+    };
+    const getReal = mesKey => l2lReal.find(r => r.mes === mesKey);
+    const salvarReal = (mesKey, campo, valor) => {
+      const existente = l2lReal.find(r => r.mes === mesKey);
+      const novo = existente ? {
+        ...existente,
+        [campo]: valor
+      } : {
+        id: mesKey,
+        mes: mesKey,
+        fat_real: 0,
+        cus_real: 0,
+        [campo]: valor
+      };
+      setL2lReal(p => {
+        const outros = p.filter(r => r.mes !== mesKey);
+        return [...outros, novo].sort((a, b) => b.mes.localeCompare(a.mes));
+      });
+      if (syncL2lReal) syncL2lReal(novo);
+    };
+    const nomeMes = k => {
+      const [y, m] = k.split("-");
+      return new Date(+y, +m - 1, 2).toLocaleString("pt-BR", {
+        month: "short",
+        year: "numeric"
+      });
+    };
+    return /*#__PURE__*/React.createElement("div", {
+      style: {
+        ...card,
+        padding: 0,
+        marginTop: 18
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        padding: "14px 16px",
+        borderBottom: "1px solid #e5e7eb"
+      }
+    }, /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontWeight: 700,
+        fontSize: 14,
+        display: "flex",
+        alignItems: "center",
+        gap: 8
+      }
+    }, "📊 Conciliação com o Financeiro"), /*#__PURE__*/React.createElement("div", {
+      style: {
+        fontSize: 11,
+        color: "#6b7280",
+        marginTop: 3
+      }
+    }, "Insira os valores reais das planilhas do financeiro. Onde houver valor real, o sistema usará ele nos totais; a diferença é destacada.")), /*#__PURE__*/React.createElement("div", {
+      style: {
+        overflowX: "auto"
+      }
+    }, /*#__PURE__*/React.createElement("table", {
+      style: {
+        width: "100%",
+        borderCollapse: "collapse",
+        fontSize: 12
+      }
+    }, /*#__PURE__*/React.createElement("thead", null, /*#__PURE__*/React.createElement("tr", {
+      style: {
+        background: "#f9fafb",
+        borderBottom: "2px solid #e5e7eb"
+      }
+    }, ["Mês", "Fat. Calculado", "Fat. Real", "Dif. Fat.", "Custo Calculado", "Custo Real", "Dif. Custo"].map((h, i) => /*#__PURE__*/React.createElement("th", {
+      key: i,
+      style: {
+        padding: "9px 12px",
+        textAlign: i === 0 ? "left" : "right",
+        fontSize: 10,
+        fontWeight: 600,
+        color: "#6b7280",
+        textTransform: "uppercase",
+        whiteSpace: "nowrap"
+      }
+    }, h)))), /*#__PURE__*/React.createElement("tbody", null, meses.map(mk => {
+      const {
+        fat: fatCalc,
+        cus: cusCalc
+      } = calcMes(mk);
+      const real = getReal(mk);
+      const fatReal = real ? parseFloat(real.fat_real) || 0 : null;
+      const cusReal = real ? parseFloat(real.cus_real) || 0 : null;
+      const difFat = fatReal !== null ? fatReal - fatCalc : null;
+      const difCus = cusReal !== null ? cusReal - cusCalc : null;
+      return /*#__PURE__*/React.createElement("tr", {
+        key: mk,
+        style: {
+          borderBottom: "1px solid #f3f4f6"
+        }
+      }, /*#__PURE__*/React.createElement("td", {
+        style: {
+          padding: "8px 12px",
+          fontWeight: 600,
+          textTransform: "capitalize",
+          whiteSpace: "nowrap"
+        }
+      }, nomeMes(mk)), /*#__PURE__*/React.createElement("td", {
+        style: {
+          padding: "8px 12px",
+          textAlign: "right",
+          fontFamily: "monospace",
+          color: "#15803d"
+        }
+      }, fmt(fatCalc)), /*#__PURE__*/React.createElement("td", {
+        style: {
+          padding: "8px 12px",
+          textAlign: "right"
+        }
+      }, /*#__PURE__*/React.createElement("input", {
+        style: {
+          ...inp,
+          width: 110,
+          padding: "4px 8px",
+          textAlign: "right",
+          fontFamily: "monospace"
+        },
+        type: "number",
+        step: "0.01",
+        placeholder: "—",
+        value: real?.fat_real ?? "",
+        onChange: e => salvarReal(mk, "fat_real", e.target.value)
+      })), /*#__PURE__*/React.createElement("td", {
+        style: {
+          padding: "8px 12px",
+          textAlign: "right",
+          fontFamily: "monospace",
+          fontWeight: 600,
+          color: difFat === null ? "#d1d5db" : Math.abs(difFat) < 0.01 ? "#9ca3af" : difFat > 0 ? "#15803d" : "#dc2626"
+        }
+      }, difFat === null ? "—" : (difFat > 0 ? "+" : "") + fmt(difFat)), /*#__PURE__*/React.createElement("td", {
+        style: {
+          padding: "8px 12px",
+          textAlign: "right",
+          fontFamily: "monospace",
+          color: "#dc2626"
+        }
+      }, fmt(cusCalc)), /*#__PURE__*/React.createElement("td", {
+        style: {
+          padding: "8px 12px",
+          textAlign: "right"
+        }
+      }, /*#__PURE__*/React.createElement("input", {
+        style: {
+          ...inp,
+          width: 110,
+          padding: "4px 8px",
+          textAlign: "right",
+          fontFamily: "monospace"
+        },
+        type: "number",
+        step: "0.01",
+        placeholder: "—",
+        value: real?.cus_real ?? "",
+        onChange: e => salvarReal(mk, "cus_real", e.target.value)
+      })), /*#__PURE__*/React.createElement("td", {
+        style: {
+          padding: "8px 12px",
+          textAlign: "right",
+          fontFamily: "monospace",
+          fontWeight: 600,
+          color: difCus === null ? "#d1d5db" : Math.abs(difCus) < 0.01 ? "#9ca3af" : difCus > 0 ? "#dc2626" : "#15803d"
+        }
+      }, difCus === null ? "—" : (difCus > 0 ? "+" : "") + fmt(difCus)));
+    })))));
+  })(), modal === "edit" && /*#__PURE__*/React.createElement(Modal, {
     title: form.id ? "Editar Ponto" : "Novo Ponto",
     onClose: () => setModal(null),
     maxWidth: 500
@@ -14818,6 +15072,7 @@ function App() {
   const [investInt, setInvestInt] = useState([]); // investimentos futuros
   const [sbUsers, setSbUsers] = useState([...PROFILES]); // usuários do sistema
   const [items, setItems] = useState([...ALL_ITEMS]); // itens com custo
+  const [l2lReal, setL2lReal] = useState([]); // valores reais mensais do L2L (financeiro)
 
   const showToast = (msg, type = "ok") => {
     setToast({
@@ -14830,7 +15085,7 @@ function App() {
   // ── Supabase sync functions ──────────────────────────────────────────────────
   const loadFromSupabase = async () => {
     try {
-      const [dbObras, dbBudgets, dbPontos, dbCustos, dbEspelhos, dbFats, dbInvests, dbUsers, dbItens] = await Promise.all([sb.get("sir_obras", "order=cod"), sb.get("sir_orcamentos", "order=ordem"), sb.get("sir_pontos", "order=created_at"), sb.get("sir_custos", "order=data"), sb.get("sir_espelhos", "order=created_at"), sb.get("sir_faturamentos", "order=data"), sb.get("sir_investimentos", "order=created_at"), sb.get("sir_usuarios", "order=nome"), sb.get("sir_itens", "order=codigo")]);
+      const [dbObras, dbBudgets, dbPontos, dbCustos, dbEspelhos, dbFats, dbInvests, dbUsers, dbItens, dbL2lReal] = await Promise.all([sb.get("sir_obras", "order=cod"), sb.get("sir_orcamentos", "order=ordem"), sb.get("sir_pontos", "order=created_at"), sb.get("sir_custos", "order=data"), sb.get("sir_espelhos", "order=created_at"), sb.get("sir_faturamentos", "order=data"), sb.get("sir_investimentos", "order=created_at"), sb.get("sir_usuarios", "order=nome"), sb.get("sir_itens", "order=codigo"), sb.get("sir_l2l_real", "order=mes")]);
 
       // Obras: se Supabase vazio, faz seed com OBRAS_DATA
       if (dbObras && dbObras.length > 0) {
@@ -14853,6 +15108,7 @@ function App() {
         Promise.all(BUDGETS_INIT.map(b => sb.upsert("sir_orcamentos", b))).then(rs => console.log("Seed orc: " + rs.filter(Boolean).length + "/" + BUDGETS_INIT.length)).catch(e => console.error("Seed orc erro:", e));
       }
       if (dbPontos?.length) setPontos(dbPontos);
+      if (dbL2lReal?.length) setL2lReal(dbL2lReal);
       if (dbCustos?.length) setCustosInt(dbCustos);
       if (dbEspelhos?.length) setEspelhos(dbEspelhos.map(e => ({
         ...e,
@@ -14934,6 +15190,16 @@ function App() {
   const syncPonto = async p => {
     const r = await sb.upsert("sir_pontos", p);
     if (!r) console.error("syncPonto falhou", p.id);else console.log("syncPonto OK", p.id);
+  };
+  const syncL2lReal = async r => {
+    const payload = {
+      id: r.mes,
+      mes: r.mes,
+      fat_real: parseFloat(r.fat_real) || 0,
+      cus_real: parseFloat(r.cus_real) || 0
+    };
+    const ok = await sb.upsert("sir_l2l_real", payload);
+    if (!ok) console.error("syncL2lReal falhou", r.mes);
   };
   const delPonto = async id => {
     await sb.del("sir_pontos", id);
@@ -15051,6 +15317,7 @@ function App() {
           fatInt: fatInt,
           investInt: investInt,
           espelhos: espelhos,
+          l2lReal: l2lReal,
           user: user,
           setPage: setPage,
           setDashFilter: setDashFilter,
@@ -15152,6 +15419,9 @@ function App() {
           setPontos: setPontos,
           syncPonto: syncPonto,
           delPonto: delPonto,
+          l2lReal: l2lReal,
+          setL2lReal: setL2lReal,
+          syncL2lReal: syncL2lReal,
           showToast: showToast
         });
       case "usuarios":
