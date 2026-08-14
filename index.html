@@ -4109,10 +4109,16 @@ function Dashboard({
     return obras.filter(o => o.env_fat && o.env_fat.slice(0, 7) === mesSocietario).reduce((s, o) => s + calcImpostos(o.fat), 0);
   }, [obras, mesSocietario]);
 
-  // Impostos dos pontos L2L (6.5% do faturamento realizado)
+  // Impostos dos pontos L2L (6.5% do faturamento)
   const impPontos = React.useMemo(() => {
-    return pontos.reduce((s, p) => s + calcImpostos(calcL2LAcum(p).fat), 0);
-  }, [pontos]);
+    if (mesSocietario === "acumulado") {
+      // Acumulado: soma imposto de todos os meses desde a ativação
+      return pontos.reduce((s, p) => s + calcImpostos(calcL2LAcum(p).fat), 0);
+    }
+    // Mensal: imposto sobre o faturamento de um único mês (pontos ativos no mês)
+    const fatMensal = pontos.filter(p => !p.ativacao || p.ativacao.slice(0, 7) <= mesSocietario).reduce((s, p) => s + (parseFloat(p.faturamento) || 0), 0);
+    return calcImpostos(fatMensal);
+  }, [pontos, mesSocietario]);
 
   // Impostos dos contratos (6.5% do valor de contratos na aba Faturamento)
   const impContratos = React.useMemo(() => {
@@ -5293,9 +5299,13 @@ function Dashboard({
         origem: "Contrato"
       }));
       pontos.filter(p => p.ativacao).forEach(p => {
-        const {
-          fat
-        } = calcL2LAcum(p);
+        let fat;
+        if (detalheModal.mes === "acumulado") {
+          fat = calcL2LAcum(p).fat;
+        } else {
+          // Mensal: só conta se o ponto estava ativo naquele mês
+          fat = p.ativacao.slice(0, 7) <= detalheModal.mes ? parseFloat(p.faturamento) || 0 : 0;
+        }
         if (fat > 0) origens.push({
           desc: p.descricao,
           data: p.ativacao || "",
