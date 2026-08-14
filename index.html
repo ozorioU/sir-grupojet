@@ -4978,33 +4978,41 @@ function Dashboard({
       fm++;
     }
 
-    // Média de fat obras (últimos 3 meses com fat>0)
-    const mesesComFat = mesesHist.filter(mes => obras.some(o => o.env_fat && o.env_fat.slice(0, 7) === mes && o.fat > 0)).slice(-3);
-    const mediaFatObras = mesesComFat.length > 0 ? mesesComFat.reduce((s, mes) => s + obras.filter(o => o.env_fat && o.env_fat.slice(0, 7) === mes).reduce((ss, o) => ss + (o.fat || 0), 0), 0) / mesesComFat.length : 0;
+    // Média de fat obras (últimos 3 meses com lançamento>0) — usa lançamentos como a tabela
+    const mesesComFat = mesesHist.filter(mes => fatInt.some(f => f.categoria === "Obras" && f.data && f.data.slice(0, 7) === mes && f.valor > 0)).slice(-3);
+    const mediaFatObras = mesesComFat.length > 0 ? mesesComFat.reduce((s, mes) => s + fatInt.filter(f => f.categoria === "Obras" && f.data && f.data.slice(0, 7) === mes).reduce((ss, f) => ss + (f.valor || 0), 0), 0) / mesesComFat.length : 0;
 
     // Custos recorrentes mensais (custosInt)
     const cusRecMensal = custosInt.filter(c => c.recorrente).reduce((s, c) => s + (c.valor || 0), 0);
-    // Fat recorrente mensal (fatInt contratos recorrentes — não tem campo recorrente, mas contratos mensais)
-    // L2L recorrente
+    // L2L mensal (um mês) — usa valor real do financeiro se existir
+    const l2lRealDoMes = (mk, campo) => {
+      const rr = l2lReal.find(x => x.mes === mk);
+      if (!rr) return null;
+      const v = parseFloat(campo === "fat" ? rr.fat_real : rr.cus_real);
+      return v && v > 0 ? v : null;
+    };
     const fatL2LMensal = pontos.reduce((s, p) => s + (parseFloat(p.faturamento) || 0), 0);
     const cusL2LMensal = pontos.reduce((s, p) => s + (parseFloat(p.custo) || 0), 0);
 
-    // Investimentos recorrentes mensais
-    const investRecMensal = investInt.filter(i => i.tipo === "recorrente").reduce((s, i) => s + (i.valor || 0), 0);
-
-    // Calcular dados históricos por mês
+    // Calcular dados históricos por mês — MESMA fonte da tabela (lançamentos + L2L mensal do mês)
     const dadosHist = mesesHist.map(mes => {
-      const fatObras = obras.filter(o => o.env_fat && o.env_fat.slice(0, 7) === mes).reduce((s, o) => s + (o.fat || 0), 0);
+      // Faturado do mês (incremento daquele mês, não acumulado)
+      const fatObras = fatInt.filter(f => f.categoria === "Obras" && f.data && f.data.slice(0, 7) === mes).reduce((s, f) => s + (f.valor || 0), 0);
       const fatContratos = fatInt.filter(f => f.categoria === "Contratos" && f.data && f.data.slice(0, 7) === mes).reduce((s, f) => s + (f.valor || 0), 0);
-      const fatL2L = pontos.filter(p => !p.ativacao || p.ativacao.slice(0, 7) <= mes).reduce((s, p) => s + (parseFloat(p.faturamento) || 0), 0);
-      const fat = fatObras + fatContratos + fatL2L;
+      const fatOutras = fatInt.filter(f => f.categoria === "Outras" && f.data && f.data.slice(0, 7) === mes).reduce((s, f) => s + (f.valor || 0), 0);
+      // L2L do mês: valor real se existir, senão faturamento dos pontos ativos naquele mês
+      const l2lRealF = l2lRealDoMes(mes, "fat");
+      const fatL2LMes = l2lRealF !== null ? l2lRealF : pontos.filter(p => !p.ativacao || p.ativacao.slice(0, 7) <= mes).reduce((s, p) => s + (parseFloat(p.faturamento) || 0), 0);
+      const fat = fatObras + fatContratos + fatOutras + fatL2LMes;
+
+      // Custos do mês
       const cusObras = obras.filter(o => o.conclusao && o.conclusao.slice(0, 7) === mes).reduce((s, o) => s + (o.custo || 0), 0);
-      const cusL2L = pontos.filter(p => !p.ativacao || p.ativacao.slice(0, 7) <= mes).reduce((s, p) => s + calcL2LMes(parseFloat(p.custo) || 0, p.ativacao, mes), 0);
+      const l2lRealC = l2lRealDoMes(mes, "cus");
+      const cusL2LMes = l2lRealC !== null ? l2lRealC : pontos.filter(p => !p.ativacao || p.ativacao.slice(0, 7) <= mes).reduce((s, p) => s + calcL2LMes(parseFloat(p.custo) || 0, p.ativacao, mes), 0);
       const cusCadastrado = custosInt.filter(c => !c.recorrente && c.data && c.data.slice(0, 7) === mes).reduce((s, c) => s + (c.valor || 0), 0);
       const cusRec = custosInt.filter(c => c.recorrente && (!c.data || c.data.slice(0, 7) <= mes)).reduce((s, c) => s + (c.valor || 0), 0);
       const imp = calcImpostos(fat);
-      const cus = cusObras + cusL2L + cusCadastrado + cusRec + imp; // investRec não incluído
-
+      const cus = cusObras + cusL2LMes + cusCadastrado + cusRec + imp;
       return {
         mes,
         label: nomeMesC(mes),
@@ -5034,16 +5042,54 @@ function Dashboard({
     // Mês que começa a ter lucro futuro
     const primLucro = dadosFut.find(d => d.lucro > 0);
 
-    // Acumulado
-    let acumFat = 0,
-      acumCus = 0;
-    const acums = todos.map(d => {
-      acumFat += d.fat;
-      acumCus += d.cus;
+    // Acumulado — para L2L não pode somar mês a mês (senão multiplica).
+    // O acumulado do L2L é o valor do ÚLTIMO mês (que já representa todos os pontos ativos).
+    // Por isso o acumulado é: fat/cus de obras+contratos somam mês a mês; L2L pega o último.
+    let acumFatObrasCont = 0,
+      acumCusObrasOutros = 0;
+    const acums = todos.map((d, idx) => {
+      // Recalcular componentes do mês separando L2L (não-acumulável) do resto (acumulável)
+      const mes = d.mes;
+      const fatObras = fatInt.filter(f => f.categoria === "Obras" && f.data && f.data.slice(0, 7) === mes).reduce((s, f) => s + (f.valor || 0), 0);
+      const fatContratos = fatInt.filter(f => f.categoria === "Contratos" && f.data && f.data.slice(0, 7) === mes).reduce((s, f) => s + (f.valor || 0), 0);
+      const fatOutras = fatInt.filter(f => f.categoria === "Outras" && f.data && f.data.slice(0, 7) === mes).reduce((s, f) => s + (f.valor || 0), 0);
+      const cusObras = obras.filter(o => o.conclusao && o.conclusao.slice(0, 7) === mes).reduce((s, o) => s + (o.custo || 0), 0);
+      const cusCadastrado = custosInt.filter(c => !c.recorrente && c.data && c.data.slice(0, 7) === mes).reduce((s, c) => s + (c.valor || 0), 0);
+      if (!d.futuro) {
+        acumFatObrasCont += fatObras + fatContratos + fatOutras;
+        acumCusObrasOutros += cusObras + cusCadastrado;
+      } else {
+        acumFatObrasCont += fatObras + fatContratos + fatOutras;
+        acumCusObrasOutros += cusObras + cusCadastrado;
+      }
+      // L2L acumulado real: soma de cada mês desde o início até este mês
+      let l2lFatAcum = 0,
+        l2lCusAcum = 0;
+      for (let j = 0; j <= idx; j++) {
+        const mj = todos[j].mes;
+        if (todos[j].futuro) {
+          l2lFatAcum += fatL2LMensal;
+          l2lCusAcum += cusL2LMensal;
+          continue;
+        }
+        const rf = l2lRealDoMes(mj, "fat"),
+          rc = l2lRealDoMes(mj, "cus");
+        l2lFatAcum += rf !== null ? rf : pontos.filter(p => !p.ativacao || p.ativacao.slice(0, 7) <= mj).reduce((s, p) => s + (parseFloat(p.faturamento) || 0), 0);
+        l2lCusAcum += rc !== null ? rc : pontos.filter(p => !p.ativacao || p.ativacao.slice(0, 7) <= mj).reduce((s, p) => s + calcL2LMes(parseFloat(p.custo) || 0, p.ativacao, mj), 0);
+      }
+      // Custos recorrentes acumulados
+      let cusRecAcum = 0;
+      for (let j = 0; j <= idx; j++) {
+        const mj = todos[j].mes;
+        cusRecAcum += custosInt.filter(c => c.recorrente && (!c.data || c.data.slice(0, 7) <= mj)).reduce((s, c) => s + (c.valor || 0), 0);
+      }
+      const fatAc = acumFatObrasCont + l2lFatAcum;
+      const impAc = calcImpostos(fatAc);
+      const cusAc = acumCusObrasOutros + l2lCusAcum + cusRecAcum + impAc;
       return {
-        fat: acumFat,
-        cus: acumCus,
-        lucro: acumFat - acumCus
+        fat: fatAc,
+        cus: cusAc,
+        lucro: fatAc - cusAc
       };
     });
     const [hovIdx, setHovIdx] = React.useState(null);
