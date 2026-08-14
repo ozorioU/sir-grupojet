@@ -21,21 +21,21 @@
 
 // ─── IMPOSTOS ─────────────────────────────────────────────────────────────────
 const IMPOSTOS = [{
-  nome: "PIS",
-  pct: 0.0065
+  nome: "ISS",
+  pct: 0.0200
 }, {
-  nome: "COFINS",
-  pct: 0.0300
-}, {
-  nome: "IRRF",
-  pct: 0.0150
+  nome: "PIS/COFINS",
+  pct: 0.0365
 }, {
   nome: "CSLL",
   pct: 0.0100
+}, {
+  nome: "IR",
+  pct: 0.0150
 }];
-const TOTAL_IMP_PCT = IMPOSTOS.reduce((s, i) => s + i.pct, 0); // 6.5%
+const TOTAL_IMP_PCT = IMPOSTOS.reduce((s, i) => s + i.pct, 0); // 8.15%
 const calcImpostos = fat => IMPOSTOS.reduce((s, i) => s + fat * i.pct, 0);
-const tooltipImpostos = fat => IMPOSTOS.map(i => `${i.nome}: ${fmt(fat * i.pct)} (${(i.pct * 100).toFixed(2)}%)`).join("\n") + `\nTotal: ${fmt(fat * TOTAL_IMP_PCT)} (6,50%)`;
+const tooltipImpostos = fat => IMPOSTOS.map(i => `${i.nome}: ${fmt(fat * i.pct)} (${(i.pct * 100).toFixed(2)}%)`).join("\n") + `\nTotal: ${fmt(fat * TOTAL_IMP_PCT)} (8,15%)`;
 
 // ─── CÁLCULO PROPORCIONAL L2L ────────────────────────────────────────────────
 const calcL2LMes = (valor, ativacao, mesAlvo) => {
@@ -4132,13 +4132,13 @@ function Dashboard({
   };
 
   // Calcular custos: base das obras + L2L dos pontos + custosInt por categoria
-  // Impostos das obras (6.5% do faturado por mês)
+  // Impostos das obras (8.15% do faturado por mês)
   const impObras = React.useMemo(() => {
     if (mesSocietario === "acumulado") return obras.filter(o => noAcumFiltro(o.env_fat)).reduce((s, o) => s + calcImpostos(o.fat), 0);
     return obras.filter(o => o.env_fat && o.env_fat.slice(0, 7) === mesSocietario).reduce((s, o) => s + calcImpostos(o.fat), 0);
   }, [obras, mesSocietario, excluirMesAtual]);
 
-  // Impostos dos pontos L2L (6.5% do faturamento)
+  // Impostos dos pontos L2L (8.15% do faturamento)
   const impPontos = React.useMemo(() => {
     if (mesSocietario === "acumulado") {
       if (excluirMesAtual) return pontos.reduce((s, p) => s + calcImpostos(calcL2LAcumSemMesAtual(p, "fat")), 0);
@@ -4148,7 +4148,7 @@ function Dashboard({
     return calcImpostos(fatMensal);
   }, [pontos, mesSocietario, excluirMesAtual]);
 
-  // Impostos dos contratos (6.5% do valor de contratos na aba Faturamento)
+  // Impostos dos contratos (8.15% do valor de contratos na aba Faturamento)
   const impContratos = React.useMemo(() => {
     return fatInt.filter(f => f.categoria === "Contratos" && (mesSocietario === "acumulado" && noAcumFiltro(f.data) || f.data && f.data.slice(0, 7) === mesSocietario)).reduce((s, f) => s + calcImpostos(f.valor || 0), 0);
   }, [fatInt, mesSocietario, excluirMesAtual]);
@@ -5369,7 +5369,7 @@ function Dashboard({
           background: "#f9fafb",
           borderBottom: "2px solid #e5e7eb"
         }
-      }, ["Descrição", "Tipo", "Data", "Base", "Impostos (6,5%)"].map((h, i) => /*#__PURE__*/React.createElement("th", {
+      }, ["Descrição", "Tipo", "Data", "Base", "Impostos (8,15%)"].map((h, i) => /*#__PURE__*/React.createElement("th", {
         key: i,
         style: {
           padding: "8px 12px",
@@ -13934,7 +13934,7 @@ function FaturamentoInternoPage({
       color: "#15803d",
       cursor: f.categoria === "Contratos" && f.valor > 0 ? "help" : "default"
     },
-    title: f.categoria === "Contratos" && f.valor > 0 ? "Impostos sobre este contrato (6,5%):\n" + tooltipImpostos(f.valor) : ""
+    title: f.categoria === "Contratos" && f.valor > 0 ? "Impostos sobre este contrato (8,15%):\n" + tooltipImpostos(f.valor) : ""
   }, fmt(f.valor), f.categoria === "Contratos" && f.valor > 0 && /*#__PURE__*/React.createElement("span", {
     style: {
       fontSize: 9,
