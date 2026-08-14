@@ -14169,7 +14169,7 @@ function FaturamentoInternoPage({
   }, mesFiltro === "tudo" ? "Ir para mês atual" : "Ver todo período")), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "grid",
-      gridTemplateColumns: "1fr 1fr 1fr",
+      gridTemplateColumns: "1fr 1fr 1fr 1fr",
       gap: 12,
       marginBottom: 14
     }
@@ -14195,6 +14195,27 @@ function FaturamentoInternoPage({
       color: "#15803d"
     }
   }, fmt(total))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      ...card,
+      background: "#fff7ed",
+      borderColor: "#fed7aa"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 10,
+      color: "#6b7280",
+      textTransform: "uppercase",
+      letterSpacing: .5,
+      marginBottom: 2
+    }
+  }, "Obras"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontWeight: 800,
+      fontSize: 20,
+      fontFamily: "monospace",
+      color: "#c2410c"
+    }
+  }, fmt(porCategoria["Obras"] || 0))), /*#__PURE__*/React.createElement("div", {
     style: {
       ...card,
       background: "#eff6ff",
@@ -14284,7 +14305,7 @@ function FaturamentoInternoPage({
     }
   }, f.categoria && /*#__PURE__*/React.createElement("span", {
     style: {
-      ...badgeStyle(f.categoria === "Contratos" ? "info" : "gray"),
+      ...badgeStyle(f.categoria === "Contratos" ? "info" : f.categoria === "Obras" ? "orange" : "gray"),
       fontSize: 10
     }
   }, f.categoria)), /*#__PURE__*/React.createElement("td", {
@@ -14408,6 +14429,8 @@ function FaturamentoInternoPage({
   }, /*#__PURE__*/React.createElement("option", {
     value: ""
   }, "Selecione..."), /*#__PURE__*/React.createElement("option", {
+    value: "Obras"
+  }, "Obras"), /*#__PURE__*/React.createElement("option", {
     value: "Contratos"
   }, "Contratos"), /*#__PURE__*/React.createElement("option", {
     value: "Outras"
