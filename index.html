@@ -11631,6 +11631,10 @@ function PontosPage({
   const [modal, setModal] = useState(null);
   const [confirm, setConfirm] = useState(null);
   const [form, setForm] = useState({});
+  const [fBusca, setFBusca] = useState("");
+  const [fStatus, setFStatus] = useState("todos"); // todos | ativo | pendente
+  const [fMes, setFMes] = useState("todos");
+  const [fVelocidade, setFVelocidade] = useState("todas");
   const upd = k => e => setForm(p => ({
     ...p,
     [k]: e.target.value
@@ -11643,6 +11647,32 @@ function PontosPage({
     faturamento: "",
     ativacao: ""
   };
+
+  // Opções únicas para os filtros
+  const mesesAtivacao = React.useMemo(() => {
+    const set = new Set(pontos.filter(p => p.ativacao).map(p => p.ativacao.slice(0, 7)));
+    return Array.from(set).sort().reverse();
+  }, [pontos]);
+  const velocidades = React.useMemo(() => {
+    const set = new Set(pontos.filter(p => p.velocidade).map(p => p.velocidade));
+    return Array.from(set).sort();
+  }, [pontos]);
+
+  // Aplicar filtros
+  const pontosFiltrados = React.useMemo(() => {
+    return pontos.filter(p => {
+      if (fBusca) {
+        const q = fBusca.toLowerCase();
+        const match = (p.descricao || "").toLowerCase().includes(q) || (p.os || "").toLowerCase().includes(q) || (p.velocidade || "").toLowerCase().includes(q);
+        if (!match) return false;
+      }
+      if (fStatus === "ativo" && !p.ativacao) return false;
+      if (fStatus === "pendente" && p.ativacao) return false;
+      if (fMes !== "todos" && (!p.ativacao || p.ativacao.slice(0, 7) !== fMes)) return false;
+      if (fVelocidade !== "todas" && p.velocidade !== fVelocidade) return false;
+      return true;
+    });
+  }, [pontos, fBusca, fStatus, fMes, fVelocidade]);
 
   // Enviar obra para aba Custos (lançamento único)
   const onEnviarCusto = o => {
@@ -11983,6 +12013,90 @@ function PontosPage({
   }, v)))), /*#__PURE__*/React.createElement("div", {
     style: {
       ...card,
+      padding: "12px 14px",
+      marginBottom: 12,
+      display: "flex",
+      gap: 10,
+      flexWrap: "wrap",
+      alignItems: "center"
+    }
+  }, /*#__PURE__*/React.createElement("input", {
+    style: {
+      ...inp,
+      flex: "1 1 220px",
+      minWidth: 180
+    },
+    placeholder: "🔍 Buscar por descrição, OS ou velocidade...",
+    value: fBusca,
+    onChange: e => setFBusca(e.target.value)
+  }), /*#__PURE__*/React.createElement("select", {
+    style: {
+      ...inp,
+      width: "auto",
+      minWidth: 130
+    },
+    value: fStatus,
+    onChange: e => setFStatus(e.target.value)
+  }, /*#__PURE__*/React.createElement("option", {
+    value: "todos"
+  }, "Todos os status"), /*#__PURE__*/React.createElement("option", {
+    value: "ativo"
+  }, "Ativos"), /*#__PURE__*/React.createElement("option", {
+    value: "pendente"
+  }, "Sem ativação")), /*#__PURE__*/React.createElement("select", {
+    style: {
+      ...inp,
+      width: "auto",
+      minWidth: 140
+    },
+    value: fMes,
+    onChange: e => setFMes(e.target.value)
+  }, /*#__PURE__*/React.createElement("option", {
+    value: "todos"
+  }, "Todos os meses"), mesesAtivacao.map(m => {
+    const [y, mm] = m.split("-");
+    const nome = new Date(+y, +mm - 1, 2).toLocaleString("pt-BR", {
+      month: "short",
+      year: "numeric"
+    });
+    return /*#__PURE__*/React.createElement("option", {
+      key: m,
+      value: m
+    }, nome);
+  })), /*#__PURE__*/React.createElement("select", {
+    style: {
+      ...inp,
+      width: "auto",
+      minWidth: 120
+    },
+    value: fVelocidade,
+    onChange: e => setFVelocidade(e.target.value)
+  }, /*#__PURE__*/React.createElement("option", {
+    value: "todas"
+  }, "Todas velocidades"), velocidades.map(v => /*#__PURE__*/React.createElement("option", {
+    key: v,
+    value: v
+  }, v))), (fBusca || fStatus !== "todos" || fMes !== "todos" || fVelocidade !== "todas") && /*#__PURE__*/React.createElement("button", {
+    style: {
+      ...btn(),
+      fontSize: 11,
+      color: "#dc2626"
+    },
+    onClick: () => {
+      setFBusca("");
+      setFStatus("todos");
+      setFMes("todos");
+      setFVelocidade("todas");
+    }
+  }, "✕ Limpar"), /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: 11,
+      color: "#6b7280",
+      marginLeft: "auto"
+    }
+  }, pontosFiltrados.length, " de ", pontos.length, " pontos")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      ...card,
       padding: 0
     }
   }, /*#__PURE__*/React.createElement("div", {
@@ -12012,7 +12126,7 @@ function PontosPage({
       letterSpacing: .4,
       whiteSpace: "nowrap"
     }
-  }, h)))), /*#__PURE__*/React.createElement("tbody", null, pontos.map(p => {
+  }, h)))), /*#__PURE__*/React.createElement("tbody", null, pontosFiltrados.map(p => {
     const lm = p.faturamento - p.custo;
     const {
       fat: fatAcum,
