@@ -4771,175 +4771,10 @@ function Dashboard({
   }, isPend ? `${fmt(v)} ⏳` : fmt(v)))))))), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "grid",
-      gridTemplateColumns: "1fr 1fr",
+      gridTemplateColumns: "1fr",
       gap: 14
     }
   }, /*#__PURE__*/React.createElement("div", {
-    style: card
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontWeight: 700,
-      fontSize: 13,
-      marginBottom: 16
-    }
-  }, "📈 Investimentos Futuros"), /*#__PURE__*/React.createElement("div", {
-    style: {
-      textAlign: "center",
-      marginBottom: 18,
-      paddingBottom: 14,
-      borderBottom: "1px solid #f3f4f6"
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 10,
-      color: "#6b7280",
-      textTransform: "uppercase",
-      letterSpacing: .8,
-      marginBottom: 4
-    }
-  }, "Total"), /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontFamily: "monospace",
-      fontWeight: 800,
-      fontSize: 28,
-      color: "#1e40af",
-      letterSpacing: -0.5
-    }
-  }, fmt(invTotal))), /*#__PURE__*/React.createElement("div", {
-    style: {
-      ...frowStyle,
-      cursor: "pointer"
-    },
-    onClick: () => setPage("investint")
-  }, /*#__PURE__*/React.createElement("span", {
-    style: {
-      display: "flex",
-      alignItems: "center",
-      gap: 8,
-      fontWeight: 600,
-      color: "#374151"
-    }
-  }, /*#__PURE__*/React.createElement("span", {
-    style: {
-      fontSize: 18
-    }
-  }, "💳"), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 12
-    }
-  }, "Pagamento Único"), /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 10,
-      color: "#9ca3af"
-    }
-  }, investInt.filter(i => i.tipo === "unico").length, " item(s)"))), /*#__PURE__*/React.createElement("span", {
-    style: {
-      fontFamily: "monospace",
-      fontWeight: 700,
-      fontSize: 18,
-      color: "#15803d"
-    }
-  }, fmt(invUnico))), investInt.filter(i => i.tipo === "unico").map(i => /*#__PURE__*/React.createElement("div", {
-    key: i.id,
-    style: {
-      display: "flex",
-      justifyContent: "space-between",
-      alignItems: "center",
-      padding: "5px 10px 5px 36px",
-      fontSize: 11,
-      borderBottom: "1px solid #f3f4f6",
-      background: "#f9fafb"
-    }
-  }, /*#__PURE__*/React.createElement("span", {
-    style: {
-      color: "#6b7280",
-      overflow: "hidden",
-      textOverflow: "ellipsis",
-      whiteSpace: "nowrap",
-      maxWidth: 140
-    }
-  }, i.descricao), /*#__PURE__*/React.createElement("span", {
-    style: {
-      fontFamily: "monospace",
-      fontWeight: 600,
-      color: "#15803d",
-      flexShrink: 0
-    }
-  }, fmt(i.valor)))), /*#__PURE__*/React.createElement("div", {
-    style: {
-      ...frowStyle,
-      cursor: "pointer"
-    },
-    onClick: () => setPage("investint")
-  }, /*#__PURE__*/React.createElement("span", {
-    style: {
-      display: "flex",
-      alignItems: "center",
-      gap: 8,
-      fontWeight: 600,
-      color: "#374151"
-    }
-  }, /*#__PURE__*/React.createElement("span", {
-    style: {
-      fontSize: 18
-    }
-  }, "🔄"), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 12
-    }
-  }, "Recorrente/mês"), /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 10,
-      color: "#9ca3af"
-    }
-  }, investInt.filter(i => i.tipo === "recorrente").length, " item(s)"))), /*#__PURE__*/React.createElement("span", {
-    style: {
-      fontFamily: "monospace",
-      fontWeight: 700,
-      fontSize: 18,
-      color: "#e8650a"
-    }
-  }, fmt(invRecorrente))), investInt.filter(i => i.tipo === "recorrente").map(i => /*#__PURE__*/React.createElement("div", {
-    key: i.id,
-    style: {
-      display: "flex",
-      justifyContent: "space-between",
-      alignItems: "center",
-      padding: "5px 10px 5px 36px",
-      fontSize: 11,
-      borderBottom: "1px solid #f3f4f6",
-      background: "#fff7f0"
-    }
-  }, /*#__PURE__*/React.createElement("span", {
-    style: {
-      color: "#6b7280",
-      overflow: "hidden",
-      textOverflow: "ellipsis",
-      whiteSpace: "nowrap",
-      maxWidth: 140
-    }
-  }, i.descricao), /*#__PURE__*/React.createElement("span", {
-    style: {
-      fontFamily: "monospace",
-      fontWeight: 600,
-      color: "#e8650a",
-      flexShrink: 0
-    }
-  }, fmt(i.valor)))), invTotal === 0 && /*#__PURE__*/React.createElement("div", {
-    style: {
-      textAlign: "center",
-      color: "#9ca3af",
-      padding: "20px 0",
-      fontSize: 12
-    }
-  }, "Nenhum investimento cadastrado.", /*#__PURE__*/React.createElement("br", null), /*#__PURE__*/React.createElement("button", {
-    style: {
-      ...btn(),
-      marginTop: 8,
-      fontSize: 11
-    },
-    onClick: () => setPage("investint")
-  }, "+ Adicionar"))), /*#__PURE__*/React.createElement("div", {
     style: {
       ...card,
       padding: "18px 20px"
@@ -4971,7 +4806,7 @@ function Dashboard({
     const mesesFut = [];
     let fy = hoje.getFullYear(),
       fm = hoje.getMonth() + 2;
-    for (let i = 0; i < 1; i++) {
+    for (let i = 0; i < 6; i++) {
       if (fm > 12) {
         fm = 1;
         fy++;
@@ -5376,7 +5211,172 @@ function Dashboard({
         color: "#92400e"
       }
     }, /*#__PURE__*/React.createElement("strong", null, "Projeção baseada em:"), " Média fat. obras (últimos 3 meses com valor): ", fmt(mediaFatObras), "/mês · L2L: ", fmt(fatL2LMensal), "/mês · Custos recorrentes: ", fmt(cusRecMensal), "/mês · L2L custo: ", fmt(cusL2LMensal), "/mês"));
-  })())), detalheModal && (() => {
+  })()), /*#__PURE__*/React.createElement("div", {
+    style: card
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontWeight: 700,
+      fontSize: 13,
+      marginBottom: 16
+    }
+  }, "📈 Investimentos Futuros"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      textAlign: "center",
+      marginBottom: 18,
+      paddingBottom: 14,
+      borderBottom: "1px solid #f3f4f6"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 10,
+      color: "#6b7280",
+      textTransform: "uppercase",
+      letterSpacing: .8,
+      marginBottom: 4
+    }
+  }, "Total"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontFamily: "monospace",
+      fontWeight: 800,
+      fontSize: 28,
+      color: "#1e40af",
+      letterSpacing: -0.5
+    }
+  }, fmt(invTotal))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      ...frowStyle,
+      cursor: "pointer"
+    },
+    onClick: () => setPage("investint")
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 8,
+      fontWeight: 600,
+      color: "#374151"
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: 18
+    }
+  }, "💳"), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 12
+    }
+  }, "Pagamento Único"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 10,
+      color: "#9ca3af"
+    }
+  }, investInt.filter(i => i.tipo === "unico").length, " item(s)"))), /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontFamily: "monospace",
+      fontWeight: 700,
+      fontSize: 18,
+      color: "#15803d"
+    }
+  }, fmt(invUnico))), investInt.filter(i => i.tipo === "unico").map(i => /*#__PURE__*/React.createElement("div", {
+    key: i.id,
+    style: {
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      padding: "5px 10px 5px 36px",
+      fontSize: 11,
+      borderBottom: "1px solid #f3f4f6",
+      background: "#f9fafb"
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: "#6b7280",
+      overflow: "hidden",
+      textOverflow: "ellipsis",
+      whiteSpace: "nowrap",
+      maxWidth: 140
+    }
+  }, i.descricao), /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontFamily: "monospace",
+      fontWeight: 600,
+      color: "#15803d",
+      flexShrink: 0
+    }
+  }, fmt(i.valor)))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      ...frowStyle,
+      cursor: "pointer"
+    },
+    onClick: () => setPage("investint")
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 8,
+      fontWeight: 600,
+      color: "#374151"
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: 18
+    }
+  }, "🔄"), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 12
+    }
+  }, "Recorrente/mês"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 10,
+      color: "#9ca3af"
+    }
+  }, investInt.filter(i => i.tipo === "recorrente").length, " item(s)"))), /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontFamily: "monospace",
+      fontWeight: 700,
+      fontSize: 18,
+      color: "#e8650a"
+    }
+  }, fmt(invRecorrente))), investInt.filter(i => i.tipo === "recorrente").map(i => /*#__PURE__*/React.createElement("div", {
+    key: i.id,
+    style: {
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      padding: "5px 10px 5px 36px",
+      fontSize: 11,
+      borderBottom: "1px solid #f3f4f6",
+      background: "#fff7f0"
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: "#6b7280",
+      overflow: "hidden",
+      textOverflow: "ellipsis",
+      whiteSpace: "nowrap",
+      maxWidth: 140
+    }
+  }, i.descricao), /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontFamily: "monospace",
+      fontWeight: 600,
+      color: "#e8650a",
+      flexShrink: 0
+    }
+  }, fmt(i.valor)))), invTotal === 0 && /*#__PURE__*/React.createElement("div", {
+    style: {
+      textAlign: "center",
+      color: "#9ca3af",
+      padding: "20px 0",
+      fontSize: 12
+    }
+  }, "Nenhum investimento cadastrado.", /*#__PURE__*/React.createElement("br", null), /*#__PURE__*/React.createElement("button", {
+    style: {
+      ...btn(),
+      marginTop: 8,
+      fontSize: 11
+    },
+    onClick: () => setPage("investint")
+  }, "+ Adicionar")))), detalheModal && (() => {
     const CAT_LABEL_MAP = {
       "Obras": "Obras",
       "Lan 2 Lan": "Lan 2 Lan",
