@@ -4231,7 +4231,9 @@ function Dashboard({
   });
   const cus = cusBase;
   const fatTotal = Object.values(fat).reduce((s, v) => s + v, 0);
-  const cusTotal = Object.values(cus).reduce((s, v) => s + v, 0);
+  // cusTotal: somar apenas categorias principais, NÃO as subcategorias (que já estão em custos_op)
+  // Subcategorias (co_*) são detalhamento de custos_op — não devem ser somadas de novo
+  const cusTotal = cus.obras + cus.l2l + cus.custos_op + cus.invest + cus.impostos + cus.outros;
   const lucro = fatTotal - cusTotal;
   const lucroP = fatTotal > 0 ? lucro / fatTotal * 100 : 0;
   const statusItems = [{
