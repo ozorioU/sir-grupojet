@@ -3976,6 +3976,13 @@ function Dashboard({
   const mesAtualKeyD = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, "0")}`;
   const [mesSocietario, setMesSocietario] = React.useState("acumulado");
   const [comPendentes, setComPendentes] = React.useState(false);
+  const [excluirMesAtual, setExcluirMesAtual] = React.useState(false);
+  // Filtro auxiliar: quando no acumulado com excluirMesAtual, ignora dados do mês atual
+  const noAcumFiltro = dataStr => {
+    if (mesSocietario !== "acumulado" || !excluirMesAtual) return true;
+    if (!dataStr) return true; // sem data, mantém (ex: obras antigas)
+    return dataStr.slice(0, 7) < mesAtualKeyD;
+  };
   const mesesDisponiveisD = React.useMemo(() => {
     const meses = [];
     let y = 2026,
@@ -4007,13 +4014,13 @@ function Dashboard({
 
   // tf: soma do faturado das obras no mês (por env_fat)
   const tf = React.useMemo(() => {
-    if (mesSocietario === "acumulado") return obras.reduce((s, o) => s + (o.fat || 0), 0);
+    if (mesSocietario === "acumulado") return obras.filter(o => noAcumFiltro(o.env_fat)).reduce((s, o) => s + (o.fat || 0), 0);
     return obras.filter(o => o.env_fat && o.env_fat.slice(0, 7) === mesSocietario).reduce((s, o) => s + (o.fat || 0), 0);
-  }, [obras, mesSocietario]);
+  }, [obras, mesSocietario, excluirMesAtual]);
 
   // tc: soma do custo das obras no mês (por conclusao)
   const tc = React.useMemo(() => {
-    const obrasParaCusto = mesSocietario === "acumulado" ? obras : obras.filter(o => o.conclusao && o.conclusao.slice(0, 7) === mesSocietario);
+    const obrasParaCusto = mesSocietario === "acumulado" ? obras.filter(o => noAcumFiltro(o.conclusao)) : obras.filter(o => o.conclusao && o.conclusao.slice(0, 7) === mesSocietario);
     if (espelhos.length === 0) return obrasParaCusto.reduce((s, o) => s + (o.custo || 0), 0);
     return espelhos.reduce((total, esp) => {
       const obra = obrasParaCusto.find(o => String(o.id) === String(esp.obra_id));
@@ -4027,7 +4034,7 @@ function Dashboard({
       }, 0);
       return total + (gastoCalc > 0 ? gastoCalc : obra.custo || 0);
     }, 0);
-  }, [obras, espelhos, mesSocietario]);
+  }, [obras, espelhos, mesSocietario, excluirMesAtual]);
   const to = obras.reduce((s, o) => s + o.orc, 0);
   const lc = tf - tc;
   const lp = tf > 0 ? lc / tf * 100 : 0;
@@ -4042,23 +4049,43 @@ function Dashboard({
   const invRecorrente = investInt.filter(i => i.tipo === "recorrente").reduce((s, i) => s + (i.valor || 0), 0);
   const invTotal = invUnico + invRecorrente;
 
+  // Helper: L2L acumulado até mês anterior (exclui mês atual)
+  const calcL2LAcumSemMesAtual = (p, campo) => {
+    if (!p.ativacao) return campo === "fat" ? parseFloat(p.faturamento) || 0 : parseFloat(p.custo) || 0;
+    const ini = new Date(p.ativacao);
+    let total = 0;
+    let y = ini.getFullYear(),
+      m = ini.getMonth() + 1;
+    // Vai até o mês ANTERIOR ao atual
+    while (y < hoje.getFullYear() || y === hoje.getFullYear() && m <= hoje.getMonth()) {
+      const mesKey = `${y}-${String(m).padStart(2, "0")}`;
+      if (campo === "fat") total += parseFloat(p.faturamento) || 0;else total += calcL2LMes(parseFloat(p.custo) || 0, p.ativacao, mesKey);
+      m++;
+      if (m > 12) {
+        m = 1;
+        y++;
+      }
+    }
+    return total;
+  };
+
   // L2L faturamento: pontos ativos no mês selecionado
   const fatL2L = React.useMemo(() => {
     if (mesSocietario === "acumulado") {
+      if (excluirMesAtual) return pontos.reduce((s, p) => s + calcL2LAcumSemMesAtual(p, "fat"), 0);
       return pontos.reduce((s, p) => s + calcL2LAcum(p).fat, 0);
     } else {
-      // Todos os pontos ativados até aquele mês
       return pontos.filter(p => !p.ativacao || p.ativacao.slice(0, 7) <= mesSocietario).reduce((s, p) => s + (parseFloat(p.faturamento) || 0), 0);
     }
-  }, [pontos, mesSocietario]);
+  }, [pontos, mesSocietario, excluirMesAtual]);
   const cusL2L = React.useMemo(() => {
     if (mesSocietario === "acumulado") {
+      if (excluirMesAtual) return pontos.reduce((s, p) => s + calcL2LAcumSemMesAtual(p, "cus"), 0);
       return pontos.reduce((s, p) => s + calcL2LAcum(p).cus, 0);
     } else {
-      // Todos os pontos ativos no mês (custo proporcional no primeiro mês)
       return pontos.filter(p => !p.ativacao || p.ativacao.slice(0, 7) <= mesSocietario).reduce((s, p) => s + calcL2LMes(parseFloat(p.custo) || 0, p.ativacao, mesSocietario), 0);
     }
-  }, [pontos, mesSocietario]);
+  }, [pontos, mesSocietario, excluirMesAtual]);
 
   // Pendentes L2L (meses ainda não processados)
   const fatL2LPend = 0;
@@ -4080,6 +4107,8 @@ function Dashboard({
     const chave = FAT_CAT_MAP[f.categoria];
     if (!chave) return;
     if (mesSocietario === "acumulado") {
+      const fMes = f.data ? f.data.slice(0, 7) : null;
+      if (excluirMesAtual && fMes && fMes >= mesAtualKeyD) return; // ignora mês atual
       fatBase[chave] += f.valor || 0;
     } else {
       const fMes = f.data ? f.data.slice(0, 7) : null;
@@ -4105,25 +4134,24 @@ function Dashboard({
   // Calcular custos: base das obras + L2L dos pontos + custosInt por categoria
   // Impostos das obras (6.5% do faturado por mês)
   const impObras = React.useMemo(() => {
-    if (mesSocietario === "acumulado") return obras.reduce((s, o) => s + calcImpostos(o.fat), 0);
+    if (mesSocietario === "acumulado") return obras.filter(o => noAcumFiltro(o.env_fat)).reduce((s, o) => s + calcImpostos(o.fat), 0);
     return obras.filter(o => o.env_fat && o.env_fat.slice(0, 7) === mesSocietario).reduce((s, o) => s + calcImpostos(o.fat), 0);
-  }, [obras, mesSocietario]);
+  }, [obras, mesSocietario, excluirMesAtual]);
 
   // Impostos dos pontos L2L (6.5% do faturamento)
   const impPontos = React.useMemo(() => {
     if (mesSocietario === "acumulado") {
-      // Acumulado: soma imposto de todos os meses desde a ativação
+      if (excluirMesAtual) return pontos.reduce((s, p) => s + calcImpostos(calcL2LAcumSemMesAtual(p, "fat")), 0);
       return pontos.reduce((s, p) => s + calcImpostos(calcL2LAcum(p).fat), 0);
     }
-    // Mensal: imposto sobre o faturamento de um único mês (pontos ativos no mês)
     const fatMensal = pontos.filter(p => !p.ativacao || p.ativacao.slice(0, 7) <= mesSocietario).reduce((s, p) => s + (parseFloat(p.faturamento) || 0), 0);
     return calcImpostos(fatMensal);
-  }, [pontos, mesSocietario]);
+  }, [pontos, mesSocietario, excluirMesAtual]);
 
   // Impostos dos contratos (6.5% do valor de contratos na aba Faturamento)
   const impContratos = React.useMemo(() => {
-    return fatInt.filter(f => f.categoria === "Contratos" && (mesSocietario === "acumulado" || f.data && f.data.slice(0, 7) === mesSocietario)).reduce((s, f) => s + calcImpostos(f.valor || 0), 0);
-  }, [fatInt, mesSocietario]);
+    return fatInt.filter(f => f.categoria === "Contratos" && (mesSocietario === "acumulado" && noAcumFiltro(f.data) || f.data && f.data.slice(0, 7) === mesSocietario)).reduce((s, f) => s + calcImpostos(f.valor || 0), 0);
+  }, [fatInt, mesSocietario, excluirMesAtual]);
   const cusBase = {
     obras: tc,
     l2l: cusL2L,
@@ -4185,6 +4213,9 @@ function Dashboard({
     const cMesReal = c._mes || (c.data ? c.data.slice(0, 7) : null);
     if (mesSocietario !== "acumulado") {
       if (cMesReal !== mesSocietario) return;
+    } else if (excluirMesAtual) {
+      // No acumulado sem mês atual, ignora custos do mês corrente
+      if (cMesReal && cMesReal >= mesAtualKeyD) return;
     }
     const subChave = SUB_MAP[c.categoria];
     if (subChave) {
@@ -4371,7 +4402,18 @@ function Dashboard({
       borderColor: mesSocietario === "acumulado" ? "#e8650a" : "#e5e7eb"
     },
     onClick: () => setMesSocietario(mesSocietario === "acumulado" ? mesAtualKeyD : "acumulado")
-  }, mesSocietario === "acumulado" ? "Ir para mês" : "Acumulado"))), /*#__PURE__*/React.createElement("div", {
+  }, mesSocietario === "acumulado" ? "Ir para mês" : "Acumulado"), mesSocietario === "acumulado" && /*#__PURE__*/React.createElement("button", {
+    style: {
+      ...btn(),
+      fontSize: 10,
+      padding: "3px 9px",
+      background: excluirMesAtual ? "#7c3aed" : "#fff",
+      color: excluirMesAtual ? "#fff" : "#374151",
+      borderColor: excluirMesAtual ? "#7c3aed" : "#e5e7eb"
+    },
+    title: "Exclui os dados do mês atual, mostrando o acumulado só até o mês anterior",
+    onClick: () => setExcluirMesAtual(v => !v)
+  }, excluirMesAtual ? "✓ Sem mês atual" : "Excluir mês atual"))), /*#__PURE__*/React.createElement("div", {
     style: {
       marginBottom: 20,
       paddingBottom: 16,
