@@ -4189,9 +4189,14 @@ function Dashboard({
     "CO:Beneficios": "custos_op",
     "CO:Veiculos": "custos_op",
     "CO:Combustivel": "custos_op",
+    "CO:EPI": "custos_op",
+    "CO:Ferramentas": "custos_op",
     "Investimentos": "invest",
-    "Impostos": "impostos",
-    "CO:Pessoal": "custos_op"
+    "INV:Ferramentas": "invest",
+    "INV:EPI": "invest",
+    "INV:Uniformes": "invest",
+    "INV:Equipamentos": "invest",
+    "Impostos": "impostos"
   };
 
   // Calcular custos: base das obras + L2L dos pontos + custosInt por categoria
@@ -4226,6 +4231,11 @@ function Dashboard({
     co_ferramentas: 0,
     co_outros: 0,
     invest: 0,
+    inv_ferramentas: 0,
+    inv_epi: 0,
+    inv_uniformes: 0,
+    inv_equipamentos: 0,
+    inv_outros: 0,
     impostos: impObras + impContratos + impPontos,
     outros: 0,
     l2l: cusL2L + (comPendentes ? cusL2LPend : 0)
@@ -4237,6 +4247,12 @@ function Dashboard({
     "CO:Combustivel": "co_combustivel",
     "CO:EPI": "co_epi",
     "CO:Ferramentas": "co_ferramentas"
+  };
+  const SUB_INV_MAP = {
+    "INV:Ferramentas": "inv_ferramentas",
+    "INV:EPI": "inv_epi",
+    "INV:Uniformes": "inv_uniformes",
+    "INV:Equipamentos": "inv_equipamentos"
   };
   // Expandir custos recorrentes igual à CustosInternoPage
   const hoje2 = new Date();
@@ -4280,14 +4296,19 @@ function Dashboard({
       if (cMesReal && cMesReal >= mesAtualKeyD) return;
     }
     const subChave = SUB_MAP[c.categoria];
+    const subInvChave = SUB_INV_MAP[c.categoria];
     if (subChave) {
       cusBase[subChave] += c.valor || 0;
       cusBase.custos_op += c.valor || 0;
+    } else if (subInvChave) {
+      cusBase[subInvChave] += c.valor || 0;
+      cusBase.invest += c.valor || 0;
     } else {
       const chave = CAT_MAP[c.categoria];
       if (chave && chave !== "obras") {
         cusBase[chave] += c.valor || 0;
         if (chave === "custos_op") cusBase.co_outros += c.valor || 0;
+        if (chave === "invest") cusBase.inv_outros += c.valor || 0;
       } else if (!chave) cusBase.outros += c.valor || 0;
     }
   });
@@ -4528,7 +4549,12 @@ function Dashboard({
     [["Sobre Obras", impObras], ["Sobre Lan 2 Lan", impPontos], ["Sobre Contratos", impContratos]].forEach(it => {
       if (it[1] > 0) kv(it[0], fmtR(it[1]), CINZA, false, 12);
     });
-    if (cus.invest > 0) kv("Investimentos", fmtR(cus.invest), VERMELHO);
+    if (cus.invest > 0) {
+      kv("Investimentos", fmtR(cus.invest), VERMELHO, true);
+      [["Ferramentas", cus.inv_ferramentas], ["EPI/EPC", cus.inv_epi], ["Uniformes", cus.inv_uniformes], ["Equipamentos", cus.inv_equipamentos], ["Outros Inv.", cus.inv_outros]].forEach(it => {
+        if (it[1] > 0) kv(it[0], fmtR(it[1]), CINZA, false, 12);
+      });
+    }
     if (cus.outros > 0) kv("Outros Custos", fmtR(cus.outros), VERMELHO);
     y += 2;
     setDraw([200, 200, 200]);
@@ -5064,7 +5090,28 @@ function Dashboard({
   }, {
     l: "Investimentos",
     v: cus.invest,
-    sub: false
+    sub: false,
+    hasDetail: true
+  }, {
+    l: "↳ Ferramentas",
+    v: cus.inv_ferramentas,
+    sub: true
+  }, {
+    l: "↳ EPI/EPC",
+    v: cus.inv_epi,
+    sub: true
+  }, {
+    l: "↳ Uniformes",
+    v: cus.inv_uniformes,
+    sub: true
+  }, {
+    l: "↳ Equipamentos",
+    v: cus.inv_equipamentos,
+    sub: true
+  }, {
+    l: "↳ Outros Inv.",
+    v: cus.inv_outros,
+    sub: true
   }, {
     l: "Impostos",
     v: cus.impostos,
@@ -5744,6 +5791,11 @@ function Dashboard({
       "↳ Ferramentas": "CO:Ferramentas",
       "↳ Outros Op.": "Custos Operacionais",
       "Investimentos": "Investimentos",
+      "↳ Ferramentas ": "INV:Ferramentas",
+      "↳ EPI/EPC": "INV:EPI",
+      "↳ Uniformes": "INV:Uniformes",
+      "↳ Equipamentos": "INV:Equipamentos",
+      "↳ Outros Inv.": "Investimentos",
       "Impostos": "Impostos",
       "Outros": "Outros"
     };
@@ -14288,9 +14340,19 @@ function CustosInternoPage({
     value: "CO:Ferramentas"
   }, "↳ Ferramentas"), /*#__PURE__*/React.createElement("option", {
     value: "Custos Operacionais"
-  }, "↳ Outros Operacionais")), /*#__PURE__*/React.createElement("option", {
+  }, "↳ Outros Operacionais")), /*#__PURE__*/React.createElement("optgroup", {
+    label: "Investimentos"
+  }, /*#__PURE__*/React.createElement("option", {
+    value: "INV:Ferramentas"
+  }, "↳ Ferramentas"), /*#__PURE__*/React.createElement("option", {
+    value: "INV:EPI"
+  }, "↳ EPI/EPC"), /*#__PURE__*/React.createElement("option", {
+    value: "INV:Uniformes"
+  }, "↳ Uniformes"), /*#__PURE__*/React.createElement("option", {
+    value: "INV:Equipamentos"
+  }, "↳ Equipamentos (Máquinas/OTDR/Computadores)"), /*#__PURE__*/React.createElement("option", {
     value: "Investimentos"
-  }, "Investimentos"), /*#__PURE__*/React.createElement("option", {
+  }, "↳ Outros Investimentos")), /*#__PURE__*/React.createElement("option", {
     value: "Impostos"
   }, "Impostos"), /*#__PURE__*/React.createElement("option", {
     value: "Outros"
