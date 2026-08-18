@@ -4421,7 +4421,7 @@ function Dashboard({
         doc.setTextColor(210, 210, 210);
         doc.text(sub, M + 12, y + 27);
       }
-      y += sub ? 32 : 24;
+      y += (sub ? 32 : 24) + 9; // +9pt de folga p/ o ascendente da 1ª linha não colidir com a barra
     };
     // linha chave-valor dentro de tabela zebrada
     let zebra = false;
@@ -4678,7 +4678,7 @@ function Dashboard({
       doc.setFont("helvetica", "normal");
       doc.setFontSize(7);
       doc.setTextColor(160, 160, 160);
-      doc.text("Pagina " + i + " de " + np, W - M, H - 32, {
+      doc.text("Pagina " + i + " de " + np, W - M, H - 20, {
         align: "right"
       });
     }
