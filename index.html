@@ -4335,283 +4335,308 @@ function Dashboard({
     });
     const W = doc.internal.pageSize.getWidth();
     const H = doc.internal.pageSize.getHeight();
-    const M = 48;
+    const M = 50;
     let y = M;
-
-    // Paleta
     const LARANJA = [232, 101, 10],
-      VERDE = [21, 128, 61],
-      VERMELHO = [220, 38, 38],
-      AZUL = [30, 64, 175],
-      CINZA = [107, 114, 128],
-      CINZA_CLARO = [156, 163, 175],
-      ESCURO = [31, 41, 55],
-      BG_SOFT = [249, 250, 251];
+      VERDE = [22, 120, 60],
+      VERMELHO = [200, 45, 45],
+      AZUL = [40, 90, 170],
+      CINZA = [110, 110, 110],
+      CINZA_C = [150, 150, 150],
+      ESCURO = [45, 45, 48],
+      PRETO = [30, 30, 30],
+      BG_SOFT = [247, 247, 248],
+      BG_LARANJA = [253, 240, 230];
     const fmtR = v => "R$ " + (v || 0).toLocaleString("pt-BR", {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2
     });
     const pct = v => (v || 0).toFixed(1) + "%";
-    const periodoLabel = mesSocietario === "acumulado" ? excluirMesAtual ? "Acumulado (ate o mes anterior)" : "Acumulado Total da Operacao" : new Date(mesSocietario + "-02").toLocaleString("pt-BR", {
+    const periodoLabel = mesSocietario === "acumulado" ? excluirMesAtual ? "Acumulado ate o mes anterior" : "Acumulado Total" : new Date(mesSocietario + "-02").toLocaleString("pt-BR", {
       month: "long",
       year: "numeric"
     });
-    const escopoTexto = mesSocietario === "acumulado" ? "Este relatorio consolida todos os resultados da operacao desde o inicio das atividades." : "Este relatorio apresenta os resultados referentes ao mes de " + periodoLabel + ".";
-
-    // Helpers de layout
+    const escopo = mesSocietario === "acumulado" ? "O presente relatorio consolida os resultados financeiros e operacionais de toda a operacao do Grupo Jet desde o inicio das atividades, apresentando as fontes de receita, a estrutura de custos, o resultado liquido e as projecoes para os proximos periodos." : "O presente relatorio apresenta os resultados financeiros e operacionais do Grupo Jet referentes ao mes de " + periodoLabel + ", detalhando as fontes de receita, a estrutura de custos e o resultado liquido do periodo.";
+    const setC = c => doc.setTextColor(c[0], c[1], c[2]);
+    const setF = c => doc.setFillColor(c[0], c[1], c[2]);
+    const setD = c => doc.setDrawColor(c[0], c[1], c[2]);
+    const rodape = () => {
+      setD([225, 225, 225]);
+      doc.setLineWidth(0.5);
+      doc.line(M, H - 46, W - M, H - 46);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(7);
+      setC(CINZA_C);
+      doc.text("RD TELECOM LTDA (Grupo Jet)  -  CNPJ 07.426.902/0001-33  -  Av. Santos, Qd. 17, Lt. 07, Jardim Novo Mundo, Goiania/GO  -  (62) 9 9254-7655", W / 2, H - 32, {
+        align: "center"
+      });
+    };
     const checkPage = (need = 60) => {
-      if (y + need > H - 70) {
+      if (y + need > H - 64) {
         rodape();
         doc.addPage();
         y = M;
       }
     };
-    const setColor = c => doc.setTextColor(c[0], c[1], c[2]);
-    const setFill = c => doc.setFillColor(c[0], c[1], c[2]);
-    const setDraw = c => doc.setDrawColor(c[0], c[1], c[2]);
-    const secao = (num, txt, cor = LARANJA) => {
-      checkPage(50);
-      y += 6;
-      setFill(cor);
-      doc.roundedRect(M, y - 11, 4, 16, 1, 1, "F");
+
+    // Titulo de secao estilo laranja + linha
+    const secao = txt => {
+      checkPage(46);
+      y += 8;
       doc.setFont("helvetica", "bold");
       doc.setFontSize(13);
-      setColor(ESCURO);
-      doc.text(num + "  " + txt, M + 14, y + 2);
-      y += 12;
-      setDraw([230, 230, 230]);
-      doc.setLineWidth(0.5);
+      setC(LARANJA);
+      doc.text(txt.toUpperCase(), M, y);
+      y += 8;
+      setD(LARANJA);
+      doc.setLineWidth(1.2);
       doc.line(M, y, W - M, y);
-      y += 18;
+      y += 8;
+      setD([230, 230, 230]);
+      doc.setLineWidth(0.5);
+      doc.line(M, y - 6, W - M, y - 6);
+      y += 12;
     };
-    const paragrafo = txt => {
+    const legenda = txt => {
+      checkPage(26);
+      doc.setFont("helvetica", "italic");
+      doc.setFontSize(9);
+      setC(CINZA);
+      const ls = doc.splitTextToSize(txt, W - M * 2);
+      doc.text(ls, M, y);
+      y += ls.length * 12 + 8;
+    };
+    // Bloco com cabecalho escuro (estilo "RD TELECOM LTDA")
+    const blocoHeader = (titulo, sub, cor = ESCURO) => {
       checkPage(40);
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(9.5);
-      setColor(CINZA);
-      const linhas = doc.splitTextToSize(txt, W - M * 2);
-      doc.text(linhas, M, y);
-      y += linhas.length * 13 + 6;
-    };
-    const kv = (k, v, cor = ESCURO, bold = false, indent = 0) => {
-      checkPage(20);
-      doc.setFont("helvetica", bold ? "bold" : "normal");
-      doc.setFontSize(bold ? 10.5 : 10);
-      setColor(indent ? CINZA_CLARO : CINZA);
-      doc.text((indent ? "      " : "") + k, M + indent, y);
-      setColor(cor);
+      setF(cor);
+      doc.rect(M, y, W - M * 2, sub ? 32 : 24, "F");
       doc.setFont("helvetica", "bold");
-      doc.text(v, W - M, y, {
-        align: "right"
-      });
-      y += indent ? 15 : 17;
+      doc.setFontSize(11);
+      doc.setTextColor(255, 255, 255);
+      doc.text(titulo, M + 12, y + (sub ? 15 : 16));
+      if (sub) {
+        doc.setFont("helvetica", "italic");
+        doc.setFontSize(8);
+        doc.setTextColor(210, 210, 210);
+        doc.text(sub, M + 12, y + 27);
+      }
+      y += sub ? 32 : 24;
     };
-    const rodape = () => {
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(7.5);
-      setColor([180, 180, 180]);
-      doc.text("SIR - Sistema de Inteligencia Regional  |  Grupo Jet  |  Documento Confidencial", M, H - 32);
-      doc.text(periodoLabel, W - M, H - 32, {
+    // linha chave-valor dentro de tabela zebrada
+    let zebra = false;
+    const resetZebra = () => {
+      zebra = false;
+    };
+    const linhaKV = (k, v, corV = PRETO, bold = false, indent = false) => {
+      checkPage(22);
+      if (zebra) {
+        setF(BG_SOFT);
+        doc.rect(M, y - 11, W - M * 2, 20, "F");
+      }
+      zebra = !zebra;
+      doc.setFont("helvetica", bold ? "bold" : "normal");
+      doc.setFontSize(indent ? 9 : 10);
+      setC(indent ? CINZA_C : ESCURO);
+      doc.text((indent ? "       " : "") + k, M + (indent ? 4 : 10), y + 2);
+      setC(corV);
+      doc.setFont("helvetica", "bold");
+      doc.text(v, W - M - 10, y + 2, {
         align: "right"
       });
-      setDraw([235, 235, 235]);
-      doc.line(M, H - 44, W - M, H - 44);
+      y += 20;
+    };
+    const totalRow = (k, v, cor) => {
+      checkPage(26);
+      setF(cor);
+      doc.rect(M, y - 11, W - M * 2, 24, "F");
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(10.5);
+      doc.setTextColor(255, 255, 255);
+      doc.text(k, M + 10, y + 4);
+      doc.text(v, W - M - 10, y + 4, {
+        align: "right"
+      });
+      y += 30;
+      resetZebra();
     };
 
-    // ══════════ CAPA / CABECALHO ══════════
-    setFill(ESCURO);
-    doc.rect(0, 0, W, 148, "F");
-    setFill(LARANJA);
-    doc.rect(0, 148, W, 5, "F");
-    // Logo
+    // ══════ CABECALHO (estilo do orcamento) ══════
     try {
-      doc.addImage(LOGO_B64, "JPEG", M, 30, 96, 58);
+      doc.addImage(LOGO_B64, "JPEG", W - M - 118, 34, 118, 40);
     } catch (e) {}
-    doc.setTextColor(255, 255, 255);
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(22);
-    doc.text("Relatorio Executivo", M, 116);
-    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9);
+    setC(LARANJA);
+    doc.text("RD TELECOM LTDA  -  GRUPO JET", M, 46);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(28);
+    setC(PRETO);
+    doc.text("Relatorio Executivo", M, 78);
+    doc.setFont("helvetica", "italic");
     doc.setFontSize(11);
-    doc.setTextColor(200, 200, 200);
-    doc.text("Demonstrativo de Resultados Societario", M, 134);
-    // Bloco periodo (direita)
+    setC(CINZA);
+    doc.text("Demonstrativo de resultados societario e projecoes financeiras", M, 98);
+    y = 118;
+    // Etiqueta escura periodo + emissao
+    setF(ESCURO);
+    doc.rect(M, y, 240, 26, "F");
     doc.setFont("helvetica", "bold");
     doc.setFontSize(10);
-    setColor(LARANJA);
-    doc.text("PERIODO", W - M, 56, {
-      align: "right"
-    });
     doc.setTextColor(255, 255, 255);
-    doc.setFontSize(13);
-    doc.text(periodoLabel.toUpperCase(), W - M, 74, {
-      align: "right"
-    });
+    doc.text(periodoLabel.toUpperCase(), M + 12, y + 17);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(9);
+    setC(ESCURO);
+    doc.text("Emissao: ", W - M - 170, y + 17);
     doc.setFont("helvetica", "normal");
-    doc.setFontSize(8.5);
-    doc.setTextColor(180, 180, 180);
-    doc.text("Emitido em " + new Date().toLocaleDateString("pt-BR") + " as " + new Date().toLocaleTimeString("pt-BR", {
-      hour: "2-digit",
-      minute: "2-digit"
-    }), W - M, 92, {
-      align: "right"
-    });
-    y = 182;
-    doc.setFont("helvetica", "italic");
-    doc.setFontSize(9.5);
-    setColor(CINZA);
-    const escLinhas = doc.splitTextToSize(escopoTexto, W - M * 2);
-    doc.text(escLinhas, M, y);
-    y += escLinhas.length * 13 + 12;
+    doc.text(new Date().toLocaleDateString("pt-BR") + " - Goiania/GO", W - M - 120, y + 17);
+    y += 26;
+    setF(LARANJA);
+    doc.rect(M, y, W - M * 2, 3, "F");
+    y += 22;
+    legenda(escopo);
+    y += 4;
 
-    // ══════════ 1. RESUMO EXECUTIVO ══════════
-    secao("1.", "Resumo Executivo");
-    // 3 cartoes
-    const gap = 14,
-      boxW = (W - M * 2 - gap * 2) / 3,
-      boxH = 64;
-    const card3 = (x, label, val, cor, sub) => {
-      setFill(BG_SOFT);
-      doc.roundedRect(x, y, boxW, boxH, 6, 6, "F");
-      setDraw([230, 230, 230]);
-      doc.setLineWidth(0.5);
-      doc.roundedRect(x, y, boxW, boxH, 6, 6, "S");
+    // ══════ 1. RESUMO EXECUTIVO ══════
+    secao("Resumo Executivo");
+    legenda("Visao consolidada dos principais indicadores financeiros do periodo.");
+    const gap = 12,
+      bw = (W - M * 2 - gap * 2) / 3,
+      bh = 62;
+    const cartao = (x, label, val, cor) => {
+      setF(BG_SOFT);
+      doc.rect(x, y, bw, bh, "F");
+      setF(cor);
+      doc.rect(x, y, bw, 4, "F");
       doc.setFont("helvetica", "normal");
       doc.setFontSize(8);
-      setColor(CINZA);
-      doc.text(label.toUpperCase(), x + 12, y + 18);
+      setC(CINZA);
+      doc.text(label.toUpperCase(), x + 12, y + 22);
       doc.setFont("helvetica", "bold");
-      doc.setFontSize(13.5);
-      setColor(cor);
-      doc.text(fmtR(val), x + 12, y + 40);
-      if (sub) {
-        doc.setFont("helvetica", "normal");
-        doc.setFontSize(7.5);
-        setColor(CINZA_CLARO);
-        doc.text(sub, x + 12, y + 55);
-      }
+      doc.setFontSize(14);
+      setC(cor);
+      doc.text(fmtR(val), x + 12, y + 45);
     };
-    card3(M, "Faturamento Total", fatTotal, VERDE, "Receita bruta do periodo");
-    card3(M + boxW + gap, "Custos Totais", cusTotal, VERMELHO, "Despesas + impostos");
-    card3(M + (boxW + gap) * 2, "Lucro Liquido", lucro, lucro >= 0 ? VERDE : VERMELHO, "Margem de " + pct(lucroP));
-    y += boxH + 20;
-    paragrafo("No periodo analisado, a operacao registrou faturamento bruto de " + fmtR(fatTotal) + ", com custos totais de " + fmtR(cusTotal) + " (incluindo impostos de " + fmtR(cus.impostos) + "). O resultado liquido foi de " + fmtR(lucro) + ", equivalente a uma margem de " + pct(lucroP) + " sobre a receita.");
+    cartao(M, "Faturamento", fatTotal, VERDE);
+    cartao(M + bw + gap, "Custos", cusTotal, VERMELHO);
+    cartao(M + (bw + gap) * 2, "Lucro Liquido", lucro, lucro >= 0 ? VERDE : VERMELHO);
+    y += bh + 16;
+    legenda("Faturamento bruto de " + fmtR(fatTotal) + ", custos totais de " + fmtR(cusTotal) + " (incluindo " + fmtR(cus.impostos) + " de impostos), resultando em lucro liquido de " + fmtR(lucro) + " e margem de " + pct(lucroP) + ".");
     // Divisao societaria
-    checkPage(60);
-    setFill([255, 247, 237]);
-    doc.roundedRect(M, y, W - M * 2, 46, 6, 6, "F");
+    checkPage(46);
+    setF(BG_LARANJA);
+    doc.rect(M, y, W - M * 2, 40, "F");
     doc.setFont("helvetica", "bold");
     doc.setFontSize(9);
-    setColor(LARANJA);
-    doc.text("DIVISAO SOCIETARIA (50% / 50%)", M + 14, y + 18);
+    setC(LARANJA);
+    doc.text("DIVISAO SOCIETARIA (50% / 50%)", M + 12, y + 16);
     doc.setFont("helvetica", "normal");
     doc.setFontSize(10);
-    setColor(ESCURO);
-    doc.text("Ruan (50%)", M + 14, y + 36);
+    setC(ESCURO);
+    doc.text("Ruan (50%):", M + 12, y + 31);
     doc.setFont("helvetica", "bold");
-    setColor(lucro >= 0 ? VERDE : VERMELHO);
-    doc.text(fmtR(lucro / 2), M + 120, y + 36);
+    setC(lucro >= 0 ? VERDE : VERMELHO);
+    doc.text(fmtR(lucro / 2), M + 90, y + 31);
     doc.setFont("helvetica", "normal");
-    setColor(ESCURO);
-    doc.text("Fernando (50%)", M + 240, y + 36);
+    setC(ESCURO);
+    doc.text("Fernando (50%):", M + 250, y + 31);
     doc.setFont("helvetica", "bold");
-    setColor(lucro >= 0 ? VERDE : VERMELHO);
-    doc.text(fmtR(lucro / 2), W - M - 14, y + 36, {
+    setC(lucro >= 0 ? VERDE : VERMELHO);
+    doc.text(fmtR(lucro / 2), W - M - 12, y + 31, {
       align: "right"
     });
-    y += 66;
+    y += 58;
 
-    // ══════════ 2. FONTES DE FATURAMENTO ══════════
-    secao("2.", "Fontes de Faturamento", VERDE);
-    paragrafo("Distribuicao da receita bruta por origem. As obras representam projetos executados, o Lan 2 Lan e a receita recorrente de pontos de internet, e os contratos sao acordos de prestacao continuada.");
-    const fatItens = [["Obras", fat.obras], ["Lan 2 Lan (recorrente)", fat.l2l], ["Contratos", fat.contratos], ["Outras Receitas", fat.outras]];
-    fatItens.forEach(it => {
+    // ══════ 2. FATURAMENTO ══════
+    secao("Fontes de Faturamento");
+    legenda("Distribuicao da receita bruta por origem: obras executadas, receita recorrente de Lan 2 Lan, contratos e outras receitas.");
+    blocoHeader("RECEITAS POR CATEGORIA", null, VERDE);
+    resetZebra();
+    [["Obras", fat.obras], ["Lan 2 Lan (recorrente)", fat.l2l], ["Contratos", fat.contratos], ["Outras Receitas", fat.outras]].forEach(it => {
       const p = fatTotal > 0 ? it[1] / fatTotal * 100 : 0;
-      kv(it[0] + "  (" + pct(p) + ")", fmtR(it[1]), VERDE);
+      linhaKV(it[0] + "  (" + pct(p) + ")", fmtR(it[1]), VERDE);
     });
-    y += 2;
-    setDraw([200, 200, 200]);
-    doc.line(M, y, W - M, y);
-    y += 14;
-    kv("TOTAL FATURADO", fmtR(fatTotal), VERDE, true);
-    y += 12;
+    totalRow("TOTAL FATURADO", fmtR(fatTotal), VERDE);
+    y += 8;
 
-    // ══════════ 3. ESTRUTURA DE CUSTOS ══════════
-    secao("3.", "Estrutura de Custos", VERMELHO);
-    paragrafo("Detalhamento das despesas operacionais, custos diretos e carga tributaria. Os custos operacionais estao discriminados por natureza abaixo.");
-    kv("Custos de Obras", fmtR(cus.obras), VERMELHO);
-    kv("Custos Lan 2 Lan", fmtR(cus.l2l), VERMELHO);
-    kv("Custos Operacionais", fmtR(cus.custos_op), VERMELHO, true);
-    [["Pessoal", cus.co_pessoal], ["Beneficios", cus.co_beneficios], ["Locacao de Veiculos", cus.co_veiculos], ["Combustivel", cus.co_combustivel], ["EPI + Uniforme", cus.co_epi], ["Ferramentas", cus.co_ferramentas], ["Outros Operacionais", cus.co_outros]].forEach(it => {
-      if (it[1] > 0) kv(it[0], fmtR(it[1]), CINZA, false, 12);
-    });
-    kv("Impostos (" + (TOTAL_IMP_PCT * 100).toFixed(2) + "% sobre faturamento)", fmtR(cus.impostos), VERMELHO, true);
-    [["Sobre Obras", impObras], ["Sobre Lan 2 Lan", impPontos], ["Sobre Contratos", impContratos]].forEach(it => {
-      if (it[1] > 0) kv(it[0], fmtR(it[1]), CINZA, false, 12);
+    // ══════ 3. CUSTOS ══════
+    secao("Estrutura de Custos");
+    legenda("Detalhamento das despesas operacionais, custos diretos, investimentos e carga tributaria.");
+    blocoHeader("DESPESAS POR CATEGORIA", null, VERMELHO);
+    resetZebra();
+    linhaKV("Custos de Obras", fmtR(cus.obras), VERMELHO);
+    linhaKV("Custos Lan 2 Lan", fmtR(cus.l2l), VERMELHO);
+    linhaKV("Custos Operacionais", fmtR(cus.custos_op), VERMELHO, true);
+    [["Pessoal", cus.co_pessoal], ["Beneficios", cus.co_beneficios], ["Locacao de Veiculos", cus.co_veiculos], ["Combustivel", cus.co_combustivel], ["EPI + Uniforme", cus.co_epi], ["Ferramentas", cus.co_ferramentas], ["Outros Op.", cus.co_outros]].forEach(it => {
+      if (it[1] > 0) linhaKV(it[0], fmtR(it[1]), CINZA, false, true);
     });
     if (cus.invest > 0) {
-      kv("Investimentos", fmtR(cus.invest), VERMELHO, true);
+      linhaKV("Investimentos", fmtR(cus.invest), VERMELHO, true);
       [["Ferramentas", cus.inv_ferramentas], ["EPI/EPC", cus.inv_epi], ["Uniformes", cus.inv_uniformes], ["Equipamentos", cus.inv_equipamentos], ["Outros Inv.", cus.inv_outros]].forEach(it => {
-        if (it[1] > 0) kv(it[0], fmtR(it[1]), CINZA, false, 12);
+        if (it[1] > 0) linhaKV(it[0], fmtR(it[1]), CINZA, false, true);
       });
     }
-    if (cus.outros > 0) kv("Outros Custos", fmtR(cus.outros), VERMELHO);
-    y += 2;
-    setDraw([200, 200, 200]);
-    doc.line(M, y, W - M, y);
-    y += 14;
-    kv("TOTAL DE CUSTOS", fmtR(cusTotal), VERMELHO, true);
-    y += 12;
+    linhaKV("Impostos (" + (TOTAL_IMP_PCT * 100).toFixed(2) + "%)", fmtR(cus.impostos), VERMELHO, true);
+    [["Sobre Obras", impObras], ["Sobre Lan 2 Lan", impPontos], ["Sobre Contratos", impContratos]].forEach(it => {
+      if (it[1] > 0) linhaKV(it[0], fmtR(it[1]), CINZA, false, true);
+    });
+    if (cus.outros > 0) linhaKV("Outros Custos", fmtR(cus.outros), VERMELHO);
+    totalRow("TOTAL DE CUSTOS", fmtR(cusTotal), VERMELHO);
+    y += 8;
 
-    // ══════════ 4. RESULTADO ══════════
-    secao("4.", "Resultado do Periodo", LARANJA);
-    checkPage(70);
-    const resBg = lucro >= 0 ? [240, 253, 244] : [254, 242, 242];
-    setFill(resBg);
-    doc.roundedRect(M, y, W - M * 2, 60, 6, 6, "F");
+    // ══════ 4. RESULTADO ══════
+    secao("Resultado do Periodo");
+    checkPage(60);
+    const rbg = lucro >= 0 ? [240, 250, 243] : [252, 240, 240];
+    setF(rbg);
+    doc.rect(M, y, W - M * 2, 54, "F");
+    setF(lucro >= 0 ? VERDE : VERMELHO);
+    doc.rect(M, y, 4, 54, "F");
     doc.setFont("helvetica", "normal");
     doc.setFontSize(9);
-    setColor(CINZA);
-    doc.text("LUCRO LIQUIDO DO PERIODO", M + 16, y + 22);
+    setC(CINZA);
+    doc.text("LUCRO LIQUIDO DO PERIODO", M + 16, y + 20);
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(20);
-    setColor(lucro >= 0 ? VERDE : VERMELHO);
-    doc.text(fmtR(lucro), M + 16, y + 46);
+    doc.setFontSize(19);
+    setC(lucro >= 0 ? VERDE : VERMELHO);
+    doc.text(fmtR(lucro), M + 16, y + 44);
     doc.setFont("helvetica", "normal");
     doc.setFontSize(9);
-    setColor(CINZA);
-    doc.text("Margem de Lucro", W - M - 16, y + 22, {
+    setC(CINZA);
+    doc.text("MARGEM", W - M - 16, y + 20, {
       align: "right"
     });
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(20);
-    setColor(lucro >= 0 ? VERDE : VERMELHO);
-    doc.text(pct(lucroP), W - M - 16, y + 46, {
+    doc.setFontSize(19);
+    setC(lucro >= 0 ? VERDE : VERMELHO);
+    doc.text(pct(lucroP), W - M - 16, y + 44, {
       align: "right"
     });
-    y += 80;
+    y += 74;
 
-    // ══════════ 5. LAN 2 LAN ══════════
-    secao("5.", "Lan 2 Lan - Operacao Recorrente", AZUL);
-    const l2lFatMes = pontos.reduce((s, p) => s + (parseFloat(p.faturamento) || 0), 0);
-    const l2lCusMes = pontos.reduce((s, p) => s + (parseFloat(p.custo) || 0), 0);
-    const l2lLucroMes = l2lFatMes - l2lCusMes;
-    paragrafo("O Lan 2 Lan e a principal fonte de receita recorrente, gerando faturamento previsivel mensalmente. Atualmente sao " + pontos.length + " pontos ativos.");
-    kv("Pontos cadastrados", String(pontos.length), ESCURO);
-    kv("Faturamento mensal recorrente", fmtR(l2lFatMes), VERDE);
-    kv("Custo mensal recorrente", fmtR(l2lCusMes), VERMELHO);
-    kv("Lucro mensal recorrente", fmtR(l2lLucroMes), l2lLucroMes >= 0 ? VERDE : VERMELHO, true);
-    y += 12;
+    // ══════ 5. LAN 2 LAN ══════
+    secao("Lan 2 Lan - Operacao Recorrente");
+    const l2lF = pontos.reduce((s, p) => s + (parseFloat(p.faturamento) || 0), 0);
+    const l2lC = pontos.reduce((s, p) => s + (parseFloat(p.custo) || 0), 0);
+    legenda("Principal fonte de receita recorrente, com faturamento previsivel mensal. Atualmente " + pontos.length + " pontos ativos.");
+    blocoHeader("INDICADORES MENSAIS RECORRENTES", null, AZUL);
+    resetZebra();
+    linhaKV("Pontos cadastrados", String(pontos.length));
+    linhaKV("Faturamento mensal", fmtR(l2lF), VERDE);
+    linhaKV("Custo mensal", fmtR(l2lC), VERMELHO);
+    totalRow("LUCRO MENSAL RECORRENTE", fmtR(l2lF - l2lC), AZUL);
+    y += 8;
 
-    // ══════════ 6. PROJECAO ══════════
-    secao("6.", "Projecao Financeira (6 meses)", LARANJA);
-    const mediaFatObrasProj = function () {
+    // ══════ 6. PROJECAO ══════
+    secao("Projecao Financeira (6 meses)");
+    const mediaObras = function () {
       const hoje = new Date();
       const meses = [];
       let yy = 2026,
         mm = 1;
-      const mAtual = hoje.getFullYear() + "-" + String(hoje.getMonth() + 1).padStart(2, "0");
-      while (yy + "-" + String(mm).padStart(2, "0") <= mAtual) {
+      const mA = hoje.getFullYear() + "-" + String(hoje.getMonth() + 1).padStart(2, "0");
+      while (yy + "-" + String(mm).padStart(2, "0") <= mA) {
         meses.push(yy + "-" + String(mm).padStart(2, "0"));
         mm++;
         if (mm > 12) {
@@ -4619,53 +4644,45 @@ function Dashboard({
           yy++;
         }
       }
-      const comFat = meses.filter(mk => fatInt.some(f => f.categoria === "Obras" && f.data && f.data.slice(0, 7) === mk && f.valor > 0)).slice(-3);
-      return comFat.length ? comFat.reduce((s, mk) => s + fatInt.filter(f => f.categoria === "Obras" && f.data && f.data.slice(0, 7) === mk).reduce((ss, f) => ss + (f.valor || 0), 0), 0) / comFat.length : 0;
+      const cf = meses.filter(mk => fatInt.some(f => f.categoria === "Obras" && f.data && f.data.slice(0, 7) === mk && f.valor > 0)).slice(-3);
+      return cf.length ? cf.reduce((s, mk) => s + fatInt.filter(f => f.categoria === "Obras" && f.data && f.data.slice(0, 7) === mk).reduce((ss, f) => ss + (f.valor || 0), 0), 0) / cf.length : 0;
     }();
-    const cusRecMes = custosInt.filter(c => c.recorrente).reduce((s, c) => s + (c.valor || 0), 0);
-    const fatProjMes = mediaFatObrasProj + l2lFatMes;
-    const cusProjMes = cusRecMes + l2lCusMes + calcImpostos(fatProjMes);
-    const lucroProjMes = fatProjMes - cusProjMes;
-    paragrafo("Projecao baseada na media de faturamento de obras dos ultimos 3 meses somada a recorrencia do Lan 2 Lan, descontados os custos fixos e impostos.");
-    kv("Faturamento projetado / mes", fmtR(fatProjMes), VERDE);
-    kv("Custo projetado / mes", fmtR(cusProjMes), VERMELHO);
-    kv("Lucro projetado / mes", fmtR(lucroProjMes), lucroProjMes >= 0 ? VERDE : VERMELHO, true);
-    y += 2;
-    setDraw([200, 200, 200]);
-    doc.line(M, y, W - M, y);
-    y += 14;
-    kv("PROJECAO DE LUCRO EM 6 MESES", fmtR(lucroProjMes * 6), lucroProjMes >= 0 ? VERDE : VERMELHO, true);
-    y += 12;
+    const cusRec = custosInt.filter(c => c.recorrente).reduce((s, c) => s + (c.valor || 0), 0);
+    const fProj = mediaObras + l2lF;
+    const cProj = cusRec + l2lC + calcImpostos(fProj);
+    const lProj = fProj - cProj;
+    legenda("Projecao baseada na media de faturamento de obras dos ultimos 3 meses somada a recorrencia do Lan 2 Lan, descontados custos fixos e impostos.");
+    blocoHeader("ESTIMATIVA MENSAL PROJETADA", null, LARANJA);
+    resetZebra();
+    linhaKV("Faturamento projetado / mes", fmtR(fProj), VERDE);
+    linhaKV("Custo projetado / mes", fmtR(cProj), VERMELHO);
+    linhaKV("Lucro projetado / mes", fmtR(lProj), lProj >= 0 ? VERDE : VERMELHO, true);
+    totalRow("PROJECAO DE LUCRO EM 6 MESES", fmtR(lProj * 6), lProj >= 0 ? VERDE : VERMELHO);
+    y += 8;
 
-    // ══════════ 7. INVESTIMENTOS ══════════
+    // ══════ 7. INVESTIMENTOS FUTUROS ══════
     if (investInt.length > 0) {
-      secao("7.", "Investimentos Futuros", AZUL);
-      paragrafo("Investimentos planejados que impactarao o fluxo de caixa nos proximos periodos.");
+      secao("Investimentos Futuros");
+      legenda("Investimentos planejados que impactarao o fluxo de caixa nos proximos periodos.");
+      blocoHeader("PLANO DE INVESTIMENTOS", null, AZUL);
+      resetZebra();
       investInt.forEach(inv => {
-        kv(inv.descricao || "Investimento", fmtR(inv.valor || 0), AZUL);
+        linhaKV(inv.descricao || "Investimento", fmtR(inv.valor || 0), AZUL);
       });
-      const totInv = investInt.reduce((s, i) => s + (i.valor || 0), 0);
-      y += 2;
-      setDraw([200, 200, 200]);
-      doc.line(M, y, W - M, y);
-      y += 14;
-      kv("TOTAL EM INVESTIMENTOS", fmtR(totInv), AZUL, true);
+      totalRow("TOTAL EM INVESTIMENTOS", fmtR(investInt.reduce((s, i) => s + (i.valor || 0), 0)), AZUL);
     }
-
-    // Rodape em todas as paginas + numeracao
     rodape();
-    const totalPaginas = doc.internal.getNumberOfPages();
-    for (let i = 1; i <= totalPaginas; i++) {
+    const np = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= np; i++) {
       doc.setPage(i);
       doc.setFont("helvetica", "normal");
-      doc.setFontSize(7.5);
-      doc.setTextColor(180, 180, 180);
-      doc.text("Pagina " + i + " de " + totalPaginas, W - M, H - 20, {
+      doc.setFontSize(7);
+      doc.setTextColor(160, 160, 160);
+      doc.text("Pagina " + i + " de " + np, W - M, H - 32, {
         align: "right"
       });
     }
-    const nomeArq = "Relatorio_Executivo_" + (mesSocietario === "acumulado" ? "Acumulado" : mesSocietario) + "_" + new Date().toISOString().slice(0, 10) + ".pdf";
-    doc.save(nomeArq);
+    doc.save("Relatorio_Executivo_" + (mesSocietario === "acumulado" ? "Acumulado" : mesSocietario) + "_" + new Date().toISOString().slice(0, 10) + ".pdf");
     showToast && showToast("Relatorio PDF gerado!");
   };
   const statusItems = [{
