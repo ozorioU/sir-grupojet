@@ -4302,7 +4302,7 @@ function Dashboard({
   // ── Gerar Relatório PDF Executivo ──
   const gerarRelatorioPDF = () => {
     if (!window.jspdf) {
-      showToast && showToast("Carregando biblioteca PDF, tente novamente em 2s...", "err");
+      showToast && showToast("Carregando biblioteca PDF, tente novamente...", "err");
       return;
     }
     const {
@@ -4314,178 +4314,271 @@ function Dashboard({
     });
     const W = doc.internal.pageSize.getWidth();
     const H = doc.internal.pageSize.getHeight();
-    const M = 42;
+    const M = 48;
     let y = M;
-    const laranja = [232, 101, 10],
-      verde = [21, 128, 61],
-      vermelho = [220, 38, 38],
-      cinza = [107, 114, 128],
-      escuro = [31, 41, 55];
+
+    // Paleta
+    const LARANJA = [232, 101, 10],
+      VERDE = [21, 128, 61],
+      VERMELHO = [220, 38, 38],
+      AZUL = [30, 64, 175],
+      CINZA = [107, 114, 128],
+      CINZA_CLARO = [156, 163, 175],
+      ESCURO = [31, 41, 55],
+      BG_SOFT = [249, 250, 251];
     const fmtR = v => "R$ " + (v || 0).toLocaleString("pt-BR", {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2
     });
-    const periodoLabel = mesSocietario === "acumulado" ? excluirMesAtual ? "Acumulado (ate mes anterior)" : "Acumulado Total" : new Date(mesSocietario + "-02").toLocaleString("pt-BR", {
+    const pct = v => (v || 0).toFixed(1) + "%";
+    const periodoLabel = mesSocietario === "acumulado" ? excluirMesAtual ? "Acumulado (ate o mes anterior)" : "Acumulado Total da Operacao" : new Date(mesSocietario + "-02").toLocaleString("pt-BR", {
       month: "long",
       year: "numeric"
     });
+    const escopoTexto = mesSocietario === "acumulado" ? "Este relatorio consolida todos os resultados da operacao desde o inicio das atividades." : "Este relatorio apresenta os resultados referentes ao mes de " + periodoLabel + ".";
+
+    // Helpers de layout
     const checkPage = (need = 60) => {
-      if (y + need > H - M) {
+      if (y + need > H - 70) {
+        rodape();
         doc.addPage();
         y = M;
       }
     };
-    const linha = () => {
-      doc.setDrawColor(230, 230, 230);
-      doc.line(M, y, W - M, y);
-      y += 14;
-    };
-    const titulo = (txt, cor = escuro) => {
-      checkPage(40);
+    const setColor = c => doc.setTextColor(c[0], c[1], c[2]);
+    const setFill = c => doc.setFillColor(c[0], c[1], c[2]);
+    const setDraw = c => doc.setDrawColor(c[0], c[1], c[2]);
+    const secao = (num, txt, cor = LARANJA) => {
+      checkPage(50);
+      y += 6;
+      setFill(cor);
+      doc.roundedRect(M, y - 11, 4, 16, 1, 1, "F");
       doc.setFont("helvetica", "bold");
       doc.setFontSize(13);
-      doc.setTextColor(cor[0], cor[1], cor[2]);
-      doc.text(txt, M, y);
-      y += 6;
-      doc.setDrawColor(cor[0], cor[1], cor[2]);
-      doc.setLineWidth(1.5);
-      doc.line(M, y, M + 40, y);
+      setColor(ESCURO);
+      doc.text(num + "  " + txt, M + 14, y + 2);
+      y += 12;
+      setDraw([230, 230, 230]);
       doc.setLineWidth(0.5);
-      y += 16;
+      doc.line(M, y, W - M, y);
+      y += 18;
     };
-    const kv = (k, v, cor = escuro, bold = false) => {
+    const paragrafo = txt => {
+      checkPage(40);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(9.5);
+      setColor(CINZA);
+      const linhas = doc.splitTextToSize(txt, W - M * 2);
+      doc.text(linhas, M, y);
+      y += linhas.length * 13 + 6;
+    };
+    const kv = (k, v, cor = ESCURO, bold = false, indent = 0) => {
       checkPage(20);
       doc.setFont("helvetica", bold ? "bold" : "normal");
-      doc.setFontSize(10);
-      doc.setTextColor(cinza[0], cinza[1], cinza[2]);
-      doc.text(k, M, y);
-      doc.setTextColor(cor[0], cor[1], cor[2]);
+      doc.setFontSize(bold ? 10.5 : 10);
+      setColor(indent ? CINZA_CLARO : CINZA);
+      doc.text((indent ? "      " : "") + k, M + indent, y);
+      setColor(cor);
       doc.setFont("helvetica", "bold");
       doc.text(v, W - M, y, {
         align: "right"
       });
-      y += 16;
+      y += indent ? 15 : 17;
     };
-    doc.setFillColor(laranja[0], laranja[1], laranja[2]);
-    doc.rect(0, 0, W, 70, "F");
+    const rodape = () => {
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(7.5);
+      setColor([180, 180, 180]);
+      doc.text("SIR - Sistema de Inteligencia Regional  |  Grupo Jet  |  Documento Confidencial", M, H - 32);
+      doc.text(periodoLabel, W - M, H - 32, {
+        align: "right"
+      });
+      setDraw([235, 235, 235]);
+      doc.line(M, H - 44, W - M, H - 44);
+    };
+
+    // ══════════ CAPA / CABECALHO ══════════
+    setFill(ESCURO);
+    doc.rect(0, 0, W, 148, "F");
+    setFill(LARANJA);
+    doc.rect(0, 148, W, 5, "F");
+    // Logo
+    try {
+      doc.addImage(LOGO_B64, "JPEG", M, 30, 96, 58);
+    } catch (e) {}
     doc.setTextColor(255, 255, 255);
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(20);
-    doc.text("GRUPO JET", M, 34);
-    doc.setFontSize(11);
+    doc.setFontSize(22);
+    doc.text("Relatorio Executivo", M, 116);
     doc.setFont("helvetica", "normal");
-    doc.text("Relatorio Executivo Societario - SIR", M, 52);
-    doc.setFontSize(9);
-    doc.text(periodoLabel.toUpperCase(), W - M, 34, {
+    doc.setFontSize(11);
+    doc.setTextColor(200, 200, 200);
+    doc.text("Demonstrativo de Resultados Societario", M, 134);
+    // Bloco periodo (direita)
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(10);
+    setColor(LARANJA);
+    doc.text("PERIODO", W - M, 56, {
       align: "right"
     });
-    doc.text("Emitido em " + new Date().toLocaleDateString("pt-BR"), W - M, 52, {
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(13);
+    doc.text(periodoLabel.toUpperCase(), W - M, 74, {
       align: "right"
     });
-    y = 96;
-    titulo("Resumo Executivo", laranja);
-    const boxW = (W - M * 2 - 20) / 3;
-    const drawBox = (x, label, val, cor) => {
-      doc.setFillColor(249, 250, 251);
-      doc.roundedRect(x, y, boxW, 54, 5, 5, "F");
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8.5);
+    doc.setTextColor(180, 180, 180);
+    doc.text("Emitido em " + new Date().toLocaleDateString("pt-BR") + " as " + new Date().toLocaleTimeString("pt-BR", {
+      hour: "2-digit",
+      minute: "2-digit"
+    }), W - M, 92, {
+      align: "right"
+    });
+    y = 182;
+    doc.setFont("helvetica", "italic");
+    doc.setFontSize(9.5);
+    setColor(CINZA);
+    const escLinhas = doc.splitTextToSize(escopoTexto, W - M * 2);
+    doc.text(escLinhas, M, y);
+    y += escLinhas.length * 13 + 12;
+
+    // ══════════ 1. RESUMO EXECUTIVO ══════════
+    secao("1.", "Resumo Executivo");
+    // 3 cartoes
+    const gap = 14,
+      boxW = (W - M * 2 - gap * 2) / 3,
+      boxH = 64;
+    const card3 = (x, label, val, cor, sub) => {
+      setFill(BG_SOFT);
+      doc.roundedRect(x, y, boxW, boxH, 6, 6, "F");
+      setDraw([230, 230, 230]);
+      doc.setLineWidth(0.5);
+      doc.roundedRect(x, y, boxW, boxH, 6, 6, "S");
       doc.setFont("helvetica", "normal");
       doc.setFontSize(8);
-      doc.setTextColor(cinza[0], cinza[1], cinza[2]);
+      setColor(CINZA);
       doc.text(label.toUpperCase(), x + 12, y + 18);
       doc.setFont("helvetica", "bold");
-      doc.setFontSize(13);
-      doc.setTextColor(cor[0], cor[1], cor[2]);
+      doc.setFontSize(13.5);
+      setColor(cor);
       doc.text(fmtR(val), x + 12, y + 40);
+      if (sub) {
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(7.5);
+        setColor(CINZA_CLARO);
+        doc.text(sub, x + 12, y + 55);
+      }
     };
-    drawBox(M, "Faturamento", fatTotal, verde);
-    drawBox(M + boxW + 10, "Custos", cusTotal, vermelho);
-    drawBox(M + boxW * 2 + 20, "Lucro Liquido", lucro, lucro >= 0 ? verde : vermelho);
-    y += 72;
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(9);
-    doc.setTextColor(cinza[0], cinza[1], cinza[2]);
-    doc.text("Margem de lucro: " + lucroP.toFixed(1) + "%  -  Divisao societaria: Ruan 50% (" + fmtR(lucro / 2) + ") - Fernando 50% (" + fmtR(lucro / 2) + ")", M, y);
-    y += 24;
-    titulo("Fontes de Faturamento", verde);
-    kv("Obras", fmtR(fat.obras), verde);
-    kv("Lan 2 Lan (L2L)", fmtR(fat.l2l), verde);
-    kv("Contratos", fmtR(fat.contratos), verde);
-    kv("Outras Receitas", fmtR(fat.outras), verde);
-    y += 2;
-    linha();
-    kv("TOTAL FATURADO", fmtR(fatTotal), verde, true);
-    y += 10;
-    titulo("Estrutura de Custos", vermelho);
-    kv("Obras", fmtR(cus.obras), vermelho);
-    kv("Lan 2 Lan (L2L)", fmtR(cus.l2l), vermelho);
-    kv("Custos Operacionais", fmtR(cus.custos_op), vermelho);
-    const subCO = [["Pessoal", cus.co_pessoal], ["Beneficios", cus.co_beneficios], ["Locacao Veiculos", cus.co_veiculos], ["Combustivel", cus.co_combustivel], ["EPI + Uniforme", cus.co_epi], ["Ferramentas", cus.co_ferramentas], ["Outros Op.", cus.co_outros]];
-    subCO.forEach(pair => {
-      const l = pair[0],
-        v = pair[1];
-      if (v > 0) {
-        checkPage(16);
-        doc.setFont("helvetica", "normal");
-        doc.setFontSize(9);
-        doc.setTextColor(150, 150, 150);
-        doc.text("     > " + l, M, y);
-        doc.text(fmtR(v), W - M, y, {
-          align: "right"
-        });
-        y += 14;
-      }
-    });
-    kv("Impostos (" + (TOTAL_IMP_PCT * 100).toFixed(2) + "%)", fmtR(cus.impostos), vermelho);
-    [["Obras", impObras], ["Lan 2 Lan", impPontos], ["Contratos", impContratos]].forEach(pair => {
-      const l = pair[0],
-        v = pair[1];
-      if (v > 0) {
-        checkPage(16);
-        doc.setFont("helvetica", "normal");
-        doc.setFontSize(9);
-        doc.setTextColor(150, 150, 150);
-        doc.text("     > " + l, M, y);
-        doc.text(fmtR(v), W - M, y, {
-          align: "right"
-        });
-        y += 14;
-      }
-    });
-    kv("Investimentos", fmtR(cus.invest), vermelho);
-    kv("Outros", fmtR(cus.outros), vermelho);
-    y += 2;
-    linha();
-    kv("TOTAL CUSTOS", fmtR(cusTotal), vermelho, true);
-    y += 10;
-    checkPage(80);
-    titulo("Resultado do Periodo", laranja);
-    doc.setFillColor(lucro >= 0 ? 240 : 254, lucro >= 0 ? 253 : 242, lucro >= 0 ? 244 : 242);
-    doc.roundedRect(M, y, W - M * 2, 50, 5, 5, "F");
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(9);
-    doc.setTextColor(cinza[0], cinza[1], cinza[2]);
-    doc.text("LUCRO LIQUIDO DO PERIODO", M + 14, y + 20);
+    card3(M, "Faturamento Total", fatTotal, VERDE, "Receita bruta do periodo");
+    card3(M + boxW + gap, "Custos Totais", cusTotal, VERMELHO, "Despesas + impostos");
+    card3(M + (boxW + gap) * 2, "Lucro Liquido", lucro, lucro >= 0 ? VERDE : VERMELHO, "Margem de " + pct(lucroP));
+    y += boxH + 20;
+    paragrafo("No periodo analisado, a operacao registrou faturamento bruto de " + fmtR(fatTotal) + ", com custos totais de " + fmtR(cusTotal) + " (incluindo impostos de " + fmtR(cus.impostos) + "). O resultado liquido foi de " + fmtR(lucro) + ", equivalente a uma margem de " + pct(lucroP) + " sobre a receita.");
+    // Divisao societaria
+    checkPage(60);
+    setFill([255, 247, 237]);
+    doc.roundedRect(M, y, W - M * 2, 46, 6, 6, "F");
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(17);
-    doc.setTextColor(lucro >= 0 ? verde[0] : vermelho[0], lucro >= 0 ? verde[1] : vermelho[1], lucro >= 0 ? verde[2] : vermelho[2]);
-    doc.text(fmtR(lucro), M + 14, y + 40);
+    doc.setFontSize(9);
+    setColor(LARANJA);
+    doc.text("DIVISAO SOCIETARIA (50% / 50%)", M + 14, y + 18);
+    doc.setFont("helvetica", "normal");
     doc.setFontSize(10);
-    doc.setTextColor(cinza[0], cinza[1], cinza[2]);
-    doc.text("Margem " + lucroP.toFixed(1) + "%", W - M - 14, y + 34, {
+    setColor(ESCURO);
+    doc.text("Ruan (50%)", M + 14, y + 36);
+    doc.setFont("helvetica", "bold");
+    setColor(lucro >= 0 ? VERDE : VERMELHO);
+    doc.text(fmtR(lucro / 2), M + 120, y + 36);
+    doc.setFont("helvetica", "normal");
+    setColor(ESCURO);
+    doc.text("Fernando (50%)", M + 240, y + 36);
+    doc.setFont("helvetica", "bold");
+    setColor(lucro >= 0 ? VERDE : VERMELHO);
+    doc.text(fmtR(lucro / 2), W - M - 14, y + 36, {
       align: "right"
     });
-    y += 68;
-    checkPage(80);
-    titulo("Lan 2 Lan - Operacao Recorrente", escuro);
+    y += 66;
+
+    // ══════════ 2. FONTES DE FATURAMENTO ══════════
+    secao("2.", "Fontes de Faturamento", VERDE);
+    paragrafo("Distribuicao da receita bruta por origem. As obras representam projetos executados, o Lan 2 Lan e a receita recorrente de pontos de internet, e os contratos sao acordos de prestacao continuada.");
+    const fatItens = [["Obras", fat.obras], ["Lan 2 Lan (recorrente)", fat.l2l], ["Contratos", fat.contratos], ["Outras Receitas", fat.outras]];
+    fatItens.forEach(it => {
+      const p = fatTotal > 0 ? it[1] / fatTotal * 100 : 0;
+      kv(it[0] + "  (" + pct(p) + ")", fmtR(it[1]), VERDE);
+    });
+    y += 2;
+    setDraw([200, 200, 200]);
+    doc.line(M, y, W - M, y);
+    y += 14;
+    kv("TOTAL FATURADO", fmtR(fatTotal), VERDE, true);
+    y += 12;
+
+    // ══════════ 3. ESTRUTURA DE CUSTOS ══════════
+    secao("3.", "Estrutura de Custos", VERMELHO);
+    paragrafo("Detalhamento das despesas operacionais, custos diretos e carga tributaria. Os custos operacionais estao discriminados por natureza abaixo.");
+    kv("Custos de Obras", fmtR(cus.obras), VERMELHO);
+    kv("Custos Lan 2 Lan", fmtR(cus.l2l), VERMELHO);
+    kv("Custos Operacionais", fmtR(cus.custos_op), VERMELHO, true);
+    [["Pessoal", cus.co_pessoal], ["Beneficios", cus.co_beneficios], ["Locacao de Veiculos", cus.co_veiculos], ["Combustivel", cus.co_combustivel], ["EPI + Uniforme", cus.co_epi], ["Ferramentas", cus.co_ferramentas], ["Outros Operacionais", cus.co_outros]].forEach(it => {
+      if (it[1] > 0) kv(it[0], fmtR(it[1]), CINZA, false, 12);
+    });
+    kv("Impostos (" + (TOTAL_IMP_PCT * 100).toFixed(2) + "% sobre faturamento)", fmtR(cus.impostos), VERMELHO, true);
+    [["Sobre Obras", impObras], ["Sobre Lan 2 Lan", impPontos], ["Sobre Contratos", impContratos]].forEach(it => {
+      if (it[1] > 0) kv(it[0], fmtR(it[1]), CINZA, false, 12);
+    });
+    if (cus.invest > 0) kv("Investimentos", fmtR(cus.invest), VERMELHO);
+    if (cus.outros > 0) kv("Outros Custos", fmtR(cus.outros), VERMELHO);
+    y += 2;
+    setDraw([200, 200, 200]);
+    doc.line(M, y, W - M, y);
+    y += 14;
+    kv("TOTAL DE CUSTOS", fmtR(cusTotal), VERMELHO, true);
+    y += 12;
+
+    // ══════════ 4. RESULTADO ══════════
+    secao("4.", "Resultado do Periodo", LARANJA);
+    checkPage(70);
+    const resBg = lucro >= 0 ? [240, 253, 244] : [254, 242, 242];
+    setFill(resBg);
+    doc.roundedRect(M, y, W - M * 2, 60, 6, 6, "F");
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9);
+    setColor(CINZA);
+    doc.text("LUCRO LIQUIDO DO PERIODO", M + 16, y + 22);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(20);
+    setColor(lucro >= 0 ? VERDE : VERMELHO);
+    doc.text(fmtR(lucro), M + 16, y + 46);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9);
+    setColor(CINZA);
+    doc.text("Margem de Lucro", W - M - 16, y + 22, {
+      align: "right"
+    });
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(20);
+    setColor(lucro >= 0 ? VERDE : VERMELHO);
+    doc.text(pct(lucroP), W - M - 16, y + 46, {
+      align: "right"
+    });
+    y += 80;
+
+    // ══════════ 5. LAN 2 LAN ══════════
+    secao("5.", "Lan 2 Lan - Operacao Recorrente", AZUL);
     const l2lFatMes = pontos.reduce((s, p) => s + (parseFloat(p.faturamento) || 0), 0);
     const l2lCusMes = pontos.reduce((s, p) => s + (parseFloat(p.custo) || 0), 0);
-    kv("Pontos cadastrados", String(pontos.length));
-    kv("Faturamento mensal recorrente", fmtR(l2lFatMes), verde);
-    kv("Custo mensal recorrente", fmtR(l2lCusMes), vermelho);
-    kv("Lucro mensal recorrente L2L", fmtR(l2lFatMes - l2lCusMes), l2lFatMes - l2lCusMes >= 0 ? verde : vermelho, true);
-    y += 10;
-    checkPage(120);
-    titulo("Projecao (proximos 6 meses)", laranja);
+    const l2lLucroMes = l2lFatMes - l2lCusMes;
+    paragrafo("O Lan 2 Lan e a principal fonte de receita recorrente, gerando faturamento previsivel mensalmente. Atualmente sao " + pontos.length + " pontos ativos.");
+    kv("Pontos cadastrados", String(pontos.length), ESCURO);
+    kv("Faturamento mensal recorrente", fmtR(l2lFatMes), VERDE);
+    kv("Custo mensal recorrente", fmtR(l2lCusMes), VERMELHO);
+    kv("Lucro mensal recorrente", fmtR(l2lLucroMes), l2lLucroMes >= 0 ? VERDE : VERMELHO, true);
+    y += 12;
+
+    // ══════════ 6. PROJECAO ══════════
+    secao("6.", "Projecao Financeira (6 meses)", LARANJA);
     const mediaFatObrasProj = function () {
       const hoje = new Date();
       const meses = [];
@@ -4507,37 +4600,41 @@ function Dashboard({
     const fatProjMes = mediaFatObrasProj + l2lFatMes;
     const cusProjMes = cusRecMes + l2lCusMes + calcImpostos(fatProjMes);
     const lucroProjMes = fatProjMes - cusProjMes;
-    kv("Faturamento projetado / mes", fmtR(fatProjMes), verde);
-    kv("Custo projetado / mes", fmtR(cusProjMes), vermelho);
-    kv("Lucro projetado / mes", fmtR(lucroProjMes), lucroProjMes >= 0 ? verde : vermelho, true);
-    kv("Projecao de lucro em 6 meses", fmtR(lucroProjMes * 6), lucroProjMes >= 0 ? verde : vermelho, true);
-    y += 4;
-    doc.setFont("helvetica", "italic");
-    doc.setFontSize(8);
-    doc.setTextColor(cinza[0], cinza[1], cinza[2]);
-    doc.text("Projecao baseada na media de faturamento de obras dos ultimos 3 meses + recorrencia de L2L e custos fixos.", M, y, {
-      maxWidth: W - M * 2
-    });
-    y += 20;
+    paragrafo("Projecao baseada na media de faturamento de obras dos ultimos 3 meses somada a recorrencia do Lan 2 Lan, descontados os custos fixos e impostos.");
+    kv("Faturamento projetado / mes", fmtR(fatProjMes), VERDE);
+    kv("Custo projetado / mes", fmtR(cusProjMes), VERMELHO);
+    kv("Lucro projetado / mes", fmtR(lucroProjMes), lucroProjMes >= 0 ? VERDE : VERMELHO, true);
+    y += 2;
+    setDraw([200, 200, 200]);
+    doc.line(M, y, W - M, y);
+    y += 14;
+    kv("PROJECAO DE LUCRO EM 6 MESES", fmtR(lucroProjMes * 6), lucroProjMes >= 0 ? VERDE : VERMELHO, true);
+    y += 12;
+
+    // ══════════ 7. INVESTIMENTOS ══════════
     if (investInt.length > 0) {
-      checkPage(80);
-      titulo("Investimentos Futuros", [30, 64, 175]);
+      secao("7.", "Investimentos Futuros", AZUL);
+      paragrafo("Investimentos planejados que impactarao o fluxo de caixa nos proximos periodos.");
       investInt.forEach(inv => {
-        checkPage(16);
-        kv(inv.descricao || "-", fmtR(inv.valor || 0), [30, 64, 175]);
+        kv(inv.descricao || "Investimento", fmtR(inv.valor || 0), AZUL);
       });
       const totInv = investInt.reduce((s, i) => s + (i.valor || 0), 0);
-      linha();
-      kv("TOTAL INVESTIMENTOS", fmtR(totInv), [30, 64, 175], true);
+      y += 2;
+      setDraw([200, 200, 200]);
+      doc.line(M, y, W - M, y);
+      y += 14;
+      kv("TOTAL EM INVESTIMENTOS", fmtR(totInv), AZUL, true);
     }
+
+    // Rodape em todas as paginas + numeracao
+    rodape();
     const totalPaginas = doc.internal.getNumberOfPages();
     for (let i = 1; i <= totalPaginas; i++) {
       doc.setPage(i);
       doc.setFont("helvetica", "normal");
-      doc.setFontSize(8);
+      doc.setFontSize(7.5);
       doc.setTextColor(180, 180, 180);
-      doc.text("SIR - Sistema de Inteligencia Regional - Grupo Jet - Documento confidencial", M, H - 22);
-      doc.text("Pagina " + i + " de " + totalPaginas, W - M, H - 22, {
+      doc.text("Pagina " + i + " de " + totalPaginas, W - M, H - 20, {
         align: "right"
       });
     }
