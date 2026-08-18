@@ -4406,6 +4406,29 @@ function Dashboard({
       doc.text(ls, M, y);
       y += ls.length * 12 + 8;
     };
+    // Mede a altura que uma legenda vai ocupar, sem desenhar nada (usa a mesma
+    // fonte/tamanho da legenda real para o splitTextToSize dar o mesmo resultado)
+    const medirLegenda = txt => {
+      doc.setFont("helvetica", "italic");
+      doc.setFontSize(9);
+      const ls = doc.splitTextToSize(txt, W - M * 2);
+      return ls.length * 12 + 8;
+    };
+    // Altura util maxima de uma pagina em branco (do topo M ate o limite do rodape)
+    const ALTURA_UTIL_PAGINA = H - M - 64;
+    // Garante que uma secao inteira (titulo + legenda + tabela + total) nao comece
+    // perto do fim da pagina e seja cortada no meio: se a secao cabe inteira numa
+    // pagina em branco mas nao cabe no espaco restante da atual, pula para a proxima
+    // pagina ANTES de desenhar qualquer coisa da secao. Se a secao for maior que uma
+    // pagina inteira (caso raro, ex: muitos itens), deixa o fluxo normal por linha
+    // cuidar da quebra (fallback), pois nesse caso nao ha como evitar a quebra.
+    const iniciarBloco = alturaEstimada => {
+      if (alturaEstimada <= ALTURA_UTIL_PAGINA && y + alturaEstimada > H - 64) {
+        rodape();
+        doc.addPage();
+        y = M;
+      }
+    };
     // Bloco com cabecalho escuro (estilo "RD TELECOM LTDA")
     const blocoHeader = (titulo, sub, cor = ESCURO) => {
       checkPage(40);
@@ -4499,8 +4522,11 @@ function Dashboard({
     y += 4;
 
     // ══════ 1. RESUMO EXECUTIVO ══════
+    const legR1_1 = "Visao consolidada dos principais indicadores financeiros do periodo.";
+    const legR1_2 = "Faturamento bruto de " + fmtR(fatTotal) + ", custos totais de " + fmtR(cusTotal) + " (incluindo " + fmtR(cus.impostos) + " de impostos), resultando em lucro liquido de " + fmtR(lucro) + " e margem de " + pct(lucroP) + ".";
+    iniciarBloco(36 + medirLegenda(legR1_1) + 78 + medirLegenda(legR1_2) + 58);
     secao("Resumo Executivo");
-    legenda("Visao consolidada dos principais indicadores financeiros do periodo.");
+    legenda(legR1_1);
     const gap = 12,
       bw = (W - M * 2 - gap * 2) / 3,
       bh = 62;
@@ -4522,7 +4548,7 @@ function Dashboard({
     cartao(M + bw + gap, "Custos", cusTotal, VERMELHO);
     cartao(M + (bw + gap) * 2, "Lucro Liquido", lucro, lucro >= 0 ? VERDE : VERMELHO);
     y += bh + 16;
-    legenda("Faturamento bruto de " + fmtR(fatTotal) + ", custos totais de " + fmtR(cusTotal) + " (incluindo " + fmtR(cus.impostos) + " de impostos), resultando em lucro liquido de " + fmtR(lucro) + " e margem de " + pct(lucroP) + ".");
+    legenda(legR1_2);
     // Divisao societaria
     checkPage(46);
     setF(BG_LARANJA);
@@ -4549,8 +4575,10 @@ function Dashboard({
     y += 58;
 
     // ══════ 2. FATURAMENTO ══════
+    const legR2 = "Distribuicao da receita bruta por origem: obras executadas, receita recorrente de Lan 2 Lan, contratos e outras receitas.";
+    iniciarBloco(36 + medirLegenda(legR2) + 33 + 4 * 20 + 30 + 8);
     secao("Fontes de Faturamento");
-    legenda("Distribuicao da receita bruta por origem: obras executadas, receita recorrente de Lan 2 Lan, contratos e outras receitas.");
+    legenda(legR2);
     blocoHeader("RECEITAS POR CATEGORIA", null, VERDE);
     resetZebra();
     [["Obras", fat.obras], ["Lan 2 Lan (recorrente)", fat.l2l], ["Contratos", fat.contratos], ["Outras Receitas", fat.outras]].forEach(it => {
@@ -4561,31 +4589,38 @@ function Dashboard({
     y += 8;
 
     // ══════ 3. CUSTOS ══════
+    const legR3 = "Detalhamento das despesas operacionais, custos diretos, investimentos e carga tributaria.";
+    const coItemsAtivos = [["Pessoal", cus.co_pessoal], ["Beneficios", cus.co_beneficios], ["Locacao de Veiculos", cus.co_veiculos], ["Combustivel", cus.co_combustivel], ["EPI + Uniforme", cus.co_epi], ["Ferramentas", cus.co_ferramentas], ["Outros Op.", cus.co_outros]].filter(it => it[1] > 0);
+    const invItemsAtivos = [["Ferramentas", cus.inv_ferramentas], ["EPI/EPC", cus.inv_epi], ["Uniformes", cus.inv_uniformes], ["Equipamentos", cus.inv_equipamentos], ["Outros Inv.", cus.inv_outros]].filter(it => it[1] > 0);
+    const impItemsAtivos = [["Sobre Obras", impObras], ["Sobre Lan 2 Lan", impPontos], ["Sobre Contratos", impContratos]].filter(it => it[1] > 0);
+    const linhasCustos3 = 3 /*obras+l2l+custos_op*/ + coItemsAtivos.length + (cus.invest > 0 ? 1 + invItemsAtivos.length : 0) + 1 /*impostos*/ + impItemsAtivos.length + (cus.outros > 0 ? 1 : 0);
+    iniciarBloco(36 + medirLegenda(legR3) + 33 + linhasCustos3 * 20 + 30 + 8);
     secao("Estrutura de Custos");
-    legenda("Detalhamento das despesas operacionais, custos diretos, investimentos e carga tributaria.");
+    legenda(legR3);
     blocoHeader("DESPESAS POR CATEGORIA", null, VERMELHO);
     resetZebra();
     linhaKV("Custos de Obras", fmtR(cus.obras), VERMELHO);
     linhaKV("Custos Lan 2 Lan", fmtR(cus.l2l), VERMELHO);
     linhaKV("Custos Operacionais", fmtR(cus.custos_op), VERMELHO, true);
-    [["Pessoal", cus.co_pessoal], ["Beneficios", cus.co_beneficios], ["Locacao de Veiculos", cus.co_veiculos], ["Combustivel", cus.co_combustivel], ["EPI + Uniforme", cus.co_epi], ["Ferramentas", cus.co_ferramentas], ["Outros Op.", cus.co_outros]].forEach(it => {
-      if (it[1] > 0) linhaKV(it[0], fmtR(it[1]), CINZA, false, true);
+    coItemsAtivos.forEach(it => {
+      linhaKV(it[0], fmtR(it[1]), CINZA, false, true);
     });
     if (cus.invest > 0) {
       linhaKV("Investimentos", fmtR(cus.invest), VERMELHO, true);
-      [["Ferramentas", cus.inv_ferramentas], ["EPI/EPC", cus.inv_epi], ["Uniformes", cus.inv_uniformes], ["Equipamentos", cus.inv_equipamentos], ["Outros Inv.", cus.inv_outros]].forEach(it => {
-        if (it[1] > 0) linhaKV(it[0], fmtR(it[1]), CINZA, false, true);
+      invItemsAtivos.forEach(it => {
+        linhaKV(it[0], fmtR(it[1]), CINZA, false, true);
       });
     }
     linhaKV("Impostos (" + (TOTAL_IMP_PCT * 100).toFixed(2) + "%)", fmtR(cus.impostos), VERMELHO, true);
-    [["Sobre Obras", impObras], ["Sobre Lan 2 Lan", impPontos], ["Sobre Contratos", impContratos]].forEach(it => {
-      if (it[1] > 0) linhaKV(it[0], fmtR(it[1]), CINZA, false, true);
+    impItemsAtivos.forEach(it => {
+      linhaKV(it[0], fmtR(it[1]), CINZA, false, true);
     });
     if (cus.outros > 0) linhaKV("Outros Custos", fmtR(cus.outros), VERMELHO);
     totalRow("TOTAL DE CUSTOS", fmtR(cusTotal), VERMELHO);
     y += 8;
 
     // ══════ 4. RESULTADO ══════
+    iniciarBloco(36 + 74);
     secao("Resultado do Periodo");
     checkPage(60);
     const rbg = lucro >= 0 ? [240, 250, 243] : [252, 240, 240];
@@ -4616,10 +4651,12 @@ function Dashboard({
     y += 74;
 
     // ══════ 5. LAN 2 LAN ══════
-    secao("Lan 2 Lan - Operacao Recorrente");
     const l2lF = pontos.reduce((s, p) => s + (parseFloat(p.faturamento) || 0), 0);
     const l2lC = pontos.reduce((s, p) => s + (parseFloat(p.custo) || 0), 0);
-    legenda("Principal fonte de receita recorrente, com faturamento previsivel mensal. Atualmente " + pontos.length + " pontos ativos.");
+    const legR5 = "Principal fonte de receita recorrente, com faturamento previsivel mensal. Atualmente " + pontos.length + " pontos ativos.";
+    iniciarBloco(36 + medirLegenda(legR5) + 33 + 3 * 20 + 30 + 8);
+    secao("Lan 2 Lan - Operacao Recorrente");
+    legenda(legR5);
     blocoHeader("INDICADORES MENSAIS RECORRENTES", null, AZUL);
     resetZebra();
     linhaKV("Pontos cadastrados", String(pontos.length));
@@ -4629,6 +4666,8 @@ function Dashboard({
     y += 8;
 
     // ══════ 6. PROJECAO ══════
+    const legR6 = "Projecao baseada na media de faturamento de obras dos ultimos 3 meses somada a recorrencia do Lan 2 Lan, descontados custos fixos e impostos.";
+    iniciarBloco(36 + medirLegenda(legR6) + 33 + 3 * 20 + 30 + 8);
     secao("Projecao Financeira (6 meses)");
     const mediaObras = function () {
       const hoje = new Date();
@@ -4651,7 +4690,7 @@ function Dashboard({
     const fProj = mediaObras + l2lF;
     const cProj = cusRec + l2lC + calcImpostos(fProj);
     const lProj = fProj - cProj;
-    legenda("Projecao baseada na media de faturamento de obras dos ultimos 3 meses somada a recorrencia do Lan 2 Lan, descontados custos fixos e impostos.");
+    legenda(legR6);
     blocoHeader("ESTIMATIVA MENSAL PROJETADA", null, LARANJA);
     resetZebra();
     linhaKV("Faturamento projetado / mes", fmtR(fProj), VERDE);
@@ -4662,8 +4701,10 @@ function Dashboard({
 
     // ══════ 7. INVESTIMENTOS FUTUROS ══════
     if (investInt.length > 0) {
+      const legR7 = "Investimentos planejados que impactarao o fluxo de caixa nos proximos periodos.";
+      iniciarBloco(36 + medirLegenda(legR7) + 33 + investInt.length * 20 + 30);
       secao("Investimentos Futuros");
-      legenda("Investimentos planejados que impactarao o fluxo de caixa nos proximos periodos.");
+      legenda(legR7);
       blocoHeader("PLANO DE INVESTIMENTOS", null, AZUL);
       resetZebra();
       investInt.forEach(inv => {
