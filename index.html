@@ -2297,24 +2297,37 @@ function PDFClientePersonalizado({
     currency: "BRL"
   });
   const hoje = new Date().toISOString().slice(0, 10);
-  const [form, setForm] = React.useState({
+
+  // Rascunho salvo automaticamente por orçamento — permite fechar/reabrir sem perder o que já foi digitado
+  const draftKey = "sir_pdf_draft_" + budget.id;
+  const draftSalvo = React.useMemo(() => {
+    try {
+      const raw = localStorage.getItem(draftKey);
+      return raw ? JSON.parse(raw) : null;
+    } catch (e) {
+      return null;
+    }
+  }, [draftKey]);
+  const formPadrao = () => ({
     titulo: (budget.titulo || "").toUpperCase(),
     destinatario: budget.cliente || "",
     projeto: "",
     objeto: "",
     dataDocumento: hoje
   });
-  const upd = k => e => setForm(p => ({
-    ...p,
-    [k]: e.target.value
-  }));
-  const [blocos, setBlocos] = React.useState([{
+  const blocosPadrao = () => [{
     id: uid(),
     titulo: "Localização ponto de rompimento",
     linhas: "Endereço: \nCoordenadas: ",
     imagem: null,
     imagemNome: ""
-  }]);
+  }];
+  const [form, setForm] = React.useState(() => draftSalvo?.form || formPadrao());
+  const upd = k => e => setForm(p => ({
+    ...p,
+    [k]: e.target.value
+  }));
+  const [blocos, setBlocos] = React.useState(() => draftSalvo?.blocos || blocosPadrao());
   const addBloco = () => setBlocos(p => [...p, {
     id: uid(),
     titulo: "",
@@ -2327,6 +2340,36 @@ function PDFClientePersonalizado({
     ...bl,
     [campo]: valor
   } : bl));
+
+  // Auto-salva o rascunho (texto + fotos) sempre que algo muda, para não perder nada
+  // caso a pessoa feche o modal e precise voltar depois para ajustar algo.
+  React.useEffect(() => {
+    try {
+      localStorage.setItem(draftKey, JSON.stringify({
+        form,
+        blocos
+      }));
+    } catch (e) {
+      // Provavelmente quota excedida por causa das fotos em base64 — tenta salvar só o texto
+      try {
+        localStorage.setItem(draftKey, JSON.stringify({
+          form,
+          blocos: blocos.map(bl => ({
+            ...bl,
+            imagem: null
+          }))
+        }));
+      } catch (e2) {}
+    }
+  }, [form, blocos, draftKey]);
+  const limparRascunho = () => {
+    if (!confirm("Limpar todas as informações preenchidas neste PDF? Essa ação não pode ser desfeita.")) return;
+    try {
+      localStorage.removeItem(draftKey);
+    } catch (e) {}
+    setForm(formPadrao());
+    setBlocos(blocosPadrao());
+  };
   const handleImagem = (id, file) => {
     if (!file) return;
     updBloco(id, "imagemNome", file.name);
@@ -2669,15 +2712,36 @@ function PDFClientePersonalizado({
     maxWidth: 760
   }, /*#__PURE__*/React.createElement("div", {
     style: {
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      gap: 10,
       background: "#f0f9ff",
       border: "1px solid #bae6fd",
       borderRadius: 8,
       padding: "10px 14px",
-      fontSize: 11,
-      color: "#0369a1",
       marginBottom: 14
     }
-  }, "O orçamento (serviços, materiais e valores) já vem preenchido automaticamente com os itens deste orçamento — só as informações de capa e as fotos precisam ser preenchidas."), /*#__PURE__*/React.createElement(FRow, {
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: "#0369a1"
+    }
+  }, "O orçamento (serviços, materiais e valores) já vem preenchido automaticamente com os itens deste orçamento — só as informações de capa e as fotos precisam ser preenchidas.", /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginTop: 4,
+      color: "#0284c7"
+    }
+  }, "💾 Tudo que você digitar aqui é salvo automaticamente — pode fechar e voltar depois sem perder nada.")), /*#__PURE__*/React.createElement("button", {
+    style: {
+      ...btn(),
+      fontSize: 10,
+      padding: "4px 8px",
+      whiteSpace: "nowrap",
+      color: "#ef4444"
+    },
+    onClick: limparRascunho
+  }, "Limpar rascunho")), /*#__PURE__*/React.createElement(FRow, {
     full: true
   }, /*#__PURE__*/React.createElement(Field, {
     label: "Título do documento *"
@@ -3082,8 +3146,7 @@ function Modal({
       alignItems: "center",
       justifyContent: "center",
       padding: 20
-    },
-    onClick: e => e.target === e.currentTarget && onClose()
+    }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
       background: "#fff",
@@ -3186,8 +3249,7 @@ function Confirm({
       alignItems: "center",
       justifyContent: "center",
       padding: 20
-    },
-    onClick: e => e.target === e.currentTarget && onCancel()
+    }
   }, /*#__PURE__*/React.createElement("div", {
     style: {
       background: "#fff",
