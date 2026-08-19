@@ -2280,7 +2280,590 @@ function PDFPreview({
   }, /*#__PURE__*/React.createElement("span", null, "Grupo Jet — SIR Sistema de Inteligência Regional"), /*#__PURE__*/React.createElement("span", null, "Gerado em ", new Date().toLocaleString("pt-BR"))))));
 }
 
-// Badge styles
+// ─── PDF EXECUTIVO PERSONALIZADO (carta ao cliente, padrão orçamento oficial) ──
+function PDFClientePersonalizado({
+  budget,
+  showToast,
+  onClose
+}) {
+  const itens = budget.itens || [];
+  const servicos = itens.filter(i => i.tipo === "servico");
+  const materiais = itens.filter(i => i.tipo === "material");
+  const totalServ = servicos.reduce((s, i) => s + i.vt, 0);
+  const totalMat = materiais.reduce((s, i) => s + i.vt, 0);
+  const totalGeral = totalServ + totalMat;
+  const f = v => (v || 0).toLocaleString("pt-BR", {
+    style: "currency",
+    currency: "BRL"
+  });
+  const hoje = new Date().toISOString().slice(0, 10);
+  const [form, setForm] = React.useState({
+    titulo: (budget.titulo || "").toUpperCase(),
+    destinatario: budget.cliente || "",
+    projeto: "",
+    objeto: "",
+    dataDocumento: hoje
+  });
+  const upd = k => e => setForm(p => ({
+    ...p,
+    [k]: e.target.value
+  }));
+  const [blocos, setBlocos] = React.useState([{
+    id: uid(),
+    titulo: "Localização ponto de rompimento",
+    linhas: "Endereço: \nCoordenadas: ",
+    imagem: null,
+    imagemNome: ""
+  }]);
+  const addBloco = () => setBlocos(p => [...p, {
+    id: uid(),
+    titulo: "",
+    linhas: "",
+    imagem: null,
+    imagemNome: ""
+  }]);
+  const removeBloco = id => setBlocos(p => p.filter(bl => bl.id !== id));
+  const updBloco = (id, campo, valor) => setBlocos(p => p.map(bl => bl.id === id ? {
+    ...bl,
+    [campo]: valor
+  } : bl));
+  const handleImagem = (id, file) => {
+    if (!file) return;
+    updBloco(id, "imagemNome", file.name);
+    const reader = new FileReader();
+    reader.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        updBloco(id, "imagem", {
+          dataUrl: reader.result,
+          w: img.naturalWidth,
+          h: img.naturalHeight
+        });
+      };
+      img.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+  };
+  const [gerando, setGerando] = React.useState(false);
+  const gerarPDF = () => {
+    if (!window.jspdf) {
+      showToast && showToast("Carregando biblioteca PDF, tente novamente...", "err");
+      return;
+    }
+    if (!form.titulo.trim()) {
+      alert("Preencha o título do documento.");
+      return;
+    }
+    setGerando(true);
+    try {
+      const {
+        jsPDF
+      } = window.jspdf;
+      const doc = new jsPDF({
+        unit: "pt",
+        format: "a4"
+      });
+      const W = doc.internal.pageSize.getWidth();
+      const H = doc.internal.pageSize.getHeight();
+      const M = 50;
+      let y = 100;
+      const LARANJA = [232, 101, 10],
+        CINZA = [110, 110, 110],
+        CINZA_C = [150, 150, 150],
+        ESCURO = [35, 35, 38],
+        PRETO = [20, 20, 20];
+      const setC = c => doc.setTextColor(c[0], c[1], c[2]);
+      const setF = c => doc.setFillColor(c[0], c[1], c[2]);
+      const setD = c => doc.setDrawColor(c[0], c[1], c[2]);
+      const mesesPt = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
+      const [dy, dm, dd] = (form.dataDocumento || hoje).split("-").map(Number);
+      const dataFmt = dd + " de " + mesesPt[dm - 1] + " de " + dy + ".";
+      const cabecalho = () => {
+        setF([242, 242, 244]);
+        doc.rect(0, 0, W, 78, "F");
+        try {
+          doc.addImage(LOGO_B64, "JPEG", M, 18, 108, 40);
+        } catch (e) {}
+        setF(LARANJA);
+        doc.rect(0, 78, W, 4, "F");
+      };
+      const rodape = () => {
+        setD([225, 225, 225]);
+        doc.setLineWidth(0.5);
+        doc.line(M, H - 56, W - M, H - 56);
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(8);
+        setC(CINZA_C);
+        doc.text("Grupo Jet - Tecnologia e Conectividade na Velocidade de seus Negócios!", W / 2, H - 42, {
+          align: "center"
+        });
+        doc.setFontSize(7.5);
+        doc.text("AV. Santos, nº 398, Jd. Novo Mundo, Goiânia/GO - CEP: 74.715-450  |  062 9 9107-3069  |  ozorio.neto@grupojet.com.br", W / 2, H - 30, {
+          align: "center"
+        });
+        setF(LARANJA);
+        doc.rect(0, H - 10, W, 10, "F");
+      };
+      const novaPagina = () => {
+        rodape();
+        doc.addPage();
+        y = 100;
+        cabecalho();
+      };
+      const checkPage = (need = 60) => {
+        if (y + need > H - 70) novaPagina();
+      };
+      const ALTURA_UTIL_PAGINA = H - 100 - 70;
+      const iniciarBloco = altura => {
+        if (altura <= ALTURA_UTIL_PAGINA && y + altura > H - 70) novaPagina();
+      };
+      cabecalho();
+
+      // Título do documento
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(14);
+      setC(PRETO);
+      const tituloLines = doc.splitTextToSize(form.titulo.toUpperCase(), W - M * 2);
+      doc.text(tituloLines, W / 2, y, {
+        align: "center"
+      });
+      const tituloH = tituloLines.length * 17;
+      setD(PRETO);
+      doc.setLineWidth(0.8);
+      doc.line(W / 2 - 120, y + tituloH - 4, W / 2 + 120, y + tituloH - 4);
+      y += tituloH + 24;
+
+      // Destinatário
+      if (form.destinatario.trim()) {
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(12);
+        setC(PRETO);
+        doc.text("À ADMINISTRAÇÃO " + form.destinatario.toUpperCase(), M, y);
+        y += 26;
+      }
+
+      // Parágrafo institucional (fixo, com trecho de projeto customizável)
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(10.5);
+      setC(ESCURO);
+      const projetoTxt = form.projeto.trim() ? "em cumprimento ao " + form.projeto.trim() + "." : "";
+      const paraInst = "A empresa RD TELECOM LTDA, inscrita no CNPJ/MF sob o n.º 07.426.902/0001-33, Inscrição Estadual n° 10.389.525-6, sediada na Av. Santos, Qd. 17, Lt. 07, Jardim Novo Mundo, Goiânia/GO CEP: 74.715-450, (62) 9 9254-7655, por meio do seu representante legal, o(a) Sr(a) Ruan Carlos Aleluia Lobo, " + projetoTxt;
+      const linesInst = doc.splitTextToSize(paraInst, W - M * 2);
+      checkPage(linesInst.length * 14 + 10);
+      doc.text(linesInst, M, y);
+      y += linesInst.length * 14 + 18;
+
+      // Texto do objeto (customizável)
+      if (form.objeto.trim()) {
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(10.5);
+        setC(ESCURO);
+        const linesObj = doc.splitTextToSize(form.objeto.trim(), W - M * 2);
+        checkPage(linesObj.length * 14 + 10);
+        doc.text(linesObj, M, y);
+        y += linesObj.length * 14 + 20;
+      }
+
+      // Blocos de imagem (localização, fotos do ponto, etc.)
+      blocos.forEach((bl, idx) => {
+        if (!bl.imagem && !bl.titulo.trim()) return;
+        const linhasArr = (bl.linhas || "").split("\n").map(s => s.trim()).filter(Boolean);
+        let imgW = 0,
+          imgH = 0;
+        if (bl.imagem) {
+          const maxW = W - M * 2,
+            maxH = 320;
+          const ratio = Math.min(maxW / bl.imagem.w, maxH / bl.imagem.h, 1);
+          imgW = bl.imagem.w * ratio;
+          imgH = bl.imagem.h * ratio;
+        }
+        const alturaBloco = 20 + linhasArr.length * 12 + (linhasArr.length ? 8 : 0) + (bl.imagem ? imgH + 10 : 0) + 16;
+        iniciarBloco(alturaBloco);
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(11);
+        setC(PRETO);
+        doc.text(idx + 1 + ". " + (bl.titulo || "Imagem"), M, y);
+        y += 16;
+        if (linhasArr.length) {
+          doc.setFontSize(9);
+          linhasArr.forEach(ln => {
+            const partes = ln.split(":");
+            if (partes.length > 1) {
+              doc.setFont("helvetica", "bold");
+              setC(ESCURO);
+              doc.text(partes[0] + ":", M, y);
+              const w1 = doc.getTextWidth(partes[0] + ": ");
+              doc.setFont("helvetica", "normal");
+              setC(CINZA);
+              doc.text(partes.slice(1).join(":").trim(), M + w1, y);
+            } else {
+              doc.setFont("helvetica", "normal");
+              setC(CINZA);
+              doc.text(ln, M, y);
+            }
+            y += 12;
+          });
+          y += 8;
+        }
+        if (bl.imagem) {
+          try {
+            const tipoImg = bl.imagem.dataUrl.indexOf("image/png") > -1 ? "PNG" : "JPEG";
+            doc.addImage(bl.imagem.dataUrl, tipoImg, M, y, imgW, imgH);
+          } catch (e) {}
+          y += imgH + 10;
+        }
+        y += 16;
+      });
+
+      // ══════ PÁGINA DO ORÇAMENTO ══════
+      novaPagina();
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(15);
+      setC(PRETO);
+      doc.text("ORÇAMENTO", W / 2, y, {
+        align: "center"
+      });
+      setD(PRETO);
+      doc.setLineWidth(0.8);
+      doc.line(W / 2 - 50, y + 6, W / 2 + 50, y + 6);
+      y += 30;
+      const gap = 12,
+        cw = (W - M * 2 - gap * 2) / 3,
+        ch = 48;
+      const kpi = (x, label, val, cor, bg) => {
+        setF(bg);
+        doc.rect(x, y, cw, ch, "F");
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(8);
+        setC(CINZA);
+        doc.text(label.toUpperCase(), x + 10, y + 18);
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(13);
+        setC(cor);
+        doc.text(f(val), x + 10, y + 37);
+      };
+      kpi(M, "Serviços (" + servicos.length + ")", totalServ, [22, 120, 60], [240, 250, 243]);
+      kpi(M + cw + gap, "Materiais (" + materiais.length + ")", totalMat, [40, 90, 170], [237, 242, 250]);
+      kpi(M + (cw + gap) * 2, "Total Geral", totalGeral, [30, 58, 138], [219, 234, 254]);
+      y += ch + 22;
+      setF(ESCURO);
+      doc.rect(M, y, W - M * 2, 22, "F");
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(8.5);
+      doc.setTextColor(255, 255, 255);
+      doc.text("CÓDIGO", M + 8, y + 14);
+      doc.text("DESCRIÇÃO", M + 70, y + 14);
+      doc.text("UNID.", W - M - 190, y + 14);
+      doc.text("QTD.", W - M - 140, y + 14, {
+        align: "right"
+      });
+      doc.text("VAL. UNIT.", W - M - 75, y + 14, {
+        align: "right"
+      });
+      doc.text("VAL. TOTAL", W - M - 8, y + 14, {
+        align: "right"
+      });
+      y += 22;
+      let zebraB = false;
+      const larguraDesc = W - M - 190 - (M + 70) - 10;
+      const linhaGrupo = (label, rows, sub) => {
+        if (rows.length === 0) return;
+        checkPage(24);
+        setF([243, 244, 246]);
+        doc.rect(M, y, W - M * 2, 18, "F");
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(8.5);
+        setC(ESCURO);
+        doc.text(label, M + 8, y + 12.5);
+        y += 18;
+        zebraB = false;
+        rows.forEach(i => {
+          const descLines = doc.splitTextToSize(i.descricao || "", larguraDesc).slice(0, 2);
+          const linhaAltura = Math.max(18, descLines.length * 10.5 + 7.5);
+          checkPage(linhaAltura + 2);
+          if (zebraB) {
+            setF([249, 249, 250]);
+            doc.rect(M, y, W - M * 2, linhaAltura, "F");
+          }
+          zebraB = !zebraB;
+          doc.setFont("helvetica", "normal");
+          doc.setFontSize(8.5);
+          setC(CINZA_C);
+          doc.text(i.codigo || "-", M + 8, y + 12.5);
+          setC(ESCURO);
+          descLines.forEach((ln, li) => {
+            doc.text(ln, M + 70, y + 12.5 + li * 10.5);
+          });
+          doc.text(i.unidade || "", W - M - 190, y + 12.5);
+          doc.text(String(i.qtd || 0), W - M - 140, y + 12.5, {
+            align: "right"
+          });
+          doc.text(f(i.vu), W - M - 75, y + 12.5, {
+            align: "right"
+          });
+          doc.setFont("helvetica", "bold");
+          doc.text(f(i.vt), W - M - 8, y + 12.5, {
+            align: "right"
+          });
+          y += linhaAltura;
+        });
+        checkPage(22);
+        setF([230, 232, 236]);
+        doc.rect(M, y, W - M * 2, 18, "F");
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(8.5);
+        setC(ESCURO);
+        doc.text("Subtotal " + label + ":", W - M - 90, y + 12.5, {
+          align: "right"
+        });
+        doc.text(f(sub), W - M - 8, y + 12.5, {
+          align: "right"
+        });
+        y += 18;
+      };
+      linhaGrupo("SERVIÇOS", servicos, totalServ);
+      linhaGrupo("MATERIAIS", materiais, totalMat);
+      checkPage(30);
+      setF(ESCURO);
+      doc.rect(M, y, W - M * 2, 26, "F");
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(11);
+      doc.setTextColor(255, 255, 255);
+      doc.text("TOTAL GERAL:", W - M - 90, y + 17, {
+        align: "right"
+      });
+      doc.text(f(totalGeral), W - M - 8, y + 17, {
+        align: "right"
+      });
+      y += 46;
+      checkPage(30);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(11);
+      setC(PRETO);
+      doc.text("Goiânia/GO, " + dataFmt, W / 2, y, {
+        align: "center"
+      });
+      rodape();
+      const np = doc.internal.getNumberOfPages();
+      for (let i = 1; i <= np; i++) {
+        doc.setPage(i);
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(7);
+        doc.setTextColor(160, 160, 160);
+        doc.text("Pagina " + i + " de " + np, W - M, H - 16, {
+          align: "right"
+        });
+      }
+      doc.save((form.titulo || "Orcamento").replace(/[^a-zA-Z0-9]/g, "_").replace(/_+/g, "_") + ".pdf");
+      showToast && showToast("PDF gerado com sucesso!");
+      onClose();
+    } catch (e) {
+      console.error(e);
+      showToast && showToast("Erro ao gerar PDF: " + e.message, "err");
+    }
+    setGerando(false);
+  };
+  return /*#__PURE__*/React.createElement(Modal, {
+    title: "🖨️ Gerar PDF Executivo — " + (budget.titulo || ""),
+    onClose: onClose,
+    maxWidth: 760
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: "#f0f9ff",
+      border: "1px solid #bae6fd",
+      borderRadius: 8,
+      padding: "10px 14px",
+      fontSize: 11,
+      color: "#0369a1",
+      marginBottom: 14
+    }
+  }, "O orçamento (serviços, materiais e valores) já vem preenchido automaticamente com os itens deste orçamento — só as informações de capa e as fotos precisam ser preenchidas."), /*#__PURE__*/React.createElement(FRow, {
+    full: true
+  }, /*#__PURE__*/React.createElement(Field, {
+    label: "Título do documento *"
+  }, /*#__PURE__*/React.createElement("input", {
+    style: inp,
+    value: form.titulo,
+    onChange: upd("titulo"),
+    placeholder: "Ex: ORÇAMENTO RECUPERAÇÃO 5ª ROMPIMENTO"
+  }))), /*#__PURE__*/React.createElement(FRow, null, /*#__PURE__*/React.createElement(Field, {
+    label: "Destinatário (À ADMINISTRAÇÃO...)"
+  }, /*#__PURE__*/React.createElement("input", {
+    style: inp,
+    value: form.destinatario,
+    onChange: upd("destinatario"),
+    placeholder: "Ex: BRILHA GOIÂNIA"
+  })), /*#__PURE__*/React.createElement(Field, {
+    label: "Data do documento"
+  }, /*#__PURE__*/React.createElement("input", {
+    style: inp,
+    type: "date",
+    value: form.dataDocumento,
+    onChange: upd("dataDocumento")
+  }))), /*#__PURE__*/React.createElement(FRow, {
+    full: true
+  }, /*#__PURE__*/React.createElement(Field, {
+    label: "Projeto / motivo (em cumprimento ao...)"
+  }, /*#__PURE__*/React.createElement("input", {
+    style: inp,
+    value: form.projeto,
+    onChange: upd("projeto"),
+    placeholder: "Ex: projeto de câmeras do BRILHA GOIANIA"
+  }))), /*#__PURE__*/React.createElement(FRow, {
+    full: true
+  }, /*#__PURE__*/React.createElement(Field, {
+    label: "Texto do objeto / descrição"
+  }, /*#__PURE__*/React.createElement("textarea", {
+    style: {
+      ...inp,
+      minHeight: 70,
+      resize: "vertical"
+    },
+    value: form.objeto,
+    onChange: upd("objeto"),
+    placeholder: "Ex: Apresentamos o orçamento para recuperação da rota do backbone (anel) rompido no dia 09/06/2026 em decorrência de troca de poste realizada pela concessionária de energia."
+  }))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginTop: 4,
+      marginBottom: 14
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      marginBottom: 8
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontWeight: 700,
+      fontSize: 12,
+      color: "#374151"
+    }
+  }, "📍 Seções de Imagem (localização, fotos do ponto, etc.)"), /*#__PURE__*/React.createElement("button", {
+    style: {
+      ...btn(),
+      fontSize: 11,
+      padding: "4px 10px"
+    },
+    onClick: addBloco
+  }, "+ Adicionar Seção")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      flexDirection: "column",
+      gap: 10
+    }
+  }, blocos.map((bl, idx) => /*#__PURE__*/React.createElement("div", {
+    key: bl.id,
+    style: {
+      border: "1px solid #e5e7eb",
+      borderRadius: 8,
+      padding: 12,
+      background: "#fafafa"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      marginBottom: 8
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: 11,
+      fontWeight: 700,
+      color: "#6b7280"
+    }
+  }, "Seção ", idx + 1), /*#__PURE__*/React.createElement("button", {
+    style: {
+      ...btn(),
+      padding: "3px 8px",
+      fontSize: 10,
+      color: "#ef4444"
+    },
+    onClick: () => removeBloco(bl.id)
+  }, "Remover")), /*#__PURE__*/React.createElement(FRow, {
+    full: true
+  }, /*#__PURE__*/React.createElement(Field, {
+    label: "Título da seção"
+  }, /*#__PURE__*/React.createElement("input", {
+    style: inp,
+    value: bl.titulo,
+    onChange: e => updBloco(bl.id, "titulo", e.target.value),
+    placeholder: "Ex: Ponto de rompimento"
+  }))), /*#__PURE__*/React.createElement(FRow, {
+    full: true
+  }, /*#__PURE__*/React.createElement(Field, {
+    label: "Informações (uma por linha, use 'Rótulo: valor')"
+  }, /*#__PURE__*/React.createElement("textarea", {
+    style: {
+      ...inp,
+      minHeight: 50,
+      resize: "vertical",
+      fontFamily: "monospace",
+      fontSize: 11
+    },
+    value: bl.linhas,
+    onChange: e => updBloco(bl.id, "linhas", e.target.value),
+    placeholder: "Causa: Troca de Poste"
+  }))), /*#__PURE__*/React.createElement(FRow, {
+    full: true
+  }, /*#__PURE__*/React.createElement(Field, {
+    label: "Imagem / Foto"
+  }, /*#__PURE__*/React.createElement("input", {
+    type: "file",
+    accept: "image/*",
+    style: {
+      ...inp,
+      padding: 6
+    },
+    onChange: e => handleImagem(bl.id, e.target.files[0])
+  }), bl.imagem && /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginTop: 8
+    }
+  }, /*#__PURE__*/React.createElement("img", {
+    src: bl.imagem.dataUrl,
+    style: {
+      maxWidth: "100%",
+      maxHeight: 140,
+      borderRadius: 6,
+      border: "1px solid #e5e7eb"
+    }
+  })))))), blocos.length === 0 && /*#__PURE__*/React.createElement("div", {
+    style: {
+      textAlign: "center",
+      color: "#9ca3af",
+      fontSize: 12,
+      padding: 16
+    }
+  }, "Nenhuma seção adicionada."))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: "#f9fafb",
+      border: "1px solid #e5e7eb",
+      borderRadius: 8,
+      padding: "10px 14px",
+      fontSize: 11,
+      color: "#6b7280",
+      marginBottom: 14
+    }
+  }, "O orçamento final incluirá ", servicos.length, " serviço(s) e ", materiais.length, " material(is), totalizando ", /*#__PURE__*/React.createElement("b", null, f(totalGeral)), "."), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      justifyContent: "flex-end",
+      gap: 8,
+      paddingTop: 12,
+      borderTop: "1px solid #e5e7eb"
+    }
+  }, /*#__PURE__*/React.createElement("button", {
+    style: btn(),
+    onClick: onClose
+  }, "Cancelar"), /*#__PURE__*/React.createElement("button", {
+    style: btn("primary"),
+    disabled: gerando,
+    onClick: gerarPDF
+  }, gerando ? "Gerando..." : "⬇️ Gerar e Baixar PDF")));
+}
 function badgeStyle(type) {
   const map = {
     success: {
@@ -9779,6 +10362,7 @@ function OrcamentosPage({
     arquivo: null
   });
   const [pdfData, setPdfData] = useState(null);
+  const [pdfClienteModal, setPdfClienteModal] = useState(null);
   const [search, setSearch] = useState("");
   const [filtroEtapa, setFiltroEtapa] = useState("all");
   const [modal, setModal] = useState(null);
@@ -11256,6 +11840,14 @@ function OrcamentosPage({
         total
       })
     }, "📄 Exportar PDF"), /*#__PURE__*/React.createElement("button", {
+      style: {
+        ...btn(),
+        color: "#7c2d12",
+        borderColor: "#fdba74",
+        background: "#fff7ed"
+      },
+      onClick: () => setPdfClienteModal(b)
+    }, "🖨️ Gerar PDF Executivo"), /*#__PURE__*/React.createElement("button", {
       style: btn("primary"),
       onClick: () => setModal(null)
     }, "Fechar")));
@@ -11499,6 +12091,10 @@ function OrcamentosPage({
   }), pdfData && /*#__PURE__*/React.createElement(PDFPreview, {
     ...pdfData,
     onClose: () => setPdfData(null)
+  }), pdfClienteModal && /*#__PURE__*/React.createElement(PDFClientePersonalizado, {
+    budget: pdfClienteModal,
+    showToast: showToast,
+    onClose: () => setPdfClienteModal(null)
   }));
 }
 
