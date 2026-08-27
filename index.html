@@ -16268,6 +16268,65 @@ const swapContratoPadrao = () => ({
   updated_at: new Date().toISOString().slice(0, 10)
 });
 
+// Preenche com os valores padrão qualquer campo que esteja faltando num
+// contrato salvo antes de alguma funcionalidade existir (ex: contratos
+// criados antes da tabela de trechos da Cláusula Segunda) — sem nunca
+// sobrescrever um valor que já esteja preenchido de verdade.
+const normalizarContratoSwap = c => {
+  const base = swapContratoPadrao();
+  if (!c) return base;
+  return {
+    ...base,
+    ...c,
+    permutanteA: {
+      ...base.permutanteA,
+      ...(c.permutanteA || {})
+    },
+    permutanteB: {
+      ...base.permutanteB,
+      ...(c.permutanteB || {})
+    },
+    clausula2_itens: Array.isArray(c.clausula2_itens) ? c.clausula2_itens : base.clausula2_itens,
+    clausula2_trechos: Array.isArray(c.clausula2_trechos) ? c.clausula2_trechos : base.clausula2_trechos,
+    clausula3_itens: Array.isArray(c.clausula3_itens) ? c.clausula3_itens : base.clausula3_itens,
+    clausula3_trechos: Array.isArray(c.clausula3_trechos) ? c.clausula3_trechos : base.clausula3_trechos,
+    clausulas: {
+      ...base.clausulas,
+      ...(c.clausulas || {})
+    },
+    notificacoes: {
+      parteA: {
+        ...base.notificacoes.parteA,
+        ...(c.notificacoes?.parteA || {})
+      },
+      parteB: {
+        ...base.notificacoes.parteB,
+        ...(c.notificacoes?.parteB || {})
+      }
+    },
+    assinatura: {
+      ...base.assinatura,
+      ...(c.assinatura || {}),
+      parteA: {
+        ...base.assinatura.parteA,
+        ...(c.assinatura?.parteA || {})
+      },
+      parteB: {
+        ...base.assinatura.parteB,
+        ...(c.assinatura?.parteB || {})
+      },
+      testemunha1: {
+        ...base.assinatura.testemunha1,
+        ...(c.assinatura?.testemunha1 || {})
+      },
+      testemunha2: {
+        ...base.assinatura.testemunha2,
+        ...(c.assinatura?.testemunha2 || {})
+      }
+    }
+  };
+};
+
 // ─── TERMO ADITIVO (vinculado a um Contrato SWAP já existente) ─────────────────
 const gerarNumeroAditivo = (contratoOriginal, aditivosExistentes = []) => {
   const base = contratoOriginal?.numero || "SWAP";
@@ -16336,6 +16395,53 @@ const termoAditivoPadrao = (contratoOriginal, aditivosExistentes = []) => ({
   created_at: new Date().toISOString().slice(0, 10),
   updated_at: new Date().toISOString().slice(0, 10)
 });
+
+// Mesma lógica de proteção do normalizarContratoSwap, mas para termos
+// aditivos — preenche campos ausentes sem sobrescrever o que já existe.
+const normalizarTermoAditivo = (a, contratoOriginal, aditivosExistentes) => {
+  const base = termoAditivoPadrao(contratoOriginal, aditivosExistentes);
+  if (!a) return base;
+  return {
+    ...base,
+    ...a,
+    contratante: {
+      ...base.contratante,
+      ...(a.contratante || {})
+    },
+    contratada: {
+      ...base.contratada,
+      ...(a.contratada || {})
+    },
+    clausula1: {
+      ...base.clausula1,
+      ...(a.clausula1 || {})
+    },
+    clausula2: {
+      ...base.clausula2,
+      ...(a.clausula2 || {})
+    },
+    assinatura: {
+      ...base.assinatura,
+      ...(a.assinatura || {}),
+      contratante: {
+        ...base.assinatura.contratante,
+        ...(a.assinatura?.contratante || {})
+      },
+      contratada: {
+        ...base.assinatura.contratada,
+        ...(a.assinatura?.contratada || {})
+      },
+      testemunha1: {
+        ...base.assinatura.testemunha1,
+        ...(a.assinatura?.testemunha1 || {})
+      },
+      testemunha2: {
+        ...base.assinatura.testemunha2,
+        ...(a.assinatura?.testemunha2 || {})
+      }
+    }
+  };
+};
 function gerarHtmlTermoAditivo(a) {
   const esc = s => String(s || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
   const c = a.contratante || {},
@@ -17392,7 +17498,7 @@ function ContratoSwapEditor({
   showToast
 }) {
   const [c, setC] = React.useState(() => {
-    if (contratoInicial) return contratoInicial;
+    if (contratoInicial) return normalizarContratoSwap(contratoInicial);
     const base = swapContratoPadrao();
     base.numero = gerarNumeroContratoSwap(contratosExistentes); // sugestão automática — o campo continua livre pra editar
     return base;
@@ -17824,7 +17930,7 @@ function TermoAditivoEditor({
   onClose,
   showToast
 }) {
-  const [a, setA] = React.useState(() => aditivoInicial || termoAditivoPadrao(contratoOriginal, aditivosExistentes));
+  const [a, setA] = React.useState(() => aditivoInicial ? normalizarTermoAditivo(aditivoInicial, contratoOriginal, aditivosExistentes) : termoAditivoPadrao(contratoOriginal, aditivosExistentes));
   const [salvando, setSalvando] = React.useState(false);
   const setCampo = (campo, valor) => setA(p => ({
     ...p,
