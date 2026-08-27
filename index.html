@@ -1620,7 +1620,7 @@ const BUDGETS_INIT = [{
 }];
 
 // ─── PERFIS ────────────────────────────────────────────────────────────────────
-const ALL_MODS = ["dashboard", "obras", "custos", "orcamentos", "itens", "importar", "pontos", "dashint", "custosint", "fatint", "investint", "usuarios"];
+const ALL_MODS = ["dashboard", "obras", "custos", "orcamentos", "itens", "importar", "pontos", "dashint", "custosint", "fatint", "investint", "dashswap", "swapcontratos", "viabilidades", "usuarios"];
 const MOD_META = {
   dashboard: {
     label: "Dashboard",
@@ -1641,6 +1641,18 @@ const MOD_META = {
   investint: {
     label: "Investimentos",
     section: "Interno"
+  },
+  dashswap: {
+    label: "Dashboard",
+    section: "SWAP/Viabilidade"
+  },
+  swapcontratos: {
+    label: "Contratos SWAP",
+    section: "SWAP/Viabilidade"
+  },
+  viabilidades: {
+    label: "Viabilidades",
+    section: "SWAP/Viabilidade"
   },
   obras: {
     label: "Obras",
@@ -16012,6 +16024,1496 @@ function InvestimentosPage({
   }));
 }
 
+// ═══════════════════════════════════════════════════════════════════════════
+// ─── MÓDULO SWAP / VIABILIDADE ──────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════════════
+// ─── SWAP / VIABILIDADE — TEXTOS PADRÃO DAS CLÁUSULAS FIXAS (4 a 11) ───────────
+const SWAP_CLAUSULAS_TEXTO_PADRAO = {
+  c4: `4.1 O presente contrato terá vigência de 60 (sessenta) meses, contados a partir da data de sua assinatura, renovável automaticamente por igual período caso não haja manifestação em contrário por nenhuma das partes.
+
+4.2 Em caso de rescisão antecipada sem justa causa, a parte infratora deverá notificar a outra com antecedência mínima de 6 (seis) meses, sem incidência de multa rescisória.`,
+  c5: `5.1 Os itens descritos na Cláusula Segunda permanecem como propriedade resolúvel da PERMUTANTE A.
+
+5.2 Da mesma forma, os itens descritos na Cláusula Terceira permanecem como propriedade da PERMUTANTE B.`,
+  c6: `6.1 O presente CONTRATO terminará nas seguintes hipóteses:
+
+I. Por liquidação judicial ou extrajudicial de qualquer das PARTES;
+II. Se, entrando alguma das PARTES em recuperação judicial ou falência, a continuidade deste negócio não for aceita pelo administrador judicial;
+III. Por acordo aceito por ambas as partes;
+IV. Mediante aviso com antecedência mínima de 6 (seis) meses, sem incidência de multa rescisória.
+
+6.2 Encerrado o Contrato, qualquer que tenha sido a causa, as Partes terão direito à remoção de seus bens e dos bens de seus clientes, em prazo a ser mutuamente acordado, resguardada a continuidade dos serviços em curso até a efetiva desmontagem.`,
+  c7: `7.1 As Partes deverão permitir e oferecer condições para que a outra realize a mais completa fiscalização, fornecendo informações e propiciando o acesso à documentação referente ao objeto contratado, bem como atendendo às observações e exigências apresentadas, garantidos os direitos de sigilo e confidencialidade previstos na Cláusula Nona.
+
+7.2 O exercício, por uma PARTE, do direito de fiscalizar a execução dos serviços e, mesmo, de aprovar as suas especificações, não exonerará, nem de qualquer forma diminuirá as responsabilidades da outra PARTE.
+
+7.3 Caso alguma das partes venha a acarretar prejuízo à outra, deverá ressarci-la por perdas e danos mediante comprovação.`,
+  c8: `8.1. Os casos fortuitos, fato de terceiro ou de força maior serão excludentes de responsabilidade nos termos do artigo 393 e seguintes do Código Civil Brasileiro. Em qualquer das hipóteses acima, a PARTE que sofrer a alteração societária deverá notificar a outra PARTE no prazo máximo de 30 (trinta) dias contado da data da formalização do ato societário, exclusivamente para fins de ciência, sem que disso decorra necessidade de anuência ou renegociação contratual.
+
+8.2. As PARTES reconhecem que os direitos de uso, obrigações operacionais, garantias de disponibilidade, níveis de serviço (SLA), investimentos realizados e demais incumbências previstas neste CONTRATO não poderão ser reduzidas, suspensos ou prejudicados em razão de alterações societárias.
+
+8.3. A PARTE que for afetada pelo caso fortuito ou motivo de força maior deverá, em até 15 (quinze) dias úteis, notificar a outra da extensão do fato e do prazo estimado durante o qual estará inabilitada a cumprir ou pelo qual será obrigada a atrasar o cumprimento de suas obrigações decorrentes deste termo. A ausência de notificação tempestiva importará decadência do direito de invocar o caso fortuito ou de força maior como exceção para o inadimplemento do Acordo.
+
+8.4. A PARTE que for afetada por caso fortuito ou motivo de força maior envidará seus melhores esforços para que cessem os seus efeitos.
+
+8.5. Cessados os efeitos de caso fortuito ou motivo de força maior, a PARTE afetada deverá notificar a outra para conhecimento desse fato, restabelecendo a situação original.
+
+8.6. Se a ocorrência do caso fortuito ou motivo de força maior prejudicar apenas parcialmente a execução das obrigações oriundas deste termo por uma das PARTES, a PARTE afetada deverá cumprir as obrigações que não tiverem sido afetadas pela ocorrência do caso fortuito ou motivo de força maior.
+
+8.7. O presente CONTRATO permanecerá integralmente vigente e eficaz, sem qualquer prejuízo aos direitos e obrigações aqui estabelecidos, independentemente de quaisquer alterações na estrutura societária das PARTES, incluindo, mas não se limitando a:
+a) venda, cessão ou transferência de participação societária a terceiros;
+b) fusão, cisão, incorporação ou qualquer forma de reorganização societária;
+c) ingresso ou saída de sócios, a qualquer título;
+d) falecimento de sócio, hipótese na qual os sucessores ou herdeiros responderão pela continuidade da PARTE sucedida, nos termos da legislação aplicável.
+
+8.8. Em qualquer das hipóteses acima, a PARTE que sofrer a alteração societária deverá notificar a outra PARTE no prazo máximo de 30 (trinta) dias contado da data da formalização do ato societário, exclusivamente para fins de ciência, sem que disso decorra necessidade de anuência ou renegociação contratual.
+
+8.9. As PARTES reconhecem que os direitos de uso, obrigações operacionais, garantias de disponibilidade, níveis de serviço (SLA), investimentos realizados e demais incumbências previstas neste CONTRATO não poderão ser reduzidas, suspensos ou prejudicados em razão das alterações societárias descritas no item 8.6.
+
+8.10. Qualquer mudança de controle societário, direta ou indireta, não afetará a plena continuidade deste CONTRATO, sendo automaticamente estendidos todos os direitos e obrigações à adquirente, sucessora ou incorporadora, vedada a rescisão unilateral ou modificação de condições por esse motivo.
+
+8.11. Esta cláusula prevalecerá sobre qualquer disposição contratual ou legal que preveja efeitos extintivos ou modificativos decorrentes de alteração societária, assegurando proteção à continuidade operacional e à estabilidade jurídica da presente parceria.`,
+  c9: `9.1. As Partes obrigam-se a manter sigilo sobre toda e qualquer informação técnica, comercial ou operacional a que tenham acesso em razão deste Contrato, não podendo divulgá-la a terceiros sem autorização prévia e por escrito da outra Parte, salvo por determinação legal, judicial ou de autoridade regulatória competente.
+
+9.2. As Partes comprometem-se a tratar eventuais dados pessoais compartilhados em razão deste Contrato (tais como dados de representantes e prepostos indicados na Cláusula Décima) em conformidade com a Lei nº 13.709/2018 (Lei Geral de Proteção de Dados – LGPD), utilizando-os exclusivamente para as finalidades aqui previstas.
+
+9.3. A obrigação de confidencialidade prevista nesta cláusula permanecerá vigente por 2 (dois) anos após o término deste Contrato, independentemente do motivo da extinção.`,
+  c10: `9.1. Fica vedado às PARTES ceder ou transferir quaisquer dos direitos e obrigações ou benefícios e interesses decorrentes deste Acordo, no todo ou em parte, sem que haja a anuência prévia e por escrito da outra PARTE. Será permitida a cessão entre empresas do mesmo grupo econômico, no entanto, o dever de notificação para ciência será mantido.
+
+9.2. Se qualquer cláusula ou condição deste Acordo vier a ser considerada ilegal, inválida ou inexequível nos termos da legislação brasileira, as demais cláusulas e condições continuarão em pleno vigor e eficácia.
+
+9.3. A ação ou omissão de qualquer das PARTES não importará em renúncia de seus direitos e obrigações contratuais, os quais poderão ser exercidos a qualquer tempo, salvo se a renúncia for colocada expressamente e por escrito. Neste caso, a renúncia terá aplicação específica e restrita ao expressamente previsto, não significando novação ou renúncia de outros direitos.
+
+9.4. Este CONTRATO vincula as PARTES nos limites do quanto neste especificamente tratado, não criando entre elas ou seus colaboradores qualquer vínculo de trabalho, sociedade, associação ou organização comercial ou societária de qualquer natureza. Nada neste CONTRATO deverá ser interpretado como fundamento para rateio de lucros, despesas ou perdas, ou comunidade de direitos entre as PARTES.
+
+9.5. As PARTES se comprometem a submeter este Acordo aos registros e aprovações aplicáveis de acordo com a regulamentação.
+
+9.6. Os tributos que forem devidos em decorrência direta ou indireta do presente Acordo, ou de sua execução, constituem ônus de responsabilidade do contribuinte, conforme definido na lei tributária.
+
+9.7. A alteração de qualquer das disposições estabelecidas neste termo de Acordo somente se reputará válida se tomadas expressamente em Instrumento Aditivo, que ao presente se aderirá, passando a dele fazer parte.
+
+9.8. As PARTES se obrigam a atender aos parâmetros de qualidade, segurança e proteção ao meio ambiente, estabelecidos pelos órgãos competentes, assim como cumprir com as obrigações associadas a concessões, permissões ou autorizações.
+
+9.9. A PARTE que receber qualquer reclamação, notificação, intimação ou interpelações relacionadas aos bens, créditos e/ou quais outras obrigações da outra PARTE e que sejam relacionadas ao objeto deste Acordo deverão ser imediatamente encaminhadas à PARTE interessada.
+
+9.10. Cada uma das PARTES é responsável pela atualização de seus dados de contato, sob pena de se considerar válida a comunicação entregue no endereço desatualizado.
+
+9.12. São ressalvados os entendimentos verbais determinados pela urgência, os quais devem ser confirmados por escrito, em até três dias subsequentes, ressalvados aqueles que imputarem despesas.
+
+9.13. A tolerância de uma PARTE relativamente ao não cumprimento de qualquer uma das obrigações assumidas neste Acordo não implica em novação, moratória, ou renúncia a qualquer direito ou prerrogativa dele decorrente. A PARTE lesada poderá exigir da outra, a qualquer tempo, o fiel cumprimento deste Acordo.
+
+9.14. Os termos e disposições deste Acordo prevalecem e revogam quaisquer outros entendimentos ou acordos anteriores entre as PARTES, expressos ou implícitos, referentes às condições nele estabelecidas.
+
+9.15. O presente Acordo obriga em todas as cláusulas e condições, tanto as PARTES, como os seus sucessores e herdeiros, ficando ao cumprimento de todas as suas cláusulas e condições.
+
+9.16. Nos termos do art. 10, § 2º, da Medida Provisória nº 2.200-2, as PARTES expressamente concordam em utilizar e reconhecem como válida qualquer forma de comprovação de anuência aos termos ora acordados em formato eletrônico, se comprometendo pela veracidade das informações referentes aos seus representantes legais, sob pena de responsabilização nas formas da lei.`,
+  c11: `As Partes elegem o Foro da Comarca de Goiânia/GO, para dirimir quaisquer questões oriundas do presente Contrato, com renúncia expressa a qualquer outro, por mais privilegiado que seja.`
+};
+const SWAP_CLAUSULAS_DEFS = [{
+  key: "c4",
+  titulo: "Cláusula Quarta — Da Vigência e Rescisão"
+}, {
+  key: "c5",
+  titulo: "Cláusula Quinta — Da Propriedade dos Ativos"
+}, {
+  key: "c6",
+  titulo: "Cláusula Sexta — Da Rescisão"
+}, {
+  key: "c7",
+  titulo: "Cláusula Sétima — Da Fiscalização, Penalidades ou Multas"
+}, {
+  key: "c8",
+  titulo: "Cláusula Oitava — Do Caso Fortuito e/ou Sucessão"
+}, {
+  key: "c9",
+  titulo: "Cláusula Nona — Da Confidencialidade e da Proteção de Dados"
+}, {
+  key: "c10",
+  titulo: "Cláusula Décima — Das Disposições Gerais"
+}, {
+  key: "c11",
+  titulo: "Cláusula Décima Primeira — Do Foro de Eleição"
+}];
+const swapContratoPadrao = () => ({
+  id: uid(),
+  numero: "",
+  status: "rascunho",
+  // rascunho | assinado
+  data_contrato: new Date().toISOString().slice(0, 10),
+  permutanteA: {
+    razaoSocial: "RD TELECOM LTDA",
+    cnpj: "07.426.902/0001-33",
+    endereco: "Av. Santos, nº 398, Qd. 17, Lt. 07, Jardim Novo Mundo",
+    cidade: "Goiânia",
+    estado: "Goiás",
+    cep: "74.715-450"
+  },
+  permutanteB: {
+    razaoSocial: "",
+    cnpj: "",
+    endereco: "",
+    cidade: "",
+    estado: "",
+    cep: ""
+  },
+  clausula2_itens: ["01 Canal DWDM 100 GHz entre X e Y (00 km)"],
+  clausula3_itens: ["01 Rack no(s) POP(s) de ___, com energia DC e infraestrutura de responsabilidade da PERMUTANTE B", "Lançamento das fibras para as novas abordagens, assim que for necessário"],
+  clausula3_trechos: [{
+    pontaA: "",
+    pontaB: "",
+    distancia: "",
+    fibras: ""
+  }],
+  clausulas: {
+    ...SWAP_CLAUSULAS_TEXTO_PADRAO
+  },
+  notificacoes: {
+    parteA: {
+      nome: "Ruan Carlos Aleluia Lobo",
+      cpf: "007.529.431-11",
+      email: "ruan.lobo@grupojet.com.br",
+      telefone: "(51) 9 9641-4840"
+    },
+    parteB: {
+      nome: "",
+      cpf: "",
+      email: "",
+      telefone: ""
+    }
+  },
+  assinatura: {
+    cidadeData: "Goiânia/GO, " + new Date().toLocaleDateString("pt-BR", {
+      day: "2-digit",
+      month: "long",
+      year: "numeric"
+    }),
+    parteA: {
+      nome: "Ruan Carlos Aleluia Lobo",
+      cpf: "007.529.431-11",
+      cargo: "Representante Legal"
+    },
+    parteB: {
+      nome: "",
+      cpf: "",
+      cargo: "Representante Legal"
+    },
+    testemunha1: {
+      nome: "",
+      cpf: ""
+    },
+    testemunha2: {
+      nome: "",
+      cpf: ""
+    }
+  },
+  anexo_pdf: null,
+  created_at: new Date().toISOString().slice(0, 10),
+  updated_at: new Date().toISOString().slice(0, 10)
+});
+function KpiCardSwap({
+  label,
+  valor,
+  cor
+}) {
+  return /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: "#fff",
+      borderRadius: 10,
+      border: "1px solid #e5e7eb",
+      padding: "14px 16px"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: "#6b7280",
+      marginBottom: 6
+    }
+  }, label), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 22,
+      fontWeight: 800,
+      color: cor
+    }
+  }, valor));
+}
+
+// ─── SWAP DASHBOARD ─────────────────────────────────────────────────────────────
+function SwapDashboard({
+  contratos = [],
+  viabilidades = [],
+  setPage
+}) {
+  const total = contratos.length;
+  const assinados = contratos.filter(c => c.status === "assinado").length;
+  const rascunhos = total - assinados;
+  const kmTotal = contratos.reduce((s, c) => s + (c.clausula3_trechos || []).reduce((ss, t) => ss + (parseFloat((t.distancia || "0").toString().replace(",", ".")) || 0), 0), 0);
+  const porCidade = {};
+  contratos.forEach(c => {
+    const cid = (c.permutanteB?.cidade || "").trim() || "Não informado";
+    porCidade[cid] = (porCidade[cid] || 0) + 1;
+  });
+  const cidadesOrdenadas = Object.entries(porCidade).sort((a, b) => b[1] - a[1]).slice(0, 8);
+  const maiorQtd = cidadesOrdenadas.length ? cidadesOrdenadas[0][1] : 1;
+  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "grid",
+      gridTemplateColumns: "repeat(auto-fit,minmax(180px,1fr))",
+      gap: 12,
+      marginBottom: 20
+    }
+  }, /*#__PURE__*/React.createElement(KpiCardSwap, {
+    label: "Contratos SWAP",
+    valor: total,
+    cor: "#e8650a"
+  }), /*#__PURE__*/React.createElement(KpiCardSwap, {
+    label: "Assinados",
+    valor: assinados,
+    cor: "#15803d"
+  }), /*#__PURE__*/React.createElement(KpiCardSwap, {
+    label: "Em rascunho",
+    valor: rascunhos,
+    cor: "#6b7280"
+  }), /*#__PURE__*/React.createElement(KpiCardSwap, {
+    label: "Km cedidos (permuta)",
+    valor: kmTotal.toLocaleString("pt-BR", {
+      maximumFractionDigits: 1
+    }) + " km",
+    cor: "#2563eb"
+  }), /*#__PURE__*/React.createElement(KpiCardSwap, {
+    label: "Viabilidades",
+    valor: viabilidades.length,
+    cor: "#7c3aed"
+  })), /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: "#fff",
+      borderRadius: 10,
+      border: "1px solid #e5e7eb",
+      padding: 16
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontWeight: 700,
+      fontSize: 13,
+      marginBottom: 12
+    }
+  }, "Contratos por cidade (Permutante B)"), cidadesOrdenadas.length === 0 ? /*#__PURE__*/React.createElement("div", {
+    style: {
+      color: "#9ca3af",
+      fontSize: 12,
+      padding: "12px 0"
+    }
+  }, "Nenhum contrato cadastrado ainda.") : cidadesOrdenadas.map(([cid, qtd]) => /*#__PURE__*/React.createElement("div", {
+    key: cid,
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 10,
+      padding: "6px 0",
+      borderBottom: "1px solid #f3f4f6"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      flex: 1,
+      fontSize: 12,
+      color: "#374151"
+    }
+  }, cid), /*#__PURE__*/React.createElement("div", {
+    style: {
+      width: 120,
+      background: "#f3f4f6",
+      borderRadius: 99,
+      height: 6,
+      overflow: "hidden"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      width: qtd / maiorQtd * 100 + "%",
+      background: "#e8650a",
+      height: "100%"
+    }
+  })), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 12,
+      fontWeight: 700,
+      width: 20,
+      textAlign: "right"
+    }
+  }, qtd)))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginTop: 16,
+      display: "flex",
+      gap: 10
+    }
+  }, /*#__PURE__*/React.createElement("button", {
+    style: btn("primary"),
+    onClick: () => setPage("swapcontratos")
+  }, "Ver Contratos SWAP"), /*#__PURE__*/React.createElement("button", {
+    style: btn(),
+    onClick: () => setPage("viabilidades")
+  }, "Ver Viabilidades")));
+}
+
+// ─── VIABILIDADES (placeholder — módulo detalhado vem depois) ─────────────────
+function ViabilidadesPage({
+  viabilidades = [],
+  setViabilidades,
+  syncViabilidade,
+  delViabilidade,
+  showToast
+}) {
+  return /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: "#fff",
+      borderRadius: 10,
+      border: "1px solid #e5e7eb",
+      padding: 40,
+      textAlign: "center"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 36,
+      marginBottom: 10
+    }
+  }, "🚧"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontWeight: 700,
+      fontSize: 15,
+      marginBottom: 6
+    }
+  }, "Módulo de Viabilidades em construção"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      color: "#6b7280",
+      fontSize: 12,
+      maxWidth: 420,
+      margin: "0 auto"
+    }
+  }, "Essa parte ainda vai ser desenhada com você — por enquanto o foco é o módulo de Contratos SWAP."));
+}
+
+// ─── GERAR HTML DE IMPRESSÃO DO CONTRATO SWAP ──────────────────────────────────
+function gerarHtmlContratoSwap(c) {
+  const esc = s => String(s || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  const nl2br = s => esc(s).split("\n").map(l => l.trim() === "" ? "<br/>" : "<p style='margin:0 0 8px'>" + l + "</p>").join("");
+  const romanos = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII"];
+  const itensHtml = arr => (arr || []).map((it, i) => `<div style="display:flex;gap:8px;margin-bottom:6px;font-size:11.5px;line-height:1.5"><b style="min-width:26px">${romanos[i] || i + 1}.</b><span>${esc(it)}</span></div>`).join("");
+  const trechosHtml = arr => {
+    if (!arr || !arr.length) return "";
+    return `<table style="width:100%;border-collapse:collapse;margin:12px 0;font-size:10.5px">
+      <thead><tr style="background:#1e3a5f;color:#fff">
+        <th style="padding:8px;text-align:left;border:1px solid #1e3a5f">Ponta A</th>
+        <th style="padding:8px;text-align:left;border:1px solid #1e3a5f">Ponta B</th>
+        <th style="padding:8px;text-align:center;border:1px solid #1e3a5f">Distância (km)</th>
+        <th style="padding:8px;text-align:center;border:1px solid #1e3a5f">Qtde. de Fibras</th>
+      </tr></thead>
+      <tbody>${arr.map(t => `<tr>
+        <td style="padding:8px;border:1px solid #e5e7eb">${esc(t.pontaA)}</td>
+        <td style="padding:8px;border:1px solid #e5e7eb">${esc(t.pontaB)}</td>
+        <td style="padding:8px;border:1px solid #e5e7eb;text-align:center">${esc(t.distancia)}</td>
+        <td style="padding:8px;border:1px solid #e5e7eb;text-align:center">${esc(t.fibras)}</td>
+      </tr>`).join("")}</tbody>
+    </table>`;
+  };
+  const clausulasExtras = SWAP_CLAUSULAS_DEFS.map(def => `
+    <div style="margin-top:16px">
+      <div style="font-weight:700;font-size:12px;margin-bottom:6px">${esc(def.titulo).toUpperCase()}</div>
+      <div style="font-size:11.5px;line-height:1.6;color:#222">${nl2br(c.clausulas?.[def.key] || "")}</div>
+    </div>
+  `).join("");
+  const n = c.notificacoes || {};
+  const a = c.assinatura || {};
+  return `<!DOCTYPE html>
+<html lang="pt-BR"><head><meta charset="UTF-8"/>
+<title>Contrato SWAP ${esc(c.numero)}</title>
+<style>
+  @page { size: A4; margin: 26mm 18mm 22mm; }
+  body { font-family: Arial, Helvetica, sans-serif; color:#1a1a1a; font-size:12px; }
+  .header { display:flex; justify-content:space-between; align-items:center; border-bottom:3px solid #e8650a; padding-bottom:10px; margin-bottom:18px; }
+  .header img { height:36px; }
+  .numero { font-weight:700; font-size:12px; }
+  h1 { text-align:center; font-size:15px; text-decoration:underline; margin-bottom:18px; }
+  .parte { margin-bottom:10px; font-size:11.5px; line-height:1.6; text-align:justify; }
+  .clausula-titulo { font-weight:700; font-size:12.5px; margin:18px 0 8px; }
+  .footer { position:fixed; bottom:-14mm; left:0; right:0; text-align:center; font-size:8.5px; color:#888; border-top:1px solid #eee; padding-top:6px; }
+  table { page-break-inside:auto; }
+  tr { page-break-inside:avoid; }
+</style>
+</head>
+<body>
+  <div class="header">
+    <img src="${LOGO_B64}" alt="Grupo Jet"/>
+    <div class="numero">Nº${esc(c.numero || "—")}</div>
+  </div>
+
+  <h1>CONTRATO DE CESSÃO RECÍPROCA DE INFRAESTRUTURA DE FIBRA ÓPTICA</h1>
+
+  <div class="parte"><b>PERMUTANTE A: ${esc(c.permutanteA.razaoSocial)},</b> pessoa jurídica de direito privado, inscrita no CNPJ nº <b>${esc(c.permutanteA.cnpj)}</b>, com sede na cidade de ${esc(c.permutanteA.cidade)}, Estado de ${esc(c.permutanteA.estado)}, na ${esc(c.permutanteA.endereco)}, CEP ${esc(c.permutanteA.cep)}, neste ato devidamente representada em conformidade com o seu Contrato Social e, denominada simplesmente de PERMUTANTE A e/ou PARTE A;</div>
+
+  <div class="parte"><b>PERMUTANTE B: ${esc(c.permutanteB.razaoSocial)}</b>, pessoa jurídica de direito privado, inscrita no CNPJ nº <b>${esc(c.permutanteB.cnpj)}</b>, com sede na ${esc(c.permutanteB.endereco)}, ${esc(c.permutanteB.cidade)}/${esc(c.permutanteB.estado)}, CEP ${esc(c.permutanteB.cep)}, neste ato devidamente representada em conformidade com o seu Contrato Social, <b>PERMUTANTE B e/ou PARTE B</b>.</div>
+
+  <div class="parte">Pelo presente instrumento particular e na melhor forma de direito, as partes abaixo qualificadas resolvem constituir o presente contrato, acordando quanto às cláusulas abaixo designadas, obrigando-se por si, seus herdeiros e ou sucessores.</div>
+
+  <div class="clausula-titulo">CLÁUSULA PRIMEIRA – DO OBJETO</div>
+  <div class="parte">O presente contrato tem por objeto a permuta (swap) de ativos, infraestrutura e prestação de serviços de telecomunicações entre as Partes, sem envolvimento de fluxo financeiro direto para as obrigações principais aqui descritas, operando em regime de reciprocidade.</div>
+
+  <div class="clausula-titulo">CLÁUSULA SEGUNDA – DAS OBRIGAÇÕES DA PERMUTANTE A</div>
+  <div class="parte">2.1 A PERMUTANTE A cederá o direito de uso à PERMUTANTE B dos seguintes ativos de rede:</div>
+  ${itensHtml(c.clausula2_itens)}
+
+  <div class="clausula-titulo">CLÁUSULA TERCEIRA – DAS OBRIGAÇÕES DA PERMUTANTE B</div>
+  <div class="parte">3.1 Em contrapartida à cessão realizada pela PERMUTANTE A, a PERMUTANTE B obriga-se a fornecer e executar:</div>
+  ${itensHtml(c.clausula3_itens)}
+  ${trechosHtml(c.clausula3_trechos)}
+
+  ${clausulasExtras}
+
+  <div class="clausula-titulo">CLÁUSULA DÉCIMA – 9.11 DAS NOTIFICAÇÕES</div>
+  <div class="parte">9.11. Os avisos, comunicados e/ou notificações relacionados a este Acordo devem ser feitos por escrito, mediante (i) protocolo de recebimento pela outra PARTE ou (ii) por carta com aviso de recebimento, enviados aos endereços aqui constantes:</div>
+  <div style="display:flex;gap:30px;margin-top:10px">
+    <div style="flex:1;font-size:11px;line-height:1.7">
+      <b>Pela ${esc(c.permutanteA.razaoSocial)}:</b><br/>
+      A/C: ${esc(n.parteA?.nome)}<br/>
+      CPF: ${esc(n.parteA?.cpf)}<br/>
+      E-mail: ${esc(n.parteA?.email)}<br/>
+      Telefone: ${esc(n.parteA?.telefone)}
+    </div>
+    <div style="flex:1;font-size:11px;line-height:1.7">
+      <b>Pela ${esc(c.permutanteB.razaoSocial)}:</b><br/>
+      A/C: ${esc(n.parteB?.nome)}<br/>
+      CPF: ${esc(n.parteB?.cpf)}<br/>
+      E-mail: ${esc(n.parteB?.email)}<br/>
+      Telefone: ${esc(n.parteB?.telefone)}
+    </div>
+  </div>
+
+  <div style="margin-top:26px;font-size:11.5px">${esc(a.cidadeData)}</div>
+
+  <div style="margin-top:30px;font-size:11px">Assinado digitalmente:</div>
+  <div style="display:flex;justify-content:space-between;margin-top:60px;text-align:center;font-size:11px">
+    <div style="width:45%;border-top:1px solid #000;padding-top:6px">
+      <b>${esc(c.permutanteA.razaoSocial)}</b><br/>
+      CNPJ: ${esc(c.permutanteA.cnpj)}<br/>
+      <b>${esc(a.parteA?.nome)}</b><br/>
+      ${esc(a.parteA?.cargo)}<br/>
+      Prestadora/Parte A
+    </div>
+    <div style="width:45%;border-top:1px solid #000;padding-top:6px">
+      <b>${esc(c.permutanteB.razaoSocial)}</b><br/>
+      CNPJ: ${esc(c.permutanteB.cnpj)}<br/>
+      <b>${esc(a.parteB?.nome)}</b><br/>
+      ${esc(a.parteB?.cargo)}<br/>
+      Prestadora/Parte B
+    </div>
+  </div>
+  <div style="display:flex;justify-content:space-between;margin-top:70px;text-align:center;font-size:11px">
+    <div style="width:45%;border-top:1px solid #000;padding-top:6px">
+      ${esc(a.testemunha1?.nome)}<br/>CPF: ${esc(a.testemunha1?.cpf)}<br/>Testemunha
+    </div>
+    <div style="width:45%;border-top:1px solid #000;padding-top:6px">
+      ${esc(a.testemunha2?.nome)}<br/>CPF: ${esc(a.testemunha2?.cpf)}<br/>Testemunha
+    </div>
+  </div>
+
+  <div class="footer">Grupo Jet – Tecnologia e Conectividade na Velocidade de seus Negócios!<br/>AV. Santos, nº 398, Jd. Novo Mundo, Goiânia/GO – CEP: 74.715-450 | 0800 648 3496 | atendimento.corporativo@grupojet.com.br</div>
+
+  <script>window.onload = () => { window.print(); };</script>
+</body></html>`;
+}
+function imprimirContratoSwap(contrato) {
+  const html = gerarHtmlContratoSwap(contrato);
+  const win = window.open("", "_blank");
+  if (!win) {
+    alert("Permita pop-ups para imprimir o contrato.");
+    return;
+  }
+  win.document.write(html);
+  win.document.close();
+}
+// ─── LISTA DE ITENS EDITÁVEL (usada nas cláusulas 2 e 3) ───────────────────────
+function ListaItensEditavel({
+  itens,
+  setItens,
+  placeholder
+}) {
+  const upd = (i, v) => setItens(prev => prev.map((it, idx) => idx === i ? v : it));
+  const add = () => setItens(prev => [...prev, ""]);
+  const remove = i => setItens(prev => prev.filter((_, idx) => idx !== i));
+  const romanos = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"];
+  return /*#__PURE__*/React.createElement("div", null, itens.map((it, i) => /*#__PURE__*/React.createElement("div", {
+    key: i,
+    style: {
+      display: "flex",
+      gap: 8,
+      alignItems: "center",
+      marginBottom: 6
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: 11,
+      fontWeight: 700,
+      color: "#9ca3af",
+      width: 22,
+      flexShrink: 0
+    }
+  }, romanos[i] || i + 1, "."), /*#__PURE__*/React.createElement("input", {
+    style: {
+      ...inp,
+      flex: 1
+    },
+    value: it,
+    onChange: e => upd(i, e.target.value),
+    placeholder: placeholder
+  }), /*#__PURE__*/React.createElement("button", {
+    style: {
+      ...btn(),
+      padding: "5px 8px",
+      color: "#ef4444",
+      flexShrink: 0
+    },
+    onClick: () => remove(i)
+  }, "✕"))), /*#__PURE__*/React.createElement("button", {
+    style: {
+      ...btn(),
+      fontSize: 11,
+      padding: "5px 10px",
+      marginTop: 4
+    },
+    onClick: add
+  }, "+ Adicionar item"));
+}
+
+// ─── TABELA DE TRECHOS EDITÁVEL (cláusula 3 — manutenção de fibras 50/50) ──────
+function TabelaTrechosEditavel({
+  trechos,
+  setTrechos
+}) {
+  const upd = (i, campo, v) => setTrechos(prev => prev.map((t, idx) => idx === i ? {
+    ...t,
+    [campo]: v
+  } : t));
+  const add = () => setTrechos(prev => [...prev, {
+    pontaA: "",
+    pontaB: "",
+    distancia: "",
+    fibras: ""
+  }]);
+  const remove = i => setTrechos(prev => prev.filter((_, idx) => idx !== i));
+  return /*#__PURE__*/React.createElement("div", {
+    style: {
+      overflowX: "auto"
+    }
+  }, /*#__PURE__*/React.createElement("table", {
+    style: {
+      width: "100%",
+      borderCollapse: "collapse",
+      fontSize: 11.5
+    }
+  }, /*#__PURE__*/React.createElement("thead", null, /*#__PURE__*/React.createElement("tr", {
+    style: {
+      background: "#1e3a5f",
+      color: "#fff"
+    }
+  }, /*#__PURE__*/React.createElement("th", {
+    style: {
+      padding: "6px 8px",
+      textAlign: "left"
+    }
+  }, "Ponta A"), /*#__PURE__*/React.createElement("th", {
+    style: {
+      padding: "6px 8px",
+      textAlign: "left"
+    }
+  }, "Ponta B"), /*#__PURE__*/React.createElement("th", {
+    style: {
+      padding: "6px 8px",
+      textAlign: "center",
+      width: 90
+    }
+  }, "Dist. (km)"), /*#__PURE__*/React.createElement("th", {
+    style: {
+      padding: "6px 8px",
+      textAlign: "center",
+      width: 80
+    }
+  }, "Fibras"), /*#__PURE__*/React.createElement("th", {
+    style: {
+      width: 32
+    }
+  }))), /*#__PURE__*/React.createElement("tbody", null, trechos.map((t, i) => /*#__PURE__*/React.createElement("tr", {
+    key: i,
+    style: {
+      background: i % 2 ? "#f9fafb" : "#fff"
+    }
+  }, /*#__PURE__*/React.createElement("td", {
+    style: {
+      padding: 4
+    }
+  }, /*#__PURE__*/React.createElement("input", {
+    style: {
+      ...inp,
+      fontSize: 11
+    },
+    value: t.pontaA,
+    onChange: e => upd(i, "pontaA", e.target.value)
+  })), /*#__PURE__*/React.createElement("td", {
+    style: {
+      padding: 4
+    }
+  }, /*#__PURE__*/React.createElement("input", {
+    style: {
+      ...inp,
+      fontSize: 11
+    },
+    value: t.pontaB,
+    onChange: e => upd(i, "pontaB", e.target.value)
+  })), /*#__PURE__*/React.createElement("td", {
+    style: {
+      padding: 4
+    }
+  }, /*#__PURE__*/React.createElement("input", {
+    style: {
+      ...inp,
+      fontSize: 11,
+      textAlign: "center"
+    },
+    value: t.distancia,
+    onChange: e => upd(i, "distancia", e.target.value)
+  })), /*#__PURE__*/React.createElement("td", {
+    style: {
+      padding: 4
+    }
+  }, /*#__PURE__*/React.createElement("input", {
+    style: {
+      ...inp,
+      fontSize: 11,
+      textAlign: "center"
+    },
+    value: t.fibras,
+    onChange: e => upd(i, "fibras", e.target.value)
+  })), /*#__PURE__*/React.createElement("td", {
+    style: {
+      padding: 4,
+      textAlign: "center"
+    }
+  }, /*#__PURE__*/React.createElement("button", {
+    style: {
+      ...btn(),
+      padding: "4px 6px",
+      color: "#ef4444"
+    },
+    onClick: () => remove(i)
+  }, "✕")))))), /*#__PURE__*/React.createElement("button", {
+    style: {
+      ...btn(),
+      fontSize: 11,
+      padding: "5px 10px",
+      marginTop: 8
+    },
+    onClick: add
+  }, "+ Adicionar trecho"));
+}
+
+// ─── CAMPO DE EMPRESA (Permutante A/B) — bloco em destaque ─────────────────────
+function BlocoEmpresa({
+  titulo,
+  cor,
+  dados,
+  onChange
+}) {
+  const upd = k => e => onChange({
+    ...dados,
+    [k]: e.target.value
+  });
+  return /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: cor + "11",
+      border: "1.5px solid " + cor + "55",
+      borderRadius: 10,
+      padding: 14,
+      marginBottom: 14
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontWeight: 700,
+      fontSize: 12.5,
+      color: cor,
+      marginBottom: 10
+    }
+  }, titulo), /*#__PURE__*/React.createElement(FRow, null, /*#__PURE__*/React.createElement(Field, {
+    label: "Razão Social"
+  }, /*#__PURE__*/React.createElement("input", {
+    style: inp,
+    value: dados.razaoSocial,
+    onChange: upd("razaoSocial")
+  })), /*#__PURE__*/React.createElement(Field, {
+    label: "CNPJ"
+  }, /*#__PURE__*/React.createElement("input", {
+    style: inp,
+    value: dados.cnpj,
+    onChange: upd("cnpj")
+  }))), /*#__PURE__*/React.createElement(FRow, {
+    full: true
+  }, /*#__PURE__*/React.createElement(Field, {
+    label: "Endereço"
+  }, /*#__PURE__*/React.createElement("input", {
+    style: inp,
+    value: dados.endereco,
+    onChange: upd("endereco")
+  }))), /*#__PURE__*/React.createElement(FRow, null, /*#__PURE__*/React.createElement(Field, {
+    label: "Cidade"
+  }, /*#__PURE__*/React.createElement("input", {
+    style: inp,
+    value: dados.cidade,
+    onChange: upd("cidade")
+  })), /*#__PURE__*/React.createElement(Field, {
+    label: "Estado"
+  }, /*#__PURE__*/React.createElement("input", {
+    style: inp,
+    value: dados.estado,
+    onChange: upd("estado")
+  }))), /*#__PURE__*/React.createElement(FRow, null, /*#__PURE__*/React.createElement(Field, {
+    label: "CEP"
+  }, /*#__PURE__*/React.createElement("input", {
+    style: inp,
+    value: dados.cep,
+    onChange: upd("cep")
+  }))));
+}
+
+// ─── CLÁUSULA COLAPSÁVEL (accordion — cláusulas 4 a 11) ────────────────────────
+function ClausulaAccordion({
+  titulo,
+  valor,
+  onChange,
+  aberta,
+  onToggle
+}) {
+  return /*#__PURE__*/React.createElement("div", {
+    style: {
+      border: "1px solid #e5e7eb",
+      borderRadius: 8,
+      marginBottom: 6,
+      overflow: "hidden"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    onClick: onToggle,
+    style: {
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      padding: "10px 12px",
+      cursor: "pointer",
+      background: "#f9fafb",
+      userSelect: "none"
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontWeight: 600,
+      fontSize: 12,
+      color: "#374151"
+    }
+  }, titulo), /*#__PURE__*/React.createElement("svg", {
+    width: "14",
+    height: "14",
+    viewBox: "0 0 24 24",
+    fill: "none",
+    stroke: "#9ca3af",
+    strokeWidth: "2.5",
+    strokeLinecap: "round",
+    strokeLinejoin: "round",
+    style: {
+      transform: aberta ? "rotate(180deg)" : "rotate(0deg)",
+      transition: "transform .15s"
+    }
+  }, /*#__PURE__*/React.createElement("polyline", {
+    points: "6 9 12 15 18 9"
+  }))), aberta && /*#__PURE__*/React.createElement("div", {
+    style: {
+      padding: 12
+    }
+  }, /*#__PURE__*/React.createElement("textarea", {
+    style: {
+      ...inp,
+      minHeight: 160,
+      resize: "vertical",
+      fontFamily: "monospace",
+      fontSize: 11,
+      lineHeight: 1.5
+    },
+    value: valor,
+    onChange: e => onChange(e.target.value)
+  })));
+}
+
+// ─── EDITOR COMPLETO DO CONTRATO SWAP ──────────────────────────────────────────
+function ContratoSwapEditor({
+  contratoInicial,
+  onSave,
+  onClose,
+  showToast
+}) {
+  const [c, setC] = React.useState(() => contratoInicial || swapContratoPadrao());
+  const [clausulaAberta, setClausulaAberta] = React.useState(null);
+  const [salvando, setSalvando] = React.useState(false);
+  const setCampo = (campo, valor) => setC(p => ({
+    ...p,
+    [campo]: valor
+  }));
+  const setSub = (grupo, valor) => setC(p => ({
+    ...p,
+    [grupo]: valor
+  }));
+  const setClausulaTexto = (key, valor) => setC(p => ({
+    ...p,
+    clausulas: {
+      ...p.clausulas,
+      [key]: valor
+    }
+  }));
+  const setNotif = (parte, campo, valor) => setC(p => ({
+    ...p,
+    notificacoes: {
+      ...p.notificacoes,
+      [parte]: {
+        ...p.notificacoes[parte],
+        [campo]: valor
+      }
+    }
+  }));
+  const setAssin = (campo, valor) => setC(p => ({
+    ...p,
+    assinatura: {
+      ...p.assinatura,
+      [campo]: valor
+    }
+  }));
+  const setAssinPessoa = (quem, campo, valor) => setC(p => ({
+    ...p,
+    assinatura: {
+      ...p.assinatura,
+      [quem]: {
+        ...p.assinatura[quem],
+        [campo]: valor
+      }
+    }
+  }));
+  const salvar = async () => {
+    if (!c.permutanteB.razaoSocial.trim()) {
+      alert("Preencha ao menos a Razão Social da PERMUTANTE B.");
+      return;
+    }
+    setSalvando(true);
+    const atualizado = {
+      ...c,
+      updated_at: new Date().toISOString().slice(0, 10)
+    };
+    await onSave(atualizado);
+    setSalvando(false);
+  };
+  return /*#__PURE__*/React.createElement(Modal, {
+    title: (contratoInicial ? "✏️ Editar" : "📝 Novo") + " Contrato SWAP" + (c.numero ? " — Nº" + c.numero : ""),
+    onClose: onClose,
+    maxWidth: 880
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: "#f0f9ff",
+      border: "1px solid #bae6fd",
+      borderRadius: 8,
+      padding: "10px 14px",
+      fontSize: 11,
+      color: "#0369a1",
+      marginBottom: 16
+    }
+  }, "Os campos das ", /*#__PURE__*/React.createElement("b", null, "Permutantes A e B"), " e das ", /*#__PURE__*/React.createElement("b", null, "Cláusulas Segunda e Terceira"), " vêm em destaque, pois mudam a cada contrato. As demais cláusulas já vêm com o texto padrão — clique em uma para abrir e ajustar só o que for necessário."), /*#__PURE__*/React.createElement(FRow, null, /*#__PURE__*/React.createElement(Field, {
+    label: "Número do contrato"
+  }, /*#__PURE__*/React.createElement("input", {
+    style: inp,
+    value: c.numero,
+    onChange: e => setCampo("numero", e.target.value),
+    placeholder: "Ex: 202640686"
+  })), /*#__PURE__*/React.createElement(Field, {
+    label: "Status"
+  }, /*#__PURE__*/React.createElement("select", {
+    style: inp,
+    value: c.status,
+    onChange: e => setCampo("status", e.target.value)
+  }, /*#__PURE__*/React.createElement("option", {
+    value: "rascunho"
+  }, "Rascunho"), /*#__PURE__*/React.createElement("option", {
+    value: "assinado"
+  }, "Assinado")))), /*#__PURE__*/React.createElement(BlocoEmpresa, {
+    titulo: "PERMUTANTE A",
+    cor: "#e8650a",
+    dados: c.permutanteA,
+    onChange: v => setSub("permutanteA", v)
+  }), /*#__PURE__*/React.createElement(BlocoEmpresa, {
+    titulo: "PERMUTANTE B",
+    cor: "#2563eb",
+    dados: c.permutanteB,
+    onChange: v => setSub("permutanteB", v)
+  }), /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: "#fef9c3",
+      border: "1.5px solid #fde047",
+      borderRadius: 10,
+      padding: 14,
+      marginBottom: 14
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontWeight: 700,
+      fontSize: 12.5,
+      color: "#854d0e",
+      marginBottom: 2
+    }
+  }, "CLÁUSULA SEGUNDA — Obrigações da Permutante A"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 10.5,
+      color: "#92700e",
+      marginBottom: 10
+    }
+  }, "Ativos de rede cedidos pela Permutante A à Permutante B."), /*#__PURE__*/React.createElement(ListaItensEditavel, {
+    itens: c.clausula2_itens,
+    setItens: v => setSub("clausula2_itens", typeof v === "function" ? v(c.clausula2_itens) : v),
+    placeholder: "Ex: 01 Canal DWDM 100 GHz entre X e Y (00 km)"
+  })), /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: "#fef9c3",
+      border: "1.5px solid #fde047",
+      borderRadius: 10,
+      padding: 14,
+      marginBottom: 18
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontWeight: 700,
+      fontSize: 12.5,
+      color: "#854d0e",
+      marginBottom: 2
+    }
+  }, "CLÁUSULA TERCEIRA — Obrigações da Permutante B"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 10.5,
+      color: "#92700e",
+      marginBottom: 10
+    }
+  }, "Contrapartida oferecida pela Permutante B."), /*#__PURE__*/React.createElement(ListaItensEditavel, {
+    itens: c.clausula3_itens,
+    setItens: v => setSub("clausula3_itens", typeof v === "function" ? v(c.clausula3_itens) : v),
+    placeholder: "Ex: 01 Rack no POP de..., com energia DC..."
+  }), /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginTop: 12,
+      fontSize: 11,
+      fontWeight: 600,
+      color: "#92700e"
+    }
+  }, "Manutenção de fibras construídas em conjunto (50%/50%):"), /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginTop: 6
+    }
+  }, /*#__PURE__*/React.createElement(TabelaTrechosEditavel, {
+    trechos: c.clausula3_trechos,
+    setTrechos: v => setSub("clausula3_trechos", typeof v === "function" ? v(c.clausula3_trechos) : v)
+  }))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontWeight: 700,
+      fontSize: 12.5,
+      marginBottom: 8,
+      color: "#374151"
+    }
+  }, "Demais cláusulas (clique para editar)"), SWAP_CLAUSULAS_DEFS.map(def => /*#__PURE__*/React.createElement(ClausulaAccordion, {
+    key: def.key,
+    titulo: def.titulo,
+    valor: c.clausulas[def.key],
+    onChange: v => setClausulaTexto(def.key, v),
+    aberta: clausulaAberta === def.key,
+    onToggle: () => setClausulaAberta(p => p === def.key ? null : def.key)
+  })), /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: "#f3f4f6",
+      borderRadius: 10,
+      padding: 14,
+      marginTop: 16,
+      marginBottom: 16
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontWeight: 700,
+      fontSize: 12.5,
+      marginBottom: 10,
+      color: "#374151"
+    }
+  }, "9.11 — Contatos para Notificações"), /*#__PURE__*/React.createElement(FRow, null, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      fontWeight: 600,
+      color: "#6b7280",
+      marginBottom: 6
+    }
+  }, "Pela Permutante A"), /*#__PURE__*/React.createElement(FRow, {
+    full: true
+  }, /*#__PURE__*/React.createElement(Field, {
+    label: "Nome"
+  }, /*#__PURE__*/React.createElement("input", {
+    style: inp,
+    value: c.notificacoes.parteA.nome,
+    onChange: e => setNotif("parteA", "nome", e.target.value)
+  }))), /*#__PURE__*/React.createElement(FRow, {
+    full: true
+  }, /*#__PURE__*/React.createElement(Field, {
+    label: "CPF"
+  }, /*#__PURE__*/React.createElement("input", {
+    style: inp,
+    value: c.notificacoes.parteA.cpf,
+    onChange: e => setNotif("parteA", "cpf", e.target.value)
+  }))), /*#__PURE__*/React.createElement(FRow, {
+    full: true
+  }, /*#__PURE__*/React.createElement(Field, {
+    label: "E-mail"
+  }, /*#__PURE__*/React.createElement("input", {
+    style: inp,
+    value: c.notificacoes.parteA.email,
+    onChange: e => setNotif("parteA", "email", e.target.value)
+  }))), /*#__PURE__*/React.createElement(FRow, {
+    full: true
+  }, /*#__PURE__*/React.createElement(Field, {
+    label: "Telefone"
+  }, /*#__PURE__*/React.createElement("input", {
+    style: inp,
+    value: c.notificacoes.parteA.telefone,
+    onChange: e => setNotif("parteA", "telefone", e.target.value)
+  })))), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      fontWeight: 600,
+      color: "#6b7280",
+      marginBottom: 6
+    }
+  }, "Pela Permutante B"), /*#__PURE__*/React.createElement(FRow, {
+    full: true
+  }, /*#__PURE__*/React.createElement(Field, {
+    label: "Nome"
+  }, /*#__PURE__*/React.createElement("input", {
+    style: inp,
+    value: c.notificacoes.parteB.nome,
+    onChange: e => setNotif("parteB", "nome", e.target.value)
+  }))), /*#__PURE__*/React.createElement(FRow, {
+    full: true
+  }, /*#__PURE__*/React.createElement(Field, {
+    label: "CPF"
+  }, /*#__PURE__*/React.createElement("input", {
+    style: inp,
+    value: c.notificacoes.parteB.cpf,
+    onChange: e => setNotif("parteB", "cpf", e.target.value)
+  }))), /*#__PURE__*/React.createElement(FRow, {
+    full: true
+  }, /*#__PURE__*/React.createElement(Field, {
+    label: "E-mail"
+  }, /*#__PURE__*/React.createElement("input", {
+    style: inp,
+    value: c.notificacoes.parteB.email,
+    onChange: e => setNotif("parteB", "email", e.target.value)
+  }))), /*#__PURE__*/React.createElement(FRow, {
+    full: true
+  }, /*#__PURE__*/React.createElement(Field, {
+    label: "Telefone"
+  }, /*#__PURE__*/React.createElement("input", {
+    style: inp,
+    value: c.notificacoes.parteB.telefone,
+    onChange: e => setNotif("parteB", "telefone", e.target.value)
+  })))))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: "#f3f4f6",
+      borderRadius: 10,
+      padding: 14,
+      marginBottom: 16
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontWeight: 700,
+      fontSize: 12.5,
+      marginBottom: 10,
+      color: "#374151"
+    }
+  }, "Assinaturas"), /*#__PURE__*/React.createElement(FRow, {
+    full: true
+  }, /*#__PURE__*/React.createElement(Field, {
+    label: "Cidade e data (rodapé do contrato)"
+  }, /*#__PURE__*/React.createElement("input", {
+    style: inp,
+    value: c.assinatura.cidadeData,
+    onChange: e => setAssin("cidadeData", e.target.value)
+  }))), /*#__PURE__*/React.createElement(FRow, null, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      fontWeight: 600,
+      color: "#6b7280",
+      marginBottom: 6
+    }
+  }, "Representante Permutante A"), /*#__PURE__*/React.createElement(FRow, {
+    full: true
+  }, /*#__PURE__*/React.createElement(Field, {
+    label: "Nome"
+  }, /*#__PURE__*/React.createElement("input", {
+    style: inp,
+    value: c.assinatura.parteA.nome,
+    onChange: e => setAssinPessoa("parteA", "nome", e.target.value)
+  }))), /*#__PURE__*/React.createElement(FRow, {
+    full: true
+  }, /*#__PURE__*/React.createElement(Field, {
+    label: "CPF"
+  }, /*#__PURE__*/React.createElement("input", {
+    style: inp,
+    value: c.assinatura.parteA.cpf,
+    onChange: e => setAssinPessoa("parteA", "cpf", e.target.value)
+  })))), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      fontWeight: 600,
+      color: "#6b7280",
+      marginBottom: 6
+    }
+  }, "Representante Permutante B"), /*#__PURE__*/React.createElement(FRow, {
+    full: true
+  }, /*#__PURE__*/React.createElement(Field, {
+    label: "Nome"
+  }, /*#__PURE__*/React.createElement("input", {
+    style: inp,
+    value: c.assinatura.parteB.nome,
+    onChange: e => setAssinPessoa("parteB", "nome", e.target.value)
+  }))), /*#__PURE__*/React.createElement(FRow, {
+    full: true
+  }, /*#__PURE__*/React.createElement(Field, {
+    label: "CPF"
+  }, /*#__PURE__*/React.createElement("input", {
+    style: inp,
+    value: c.assinatura.parteB.cpf,
+    onChange: e => setAssinPessoa("parteB", "cpf", e.target.value)
+  }))))), /*#__PURE__*/React.createElement(FRow, null, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      fontWeight: 600,
+      color: "#6b7280",
+      marginBottom: 6
+    }
+  }, "Testemunha 1"), /*#__PURE__*/React.createElement(FRow, {
+    full: true
+  }, /*#__PURE__*/React.createElement(Field, {
+    label: "Nome"
+  }, /*#__PURE__*/React.createElement("input", {
+    style: inp,
+    value: c.assinatura.testemunha1.nome,
+    onChange: e => setAssinPessoa("testemunha1", "nome", e.target.value)
+  }))), /*#__PURE__*/React.createElement(FRow, {
+    full: true
+  }, /*#__PURE__*/React.createElement(Field, {
+    label: "CPF"
+  }, /*#__PURE__*/React.createElement("input", {
+    style: inp,
+    value: c.assinatura.testemunha1.cpf,
+    onChange: e => setAssinPessoa("testemunha1", "cpf", e.target.value)
+  })))), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      fontWeight: 600,
+      color: "#6b7280",
+      marginBottom: 6
+    }
+  }, "Testemunha 2"), /*#__PURE__*/React.createElement(FRow, {
+    full: true
+  }, /*#__PURE__*/React.createElement(Field, {
+    label: "Nome"
+  }, /*#__PURE__*/React.createElement("input", {
+    style: inp,
+    value: c.assinatura.testemunha2.nome,
+    onChange: e => setAssinPessoa("testemunha2", "nome", e.target.value)
+  }))), /*#__PURE__*/React.createElement(FRow, {
+    full: true
+  }, /*#__PURE__*/React.createElement(Field, {
+    label: "CPF"
+  }, /*#__PURE__*/React.createElement("input", {
+    style: inp,
+    value: c.assinatura.testemunha2.cpf,
+    onChange: e => setAssinPessoa("testemunha2", "cpf", e.target.value)
+  })))))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      justifyContent: "flex-end",
+      gap: 8,
+      paddingTop: 12,
+      borderTop: "1px solid #e5e7eb"
+    }
+  }, /*#__PURE__*/React.createElement("button", {
+    style: btn(),
+    onClick: () => imprimirContratoSwap(c)
+  }, "🖨️ Pré-visualizar/Imprimir"), /*#__PURE__*/React.createElement("button", {
+    style: btn(),
+    onClick: onClose
+  }, "Cancelar"), /*#__PURE__*/React.createElement("button", {
+    style: btn("primary"),
+    disabled: salvando,
+    onClick: salvar
+  }, salvando ? "Salvando..." : "💾 Salvar Contrato")));
+}
+
+// ─── LISTA / GESTÃO DE CONTRATOS SWAP ───────────────────────────────────────────
+function SwapContratosPage({
+  contratos = [],
+  setContratos,
+  syncContrato,
+  delContrato,
+  user,
+  showToast
+}) {
+  const [busca, setBusca] = React.useState("");
+  const [filtroStatus, setFiltroStatus] = React.useState("all");
+  const [editorAberto, setEditorAberto] = React.useState(null); // null | "novo" | contrato
+  const [confirm, setConfirm] = React.useState(null);
+  const [anexoModal, setAnexoModal] = React.useState(null);
+  const [enviandoAnexo, setEnviandoAnexo] = React.useState(false);
+  const fileRef = React.useRef(null);
+  const filtrados = contratos.filter(c => {
+    if (filtroStatus !== "all" && c.status !== filtroStatus) return false;
+    if (!busca.trim()) return true;
+    const q = busca.toLowerCase();
+    return (c.numero || "").toLowerCase().includes(q) || (c.permutanteB?.razaoSocial || "").toLowerCase().includes(q) || (c.permutanteB?.cidade || "").toLowerCase().includes(q) || (c.permutanteA?.razaoSocial || "").toLowerCase().includes(q);
+  }).sort((a, b) => (b.updated_at || "").localeCompare(a.updated_at || ""));
+  const salvarContrato = async contrato => {
+    const existe = contratos.some(c => c.id === contrato.id);
+    setContratos(prev => existe ? prev.map(c => c.id === contrato.id ? contrato : c) : [contrato, ...prev]);
+    await syncContrato(contrato);
+    showToast(existe ? "Contrato atualizado!" : "Contrato criado!");
+    setEditorAberto(null);
+  };
+  const excluir = async id => {
+    setContratos(prev => prev.filter(c => c.id !== id));
+    await delContrato(id);
+    showToast("Contrato excluído.");
+    setConfirm(null);
+  };
+  const handleAnexo = async file => {
+    if (!file || !anexoModal) return;
+    setEnviandoAnexo(true);
+    try {
+      const path = "swap/" + anexoModal.id + "/" + Date.now() + "_" + file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
+      const url = await uploadArquivo(file, path);
+      if (!url) {
+        showToast("Erro ao enviar o arquivo.", "err");
+        setEnviandoAnexo(false);
+        return;
+      }
+      const anexo = {
+        nome: file.name,
+        url,
+        path,
+        size: file.size,
+        created_at: new Date().toISOString()
+      };
+      const atualizado = {
+        ...anexoModal,
+        anexo_pdf: anexo,
+        status: "assinado",
+        updated_at: new Date().toISOString().slice(0, 10)
+      };
+      setContratos(prev => prev.map(c => c.id === atualizado.id ? atualizado : c));
+      await syncContrato(atualizado);
+      showToast("PDF assinado anexado!");
+      setAnexoModal(null);
+    } catch (e) {
+      showToast("Erro: " + e.message, "err");
+    }
+    setEnviandoAnexo(false);
+  };
+  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      marginBottom: 16,
+      gap: 10,
+      flexWrap: "wrap"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 8,
+      flex: 1,
+      minWidth: 260
+    }
+  }, /*#__PURE__*/React.createElement("input", {
+    style: {
+      ...inp,
+      maxWidth: 320
+    },
+    placeholder: "Buscar por nº, empresa ou cidade...",
+    value: busca,
+    onChange: e => setBusca(e.target.value)
+  }), /*#__PURE__*/React.createElement("select", {
+    style: {
+      ...inp,
+      maxWidth: 160
+    },
+    value: filtroStatus,
+    onChange: e => setFiltroStatus(e.target.value)
+  }, /*#__PURE__*/React.createElement("option", {
+    value: "all"
+  }, "Todos os status"), /*#__PURE__*/React.createElement("option", {
+    value: "rascunho"
+  }, "Rascunho"), /*#__PURE__*/React.createElement("option", {
+    value: "assinado"
+  }, "Assinado"))), /*#__PURE__*/React.createElement("button", {
+    style: btn("primary"),
+    onClick: () => setEditorAberto("novo")
+  }, "+ Novo Contrato")), filtrados.length === 0 ? /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: "#fff",
+      borderRadius: 10,
+      border: "1px solid #e5e7eb",
+      padding: 40,
+      textAlign: "center",
+      color: "#9ca3af",
+      fontSize: 12
+    }
+  }, "Nenhum contrato encontrado.") : /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      flexDirection: "column",
+      gap: 8
+    }
+  }, filtrados.map(c => /*#__PURE__*/React.createElement("div", {
+    key: c.id,
+    style: {
+      background: "#fff",
+      borderRadius: 10,
+      border: "1px solid #e5e7eb",
+      padding: 14,
+      display: "flex",
+      alignItems: "center",
+      gap: 14,
+      flexWrap: "wrap"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      flex: 1,
+      minWidth: 220
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      alignItems: "center",
+      gap: 8,
+      marginBottom: 3
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontWeight: 700,
+      fontSize: 13
+    }
+  }, c.permutanteB?.razaoSocial || "(sem nome da Permutante B)"), /*#__PURE__*/React.createElement("span", {
+    style: {
+      ...badgeStyle(c.status === "assinado" ? "green" : "gray"),
+      fontSize: 10
+    }
+  }, c.status === "assinado" ? "Assinado" : "Rascunho")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: "#6b7280"
+    }
+  }, "Nº", c.numero || "—", " · ", c.permutanteB?.cidade || "cidade não informada", c.permutanteB?.estado ? "/" + c.permutanteB.estado : "", " · atualizado em ", c.updated_at || "—")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 6,
+      flexWrap: "wrap"
+    }
+  }, /*#__PURE__*/React.createElement("button", {
+    style: {
+      ...btn(),
+      fontSize: 11,
+      padding: "6px 10px"
+    },
+    onClick: () => setEditorAberto(c)
+  }, "👁️ Ver/Editar"), /*#__PURE__*/React.createElement("button", {
+    style: {
+      ...btn(),
+      fontSize: 11,
+      padding: "6px 10px"
+    },
+    onClick: () => imprimirContratoSwap(c)
+  }, "🖨️ Imprimir"), /*#__PURE__*/React.createElement("button", {
+    style: {
+      ...btn(),
+      fontSize: 11,
+      padding: "6px 10px"
+    },
+    onClick: () => setAnexoModal(c)
+  }, "📎 ", c.anexo_pdf ? "Trocar PDF" : "Anexar PDF"), c.anexo_pdf && /*#__PURE__*/React.createElement("a", {
+    href: c.anexo_pdf.url,
+    target: "_blank",
+    rel: "noreferrer",
+    style: {
+      ...btn(),
+      fontSize: 11,
+      padding: "6px 10px",
+      textDecoration: "none",
+      display: "flex",
+      alignItems: "center"
+    }
+  }, "📄 Ver assinado"), /*#__PURE__*/React.createElement("button", {
+    style: {
+      ...btn(),
+      fontSize: 11,
+      padding: "6px 10px",
+      color: "#ef4444"
+    },
+    onClick: () => setConfirm(c)
+  }, "🗑️"))))), editorAberto && /*#__PURE__*/React.createElement(ContratoSwapEditor, {
+    contratoInicial: editorAberto === "novo" ? null : editorAberto,
+    onSave: salvarContrato,
+    onClose: () => setEditorAberto(null),
+    showToast: showToast
+  }), anexoModal && /*#__PURE__*/React.createElement(Modal, {
+    title: "📎 Anexar PDF Assinado — " + (anexoModal.permutanteB?.razaoSocial || ""),
+    onClose: () => setAnexoModal(null)
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: "#6b7280",
+      marginBottom: 12
+    }
+  }, "Selecione o arquivo PDF do contrato já assinado por ambas as partes. Ao anexar, o status do contrato passa automaticamente para \"Assinado\"."), /*#__PURE__*/React.createElement("input", {
+    ref: fileRef,
+    type: "file",
+    accept: "application/pdf",
+    style: {
+      ...inp,
+      padding: 6
+    },
+    onChange: e => handleAnexo(e.target.files[0]),
+    disabled: enviandoAnexo
+  }), enviandoAnexo && /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: "#6b7280",
+      marginTop: 8
+    }
+  }, "Enviando..."), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      justifyContent: "flex-end",
+      marginTop: 16,
+      paddingTop: 12,
+      borderTop: "1px solid #e5e7eb"
+    }
+  }, /*#__PURE__*/React.createElement("button", {
+    style: btn(),
+    onClick: () => setAnexoModal(null)
+  }, "Fechar"))), confirm && /*#__PURE__*/React.createElement(Confirm, {
+    msg: `Excluir o contrato com "${confirm.permutanteB?.razaoSocial || "esta empresa"}"?`,
+    onOk: () => excluir(confirm.id),
+    onCancel: () => setConfirm(null)
+  }));
+}
+
 // ─── NAV ──────────────────────────────────────────────────────────────────────
 // Ícones SVG outline para o menu — como função para evitar JSX fora de componente
 function NavIcon({
@@ -16188,6 +17690,25 @@ function NavIcon({
   }), /*#__PURE__*/React.createElement("path", {
     d: "M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"
   }));
+  if (name === "dashswap") return /*#__PURE__*/React.createElement("svg", p, /*#__PURE__*/React.createElement("path", {
+    d: "M3 3v18h18"
+  }), /*#__PURE__*/React.createElement("path", {
+    d: "M7 14l3-3 3 3 5-6"
+  }));
+  if (name === "swapcontratos") return /*#__PURE__*/React.createElement("svg", p, /*#__PURE__*/React.createElement("path", {
+    d: "M7 3L3 7l4 4"
+  }), /*#__PURE__*/React.createElement("path", {
+    d: "M3 7h13a4 4 0 0 1 4 4v1"
+  }), /*#__PURE__*/React.createElement("path", {
+    d: "M17 21l4-4-4-4"
+  }), /*#__PURE__*/React.createElement("path", {
+    d: "M21 17H8a4 4 0 0 1-4-4v-1"
+  }));
+  if (name === "viabilidades") return /*#__PURE__*/React.createElement("svg", p, /*#__PURE__*/React.createElement("path", {
+    d: "M9 11l3 3L22 4"
+  }), /*#__PURE__*/React.createElement("path", {
+    d: "M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"
+  }));
   if (name === "logout") return /*#__PURE__*/React.createElement("svg", p, /*#__PURE__*/React.createElement("path", {
     d: "M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"
   }), /*#__PURE__*/React.createElement("polyline", {
@@ -16240,6 +17761,17 @@ const NAV = [{
   key: "investint",
   label: "Investimentos"
 }, {
+  section: "SWAP/Viabilidade"
+}, {
+  key: "dashswap",
+  label: "Dashboard"
+}, {
+  key: "swapcontratos",
+  label: "Contratos SWAP"
+}, {
+  key: "viabilidades",
+  label: "Viabilidades"
+}, {
   section: "Administração"
 }, {
   key: "usuarios",
@@ -16257,7 +17789,10 @@ const TITLES = {
   itens: "Base de Itens",
   importar: "Importar Itens",
   pontos: "Lan 2 Lan — Pontos",
-  usuarios: "Usuários"
+  usuarios: "Usuários",
+  dashswap: "Dashboard SWAP/Viabilidade",
+  swapcontratos: "Contratos SWAP",
+  viabilidades: "Viabilidades"
 };
 
 // ─── APP ──────────────────────────────────────────────────────────────────────
@@ -16274,6 +17809,8 @@ function App() {
   const [custosInt, setCustosInt] = useState([]); // custos da aba Custos Interno
   const [fatInt, setFatInt] = useState([]); // faturamentos internos (contratos, outras)
   const [investInt, setInvestInt] = useState([]); // investimentos futuros
+  const [swapContratos, setSwapContratos] = useState([]); // contratos SWAP/permuta de infraestrutura
+  const [viabilidades, setViabilidades] = useState([]); // estudos de viabilidade (módulo futuro)
   const [sbUsers, setSbUsers] = useState([...PROFILES]); // usuários do sistema
   const [items, setItems] = useState([...ALL_ITEMS]); // itens com custo
   const [l2lReal, setL2lReal] = useState([]); // valores reais mensais do L2L (financeiro)
@@ -16289,7 +17826,7 @@ function App() {
   // ── Supabase sync functions ──────────────────────────────────────────────────
   const loadFromSupabase = async () => {
     try {
-      const [dbObras, dbBudgets, dbPontos, dbCustos, dbEspelhos, dbFats, dbInvests, dbUsers, dbItens, dbL2lReal] = await Promise.all([sb.get("sir_obras", "order=cod"), sb.get("sir_orcamentos", "order=ordem"), sb.get("sir_pontos", "order=created_at"), sb.get("sir_custos", "order=data"), sb.get("sir_espelhos", "order=created_at"), sb.get("sir_faturamentos", "order=data"), sb.get("sir_investimentos", "order=created_at"), sb.get("sir_usuarios", "order=nome"), sb.get("sir_itens", "order=codigo"), sb.get("sir_l2l_real", "order=mes")]);
+      const [dbObras, dbBudgets, dbPontos, dbCustos, dbEspelhos, dbFats, dbInvests, dbUsers, dbItens, dbL2lReal, dbSwapContratos, dbViabilidades] = await Promise.all([sb.get("sir_obras", "order=cod"), sb.get("sir_orcamentos", "order=ordem"), sb.get("sir_pontos", "order=created_at"), sb.get("sir_custos", "order=data"), sb.get("sir_espelhos", "order=created_at"), sb.get("sir_faturamentos", "order=data"), sb.get("sir_investimentos", "order=created_at"), sb.get("sir_usuarios", "order=nome"), sb.get("sir_itens", "order=codigo"), sb.get("sir_l2l_real", "order=mes"), sb.get("sir_swap_contratos", "order=created_at"), sb.get("sir_viabilidades", "order=created_at")]);
 
       // Obras: se Supabase vazio, faz seed com OBRAS_DATA
       if (dbObras && dbObras.length > 0) {
@@ -16320,6 +17857,8 @@ function App() {
       })));
       if (dbFats?.length) setFatInt(dbFats);
       if (dbInvests?.length) setInvestInt(dbInvests);
+      if (dbSwapContratos?.length) setSwapContratos(dbSwapContratos);
+      if (dbViabilidades?.length) setViabilidades(dbViabilidades);
       if (dbUsers?.length) {
         setSbUsers(dbUsers);
         // Atualizar o user logado com dados atualizados do Supabase
@@ -16425,6 +17964,22 @@ function App() {
   };
   const syncInvest = async i => {
     await sb.upsert("sir_investimentos", i).catch(() => {});
+  };
+  const syncSwapContrato = async c => {
+    const r = await sb.upsert("sir_swap_contratos", c);
+    if (!r) console.error("syncSwapContrato falhou", c.id);
+    return r;
+  };
+  const delSwapContrato = async id => {
+    await sbFetch("sir_swap_contratos", "DELETE", null, "id=eq." + id);
+  };
+  const syncViabilidade = async v => {
+    const r = await sb.upsert("sir_viabilidades", v);
+    if (!r) console.error("syncViabilidade falhou", v.id);
+    return r;
+  };
+  const delViabilidade = async id => {
+    await sbFetch("sir_viabilidades", "DELETE", null, "id=eq." + id);
   };
   const syncUsuario = async u => {
     await sb.upsert("sir_usuarios", u).catch(() => {});
@@ -16587,6 +18142,29 @@ function App() {
           setInvests: setInvestInt,
           syncInvest: syncInvest,
           delInvest: delInvest,
+          showToast: showToast
+        });
+      case "dashswap":
+        return /*#__PURE__*/React.createElement(SwapDashboard, {
+          contratos: swapContratos,
+          viabilidades: viabilidades,
+          setPage: setPage
+        });
+      case "swapcontratos":
+        return /*#__PURE__*/React.createElement(SwapContratosPage, {
+          contratos: swapContratos,
+          setContratos: setSwapContratos,
+          syncContrato: syncSwapContrato,
+          delContrato: delSwapContrato,
+          user: user,
+          showToast: showToast
+        });
+      case "viabilidades":
+        return /*#__PURE__*/React.createElement(ViabilidadesPage, {
+          viabilidades: viabilidades,
+          setViabilidades: setViabilidades,
+          syncViabilidade: syncViabilidade,
+          delViabilidade: delViabilidade,
           showToast: showToast
         });
       case "orcamentos":
