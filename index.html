@@ -18281,11 +18281,12 @@ function App() {
     NAV.forEach((item, i) => {
       if (item.section) {
         currentSection = item.section;
-        const isOpen = collapsed[currentSection] !== true;
+        const secKey = item.section; // captura o valor desta iteração — evita bug de closure com "let" mutável
+        const isOpen = collapsed[secKey] !== true;
         items.push(/*#__PURE__*/React.createElement("div", {
           key: "s" + i
         }, /*#__PURE__*/React.createElement("div", {
-          onClick: () => toggleSection(currentSection),
+          onClick: () => toggleSection(secKey),
           style: {
             display: "flex",
             alignItems: "center",
