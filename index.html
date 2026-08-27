@@ -18167,6 +18167,17 @@ const TITLES = {
   viabilidades: "Viabilidades"
 };
 
+// Escolhe a primeira página (na ordem do menu) que o usuário realmente tem
+// liberada — usada como destino inicial após login e como "voltar ao início"
+// quando alguém tenta acessar uma página sem permissão.
+const primeiraPagePermitida = mods => {
+  const lista = mods && mods.length ? mods : ALL_MODS;
+  for (const item of NAV) {
+    if (item.key && lista.includes(item.key)) return item.key;
+  }
+  return "dashboard";
+};
+
 // ─── APP ──────────────────────────────────────────────────────────────────────
 function App() {
   const [user, setUser] = useState(null);
@@ -18423,6 +18434,7 @@ function App() {
       if (local) {
         if (senha !== senhasValidas[email]) return "Senha incorreta.";
         setUser(local);
+        setPage(primeiraPagePermitida(local.modulos));
         loadFromSupabase().catch(e => console.log("Supabase offline:", e.message));
         setTimeout(() => showToast("Bem-vindo, " + local.nome.split(" ")[0] + "!"), 100);
         return null;
@@ -18438,6 +18450,7 @@ function App() {
           modulos: remoto.modulos && remoto.modulos.length ? remoto.modulos : ALL_MODS
         };
         setUser(userObj);
+        setPage(primeiraPagePermitida(userObj.modulos));
         loadFromSupabase().catch(e => console.log("Supabase offline:", e.message));
         setTimeout(() => showToast("Bem-vindo, " + (userObj.nome || "").split(" ")[0] + "!"), 100);
         return null;
@@ -18447,6 +18460,45 @@ function App() {
     }
   });
   const renderPage = () => {
+    // Guarda de permissão de verdade: o filtro do menu lateral só esconde o
+    // link, mas não impedia o CONTEÚDO de ser renderizado (ex: "dashboard" é
+    // sempre a página inicial padrão, então qualquer usuário caía nela mesmo
+    // sem ter esse módulo liberado). Aqui bloqueamos o acesso à página em si.
+    const mods = user.modulos || ALL_MODS;
+    if (!mods.includes(page)) {
+      return /*#__PURE__*/React.createElement("div", {
+        style: {
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          minHeight: "60vh",
+          textAlign: "center",
+          gap: 10
+        }
+      }, /*#__PURE__*/React.createElement("div", {
+        style: {
+          fontSize: 40
+        }
+      }, "🔒"), /*#__PURE__*/React.createElement("div", {
+        style: {
+          fontWeight: 700,
+          fontSize: 15
+        }
+      }, "Você não tem permissão para acessar esta página"), /*#__PURE__*/React.createElement("div", {
+        style: {
+          color: "#6b7280",
+          fontSize: 12,
+          maxWidth: 360
+        }
+      }, "Fale com um administrador se acredita que deveria ter acesso a esta área."), /*#__PURE__*/React.createElement("button", {
+        style: {
+          ...btn("primary"),
+          marginTop: 6
+        },
+        onClick: () => setPage(primeiraPagePermitida(mods))
+      }, "Voltar ao início"));
+    }
     switch (page) {
       case "dashboard":
         return /*#__PURE__*/React.createElement(DashboardPrincipal, {
