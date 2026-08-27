@@ -17865,10 +17865,16 @@ function App() {
         setUser(prev => {
           if (!prev) return prev;
           const updated = dbUsers.find(u => u.id === prev.id || u.email === prev.email);
-          return updated ? {
+          if (!updated) return prev;
+          // Une os módulos em vez de substituir: evita que uma lista antiga salva
+          // no banco (de antes de um módulo novo existir, ex: SWAP/Viabilidade)
+          // "apague" o acesso que o perfil local já concede por padrão.
+          const modulosUnificados = Array.from(new Set([...(prev.modulos || []), ...(updated.modulos || [])]));
+          return {
             ...prev,
-            ...updated
-          } : prev;
+            ...updated,
+            modulos: modulosUnificados
+          };
         });
       }
       if (dbItens && dbItens.length > 0) {
