@@ -6,6 +6,9 @@
 <title>SIR — Grupo Jet</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>if(window['pdfjs-dist/build/pdf']) window.pdfjsLib = window['pdfjs-dist/build/pdf'];
+if(window.pdfjsLib) window.pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
@@ -16557,6 +16560,324 @@ function imprimirContratoSwap(contrato) {
   win.document.write(html);
   win.document.close();
 }
+
+// ─── LEITURA INTELIGENTE DE CONTRATOS SWAP JÁ EXISTENTES (PDF) ─────────────────
+// Extrai o texto do PDF (via pdf.js) e usa os padrões do próprio modelo de
+// contrato (Permutante A/B, CNPJ, cidade/UF, número, data) para tentar
+// preencher os campos sozinho. Nunca é garantido — por isso os campos ficam
+// sempre editáveis para conferência antes de salvar.
+async function lerTextoPDF(file) {
+  if (!window.pdfjsLib) throw new Error("Biblioteca de leitura de PDF ainda não carregou. Aguarde alguns segundos e tente novamente.");
+  const buf = await file.arrayBuffer();
+  const pdf = await window.pdfjsLib.getDocument({
+    data: buf
+  }).promise;
+  let texto = "";
+  for (let i = 1; i <= pdf.numPages; i++) {
+    const page = await pdf.getPage(i);
+    const content = await page.getTextContent();
+    texto += content.items.map(it => it.str).join(" ") + "\n";
+  }
+  return texto;
+}
+const SWAP_MESES_PT = {
+  "janeiro": 1,
+  "fevereiro": 2,
+  "março": 3,
+  "marco": 3,
+  "abril": 4,
+  "maio": 5,
+  "junho": 6,
+  "julho": 7,
+  "agosto": 8,
+  "setembro": 9,
+  "outubro": 10,
+  "novembro": 11,
+  "dezembro": 12
+};
+function extrairDadosContratoTexto(texto) {
+  const dados = {
+    numero: "",
+    permutanteB: {
+      razaoSocial: "",
+      cnpj: "",
+      cidade: "",
+      estado: "",
+      cep: ""
+    },
+    data_contrato: "",
+    encontrados: {} // marca quais campos foram detectados automaticamente
+  };
+
+  // Número do contrato (ex: "Nº202640685")
+  const mNum = texto.match(/N[ºo°]\s*(\d{4,})/);
+  if (mNum) {
+    dados.numero = mNum[1];
+    dados.encontrados.numero = true;
+  }
+
+  // Isola o trecho da PERMUTANTE B (do rótulo até a próxima cláusula)
+  const idxB = texto.search(/PERMUTANTE\s*B\s*:/i);
+  if (idxB >= 0) {
+    let bloco = texto.slice(idxB, idxB + 700);
+    const corte = bloco.search(/CL[ÁA]USULA|Pelo presente/i);
+    if (corte > 0) bloco = bloco.slice(0, corte);
+    const mRazao = bloco.match(/PERMUTANTE\s*B\s*:\s*([^,]+?),\s*pessoa jur[íi]dica/i);
+    if (mRazao) {
+      dados.permutanteB.razaoSocial = mRazao[1].trim();
+      dados.encontrados.razaoSocial = true;
+    }
+    const mCnpj = bloco.match(/CNPJ\s*n[ºo°]?\s*([\d.\/-]{14,20})/i);
+    if (mCnpj) {
+      dados.permutanteB.cnpj = mCnpj[1].trim();
+      dados.encontrados.cnpj = true;
+    }
+    const mCidUf = bloco.match(/,\s*([A-Za-zÀ-ÿ\s]{3,40})\/([A-Z]{2})\s*,?\s*CEP\s*:?\s*([\d.-]{8,10})/);
+    if (mCidUf) {
+      dados.permutanteB.cidade = mCidUf[1].trim();
+      dados.permutanteB.estado = mCidUf[2].trim();
+      dados.permutanteB.cep = mCidUf[3].trim();
+      dados.encontrados.cidade = true;
+    }
+  }
+
+  // Data do contrato (ex: "21 de agosto de 2026")
+  const mData = texto.match(/(\d{1,2})\s*de\s*([a-zçãé]+)\s*de\s*(\d{4})/i);
+  if (mData) {
+    const mesNum = SWAP_MESES_PT[mData[2].toLowerCase()];
+    if (mesNum) {
+      dados.data_contrato = mData[3] + "-" + String(mesNum).padStart(2, "0") + "-" + String(mData[1]).padStart(2, "0");
+      dados.encontrados.data = true;
+    }
+  }
+  return dados;
+}
+async function extrairDadosContratoPDF(file) {
+  const texto = await lerTextoPDF(file);
+  return extrairDadosContratoTexto(texto);
+}
+function CampoDetectado({
+  ok
+}) {
+  return ok ? /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: 9,
+      fontWeight: 700,
+      color: "#15803d",
+      background: "#dcfce7",
+      padding: "1px 6px",
+      borderRadius: 99,
+      marginLeft: 6
+    }
+  }, "✓ detectado") : null;
+}
+function AnexarContratoExistenteModal({
+  onSave,
+  onClose,
+  showToast
+}) {
+  const [arquivo, setArquivo] = React.useState(null);
+  const [analisando, setAnalisando] = React.useState(false);
+  const [encontrados, setEncontrados] = React.useState({});
+  const [salvando, setSalvando] = React.useState(false);
+  const [form, setForm] = React.useState({
+    numero: "",
+    permB_razaoSocial: "",
+    permB_cnpj: "",
+    permB_cidade: "",
+    permB_estado: "",
+    permB_cep: "",
+    data_contrato: new Date().toISOString().slice(0, 10)
+  });
+  const upd = k => e => setForm(p => ({
+    ...p,
+    [k]: e.target.value
+  }));
+  const handleArquivo = async file => {
+    if (!file) return;
+    setArquivo(file);
+    setAnalisando(true);
+    setEncontrados({});
+    try {
+      const dados = await extrairDadosContratoPDF(file);
+      setForm(p => ({
+        ...p,
+        numero: dados.numero || p.numero,
+        permB_razaoSocial: dados.permutanteB.razaoSocial || p.permB_razaoSocial,
+        permB_cnpj: dados.permutanteB.cnpj || p.permB_cnpj,
+        permB_cidade: dados.permutanteB.cidade || p.permB_cidade,
+        permB_estado: dados.permutanteB.estado || p.permB_estado,
+        permB_cep: dados.permutanteB.cep || p.permB_cep,
+        data_contrato: dados.data_contrato || p.data_contrato
+      }));
+      setEncontrados(dados.encontrados || {});
+      const qtd = Object.keys(dados.encontrados || {}).length;
+      showToast(qtd > 0 ? `PDF lido! ${qtd} campo(s) preenchido(s) automaticamente — confira antes de salvar.` : "Não consegui reconhecer os campos automaticamente neste PDF. Preencha manualmente.", qtd > 0 ? "ok" : "err");
+    } catch (e) {
+      console.error(e);
+      showToast("Não foi possível ler o PDF automaticamente. Preencha os campos manualmente.", "err");
+    }
+    setAnalisando(false);
+  };
+  const salvar = async () => {
+    if (!arquivo) {
+      alert("Selecione o arquivo PDF do contrato.");
+      return;
+    }
+    if (!form.permB_razaoSocial.trim()) {
+      alert("Preencha ao menos a Razão Social da Permutante B.");
+      return;
+    }
+    setSalvando(true);
+    try {
+      const contrato = swapContratoPadrao();
+      contrato.numero = form.numero;
+      contrato.status = "assinado";
+      contrato.data_contrato = form.data_contrato;
+      contrato.permutanteB = {
+        razaoSocial: form.permB_razaoSocial,
+        cnpj: form.permB_cnpj,
+        endereco: "",
+        cidade: form.permB_cidade,
+        estado: form.permB_estado,
+        cep: form.permB_cep
+      };
+      try {
+        contrato.assinatura.cidadeData = "Goiânia/GO, " + new Date(form.data_contrato + "T12:00:00").toLocaleDateString("pt-BR", {
+          day: "2-digit",
+          month: "long",
+          year: "numeric"
+        });
+      } catch (e) {}
+      const path = "swap/" + contrato.id + "/" + Date.now() + "_" + arquivo.name.replace(/[^a-zA-Z0-9._-]/g, "_");
+      const url = await uploadArquivo(arquivo, path);
+      if (!url) {
+        showToast("Erro ao enviar o arquivo.", "err");
+        setSalvando(false);
+        return;
+      }
+      contrato.anexo_pdf = {
+        nome: arquivo.name,
+        url,
+        path,
+        size: arquivo.size,
+        created_at: new Date().toISOString()
+      };
+      await onSave(contrato);
+    } catch (e) {
+      showToast("Erro ao salvar: " + e.message, "err");
+    }
+    setSalvando(false);
+  };
+  return /*#__PURE__*/React.createElement(Modal, {
+    title: "📎 Anexar Contrato Já Existente",
+    onClose: onClose,
+    maxWidth: 560
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: "#f0f9ff",
+      border: "1px solid #bae6fd",
+      borderRadius: 8,
+      padding: "10px 14px",
+      fontSize: 11,
+      color: "#0369a1",
+      marginBottom: 16
+    }
+  }, "Envie o PDF de um contrato SWAP feito fora da plataforma. Vou tentar ler o arquivo e preencher os campos abaixo sozinho — confira e ajuste o que precisar antes de salvar."), /*#__PURE__*/React.createElement(Field, {
+    label: "Arquivo PDF do contrato *"
+  }, /*#__PURE__*/React.createElement("input", {
+    type: "file",
+    accept: "application/pdf",
+    style: {
+      ...inp,
+      padding: 6
+    },
+    onChange: e => handleArquivo(e.target.files[0]),
+    disabled: analisando || salvando
+  })), analisando && /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: 11,
+      color: "#6b7280",
+      marginTop: 6
+    }
+  }, "🔎 Lendo o PDF e procurando os dados do contrato..."), /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginTop: 16,
+      display: "flex",
+      flexDirection: "column",
+      gap: 10
+    }
+  }, /*#__PURE__*/React.createElement(FRow, {
+    full: true
+  }, /*#__PURE__*/React.createElement(Field, {
+    label: /*#__PURE__*/React.createElement("span", null, "Número do contrato", /*#__PURE__*/React.createElement(CampoDetectado, {
+      ok: encontrados.numero
+    }))
+  }, /*#__PURE__*/React.createElement("input", {
+    style: inp,
+    value: form.numero,
+    onChange: upd("numero"),
+    placeholder: "Ex: 202640686"
+  }))), /*#__PURE__*/React.createElement(FRow, {
+    full: true
+  }, /*#__PURE__*/React.createElement(Field, {
+    label: /*#__PURE__*/React.createElement("span", null, "Razão Social — Permutante B", /*#__PURE__*/React.createElement(CampoDetectado, {
+      ok: encontrados.razaoSocial
+    }))
+  }, /*#__PURE__*/React.createElement("input", {
+    style: inp,
+    value: form.permB_razaoSocial,
+    onChange: upd("permB_razaoSocial")
+  }))), /*#__PURE__*/React.createElement(FRow, null, /*#__PURE__*/React.createElement(Field, {
+    label: /*#__PURE__*/React.createElement("span", null, "CNPJ", /*#__PURE__*/React.createElement(CampoDetectado, {
+      ok: encontrados.cnpj
+    }))
+  }, /*#__PURE__*/React.createElement("input", {
+    style: inp,
+    value: form.permB_cnpj,
+    onChange: upd("permB_cnpj")
+  })), /*#__PURE__*/React.createElement(Field, {
+    label: /*#__PURE__*/React.createElement("span", null, "Data do contrato", /*#__PURE__*/React.createElement(CampoDetectado, {
+      ok: encontrados.data
+    }))
+  }, /*#__PURE__*/React.createElement("input", {
+    style: inp,
+    type: "date",
+    value: form.data_contrato,
+    onChange: upd("data_contrato")
+  }))), /*#__PURE__*/React.createElement(FRow, null, /*#__PURE__*/React.createElement(Field, {
+    label: /*#__PURE__*/React.createElement("span", null, "Cidade", /*#__PURE__*/React.createElement(CampoDetectado, {
+      ok: encontrados.cidade
+    }))
+  }, /*#__PURE__*/React.createElement("input", {
+    style: inp,
+    value: form.permB_cidade,
+    onChange: upd("permB_cidade")
+  })), /*#__PURE__*/React.createElement(Field, {
+    label: "Estado"
+  }, /*#__PURE__*/React.createElement("input", {
+    style: inp,
+    value: form.permB_estado,
+    onChange: upd("permB_estado")
+  })))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      justifyContent: "flex-end",
+      gap: 8,
+      marginTop: 16,
+      paddingTop: 12,
+      borderTop: "1px solid #e5e7eb"
+    }
+  }, /*#__PURE__*/React.createElement("button", {
+    style: btn(),
+    onClick: onClose
+  }, "Cancelar"), /*#__PURE__*/React.createElement("button", {
+    style: btn("primary"),
+    disabled: salvando || analisando,
+    onClick: salvar
+  }, salvando ? "Salvando..." : "💾 Salvar Contrato")));
+}
+
 // ─── LISTA DE ITENS EDITÁVEL (usada nas cláusulas 2 e 3) ───────────────────────
 function ListaItensEditavel({
   itens,
@@ -17297,6 +17618,7 @@ function SwapContratosPage({
   const [busca, setBusca] = React.useState("");
   const [filtroStatus, setFiltroStatus] = React.useState("all");
   const [editorAberto, setEditorAberto] = React.useState(null); // null | "novo" | contrato
+  const [importarAberto, setImportarAberto] = React.useState(false);
   const [confirm, setConfirm] = React.useState(null);
   const [anexoModal, setAnexoModal] = React.useState(null);
   const [enviandoAnexo, setEnviandoAnexo] = React.useState(false);
@@ -17307,11 +17629,17 @@ function SwapContratosPage({
     const q = busca.toLowerCase();
     return (c.numero || "").toLowerCase().includes(q) || (c.permutanteB?.razaoSocial || "").toLowerCase().includes(q) || (c.permutanteB?.cidade || "").toLowerCase().includes(q) || (c.permutanteA?.razaoSocial || "").toLowerCase().includes(q);
   }).sort((a, b) => (b.updated_at || "").localeCompare(a.updated_at || ""));
-  const salvarContrato = async contrato => {
+
+  // Persiste (cria ou atualiza) um contrato no estado + Supabase — sem fechar nenhum modal específico,
+  // já que é reaproveitada tanto pelo editor completo quanto pelo importador de contrato existente.
+  const persistirContrato = async contrato => {
     const existe = contratos.some(c => c.id === contrato.id);
     setContratos(prev => existe ? prev.map(c => c.id === contrato.id ? contrato : c) : [contrato, ...prev]);
     await syncContrato(contrato);
     showToast(existe ? "Contrato atualizado!" : "Contrato criado!");
+  };
+  const salvarContrato = async contrato => {
+    await persistirContrato(contrato);
     setEditorAberto(null);
   };
   const excluir = async id => {
@@ -17390,10 +17718,18 @@ function SwapContratosPage({
     value: "rascunho"
   }, "Rascunho"), /*#__PURE__*/React.createElement("option", {
     value: "assinado"
-  }, "Assinado"))), /*#__PURE__*/React.createElement("button", {
+  }, "Assinado"))), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 8
+    }
+  }, /*#__PURE__*/React.createElement("button", {
+    style: btn(),
+    onClick: () => setImportarAberto(true)
+  }, "📎 Anexar Contrato Existente"), /*#__PURE__*/React.createElement("button", {
     style: btn("primary"),
     onClick: () => setEditorAberto("novo")
-  }, "+ Novo Contrato")), filtrados.length === 0 ? /*#__PURE__*/React.createElement("div", {
+  }, "+ Novo Contrato"))), filtrados.length === 0 ? /*#__PURE__*/React.createElement("div", {
     style: {
       background: "#fff",
       borderRadius: 10,
@@ -17536,7 +17872,14 @@ function SwapContratosPage({
   }, /*#__PURE__*/React.createElement("button", {
     style: btn(),
     onClick: () => setAnexoModal(null)
-  }, "Fechar"))), confirm && /*#__PURE__*/React.createElement(Confirm, {
+  }, "Fechar"))), importarAberto && /*#__PURE__*/React.createElement(AnexarContratoExistenteModal, {
+    onSave: async contrato => {
+      await persistirContrato(contrato);
+      setImportarAberto(false);
+    },
+    onClose: () => setImportarAberto(false),
+    showToast: showToast
+  }), confirm && /*#__PURE__*/React.createElement(Confirm, {
     msg: `Excluir o contrato com "${confirm.permutanteB?.razaoSocial || "esta empresa"}"?`,
     onOk: () => excluir(confirm.id),
     onCancel: () => setConfirm(null)
