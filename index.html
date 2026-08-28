@@ -18324,8 +18324,12 @@ function SwapContratosPage({
   const persistirContrato = async contrato => {
     const existe = contratos.some(c => c.id === contrato.id);
     setContratos(prev => existe ? prev.map(c => c.id === contrato.id ? contrato : c) : [contrato, ...prev]);
-    await syncContrato(contrato);
-    showToast(existe ? "Contrato atualizado!" : "Contrato criado!");
+    const resultado = await syncContrato(contrato);
+    if (resultado) {
+      showToast(existe ? "Contrato atualizado!" : "Contrato criado!");
+    } else {
+      showToast("⚠️ Salvo apenas nesta tela — falhou ao gravar no servidor, vai sumir se recarregar a página. Avise o suporte.", "err");
+    }
   };
   const salvarContrato = async contrato => {
     await persistirContrato(contrato);
@@ -18375,8 +18379,12 @@ function SwapContratosPage({
   const persistirAditivo = async aditivo => {
     const existe = aditivos.some(a => a.id === aditivo.id);
     setAditivos(prev => existe ? prev.map(a => a.id === aditivo.id ? aditivo : a) : [aditivo, ...prev]);
-    await syncAditivo(aditivo);
-    showToast(existe ? "Termo aditivo atualizado!" : "Termo aditivo criado!");
+    const resultado = await syncAditivo(aditivo);
+    if (resultado) {
+      showToast(existe ? "Termo aditivo atualizado!" : "Termo aditivo criado!");
+    } else {
+      showToast("⚠️ Salvo apenas nesta tela — falhou ao gravar no servidor, vai sumir se recarregar a página. Avise o suporte.", "err");
+    }
   };
   const salvarAditivo = async aditivo => {
     await persistirAditivo(aditivo);
