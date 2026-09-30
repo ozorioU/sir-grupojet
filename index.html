@@ -72,7 +72,7 @@ const MODS_CLIENTE=["dashboard","obras","custos","orcamentos","itens","importar"
 // administrador pode depois restringir por cliente na tela de Usuários.
 const normalizarModulosUsuario=u=>{if(!u)return u;if(u.modulosBrilha||u.modulosF8||u.modulosGeral){return{...u,modulosBrilha:u.modulosBrilha||[],modulosF8:u.modulosF8||[],modulosGeral:u.modulosGeral||[]};}const antigos=u.modulos&&u.modulos.length?u.modulos:ALL_MODS;return{...u,modulosBrilha:antigos.filter(m=>MODS_CLIENTE.includes(m)),modulosF8:antigos.filter(m=>MODS_CLIENTE.includes(m)),modulosGeral:antigos.filter(m=>MODS_GERAL.includes(m))};};// Verifica se um usuário tem acesso a um módulo, considerando o cliente
 // atualmente selecionado (módulos gerais nunca dependem do cliente).
-const temAcessoModulo=(user,key,clienteAtivo)=>{const n=normalizarModulosUsuario(user);if(MODS_GERAL.includes(key))return n.modulosGeral.includes(key);return(clienteAtivo==="f8"?n.modulosF8:n.modulosBrilha).includes(key);};const MOD_META={dashboard:{label:"Dashboard",section:"Geral"},dashint:{label:"Dashboard Interno",section:"Interno"},custosint:{label:"Custos",section:"Interno"},fatint:{label:"Faturamento",section:"Interno"},investint:{label:"Investimentos",section:"Interno"},dashswap:{label:"Dashboard",section:"SWAP/Viabilidade"},swapcontratos:{label:"Contratos SWAP",section:"SWAP/Viabilidade"},viabilidades:{label:"Viabilidades",section:"SWAP/Viabilidade"},obras:{label:"Obras",section:"Controle de Obras"},custos:{label:"Custos",section:"Controle de Obras"},orcamentos:{label:"Orçamentos",section:"Controle de Obras"},itens:{label:"Itens",section:"Controle de Obras"},importar:{label:"Importar",section:"Controle de Obras"},pontos:{label:"Pontos",section:"Lan 2 Lan"},usuarios:{label:"Usuários",section:"Administração"}};const PROFILES=[{id:"u1",email:"ozorio.neto@grupojet.com.br",nome:"Ozorio Pinto da Cunha Neto",grupo:"jet",perfil:"diretor",modulos:[...ALL_MODS]},{id:"u2",email:"ruan.lobo@grupojet.com.br",nome:"Ruan Lobo",grupo:"jet",perfil:"gerente",modulos:[...ALL_MODS]},{id:"u5",email:"operador@grupojet.com.br",nome:"Operador Jet",grupo:"jet",perfil:"operador",modulos:["dashboard","obras","custos","orcamentos","itens","importar","pontos"]},{id:"u3",email:"novosnegocios@grupof8.com.br",nome:"Novos Negócios F8",grupo:"f8",perfil:"aprovador",modulos:["dashboard","orcamentos"]},{id:"u4",email:"fernando@grupof8.com.br",nome:"Fernando F8",grupo:"f8",perfil:"aprovador",modulos:["dashboard","orcamentos"]}];// Status da esteira de aprovação
+const temAcessoModulo=(user,key,clienteAtivo)=>{const n=normalizarModulosUsuario(user);if(MODS_GERAL.includes(key))return n.modulosGeral.includes(key);return(clienteAtivo==="f8"?n.modulosF8:n.modulosBrilha).includes(key);};const MOD_META={dashboard:{label:"Dashboard",section:"Geral"},dashint:{label:"Dashboard Interno",section:"Interno"},custosint:{label:"Custos",section:"Interno"},fatint:{label:"Faturamento",section:"Interno"},investint:{label:"Investimentos",section:"Interno"},dashswap:{label:"Dashboard",section:"SWAP/Viabilidade"},swapcontratos:{label:"Contratos SWAP",section:"SWAP/Viabilidade"},viabilidades:{label:"Viabilidades",section:"SWAP/Viabilidade"},obras:{label:"Obras",section:"Controle de Obras"},custos:{label:"Custos",section:"Controle de Obras"},orcamentos:{label:"Orçamentos",section:"Controle de Obras"},itens:{label:"Itens",section:"Controle de Obras"},importar:{label:"Importar",section:"Controle de Obras"},pontos:{label:"Pontos",section:"Lan 2 Lan"},usuarios:{label:"Usuários",section:"Administração"},pedidos:{label:"Pedidos de Compra",section:"Controle de Obras"}};const PROFILES=[{id:"u1",email:"ozorio.neto@grupojet.com.br",nome:"Ozorio Pinto da Cunha Neto",grupo:"jet",perfil:"diretor",modulos:[...ALL_MODS]},{id:"u2",email:"ruan.lobo@grupojet.com.br",nome:"Ruan Lobo",grupo:"jet",perfil:"gerente",modulos:[...ALL_MODS]},{id:"u5",email:"operador@grupojet.com.br",nome:"Operador Jet",grupo:"jet",perfil:"operador",modulos:["dashboard","obras","custos","orcamentos","itens","importar","pontos"]},{id:"u3",email:"novosnegocios@grupof8.com.br",nome:"Novos Negócios F8",grupo:"f8",perfil:"aprovador",modulos:["dashboard","orcamentos"]},{id:"u4",email:"fernando@grupof8.com.br",nome:"Fernando F8",grupo:"f8",perfil:"aprovador",modulos:["dashboard","orcamentos"]}];// Status da esteira de aprovação
 const ETAPAS={rascunho:{label:"Rascunho",cor:"gray",icon:"📝",next:"jet_gerente"},jet_gerente:{label:"Ag. Ger. Jet",cor:"warn",icon:"⏳",next:"jet_diretor"},jet_diretor:{label:"Ag. Dir. Jet",cor:"warn",icon:"⏳",next:"f8"},f8:{label:"Ag. Aprov. F8",cor:"info",icon:"📋",next:"aprovado"},aprovado:{label:"Aprovado",cor:"success",icon:"✅",next:null},reprovado:{label:"Reprovado",cor:"danger",icon:"❌",next:null}};// Quem pode aprovar cada etapa
 const PODE_APROVAR={jet_gerente:u=>u.grupo==="jet"&&u.perfil==="gerente",jet_diretor:u=>u.grupo==="jet"&&u.perfil==="diretor",f8:u=>u.grupo==="f8"};// Quem pode enviar para esteira (criar/editar orçamentos)
 const PODE_EDITAR_ORC=u=>u.grupo==="jet";// Quem pode ver orçamentos
@@ -620,6 +620,248 @@ function NavIcon({name,color}){const c=color||"currentColor";const p={width:16,h
 // cliente e como "voltar ao início" quando alguém tenta acessar uma página
 // sem permissão.
 const primeiraPagePermitida=(user,clienteAtivo)=>{for(const item of NAV){if(item.key&&temAcessoModulo(user,item.key,clienteAtivo))return item.key;}return"dashboard";};// ─── APP ──────────────────────────────────────────────────────────────────────
+
+// ─── PEDIDOS DE COMPRA (integração Brilha Goiânia) ────────────────────────────
+function PedidosCompraPage({pedidos,setPedidos,user,showToast}){
+  const[viewId,setViewId]=React.useState(null);
+  const[filtro,setFiltro]=React.useState("todos");
+  const[obsInput,setObsInput]=React.useState("");
+
+  const statusColor={
+    "Aguardando":"#f59e0b","Em Cotação":"#3b82f6",
+    "Aguardando Aprovação Brilha":"#8b5cf6","Aprovado — Aguardando Entrega":"#10b981",
+    "Finalizado":"#059669","Recusado":"#ef4444","Cancelado":"#6b7280"
+  };
+  const statusBg={
+    "Aguardando":"#fef3c7","Em Cotação":"#dbeafe",
+    "Aguardando Aprovação Brilha":"#ede9fe","Aprovado — Aguardando Entrega":"#d1fae5",
+    "Finalizado":"#d1fae5","Recusado":"#fee2e2","Cancelado":"#f3f4f6"
+  };
+  const urgColor={"Alta":"#ef4444","Urgente":"#dc2626","Média":"#f59e0b","Normal":"#6b7280","Baixa":"#6b7280"};
+
+  const aguardando=pedidos.filter(p=>p.status==="Aguardando").length;
+  const filtrados=filtro==="todos"?pedidos:pedidos.filter(p=>p.status===filtro);
+
+  const atualizarStatus=async(id,novoStatus,obs)=>{
+    const p=pedidos.find(x=>x.id===id);if(!p)return;
+    const now=new Date().toISOString();
+    const novoEv={acao:novoStatus,data:now,usuario:user?.nome||"Jet",obs:obs||""};
+    const newTimeline=[...(p.timeline||[]),novoEv];
+    const upd={status:novoStatus,obs_admin:obs||p.obs_admin||"",timeline:newTimeline,updated_at:now};
+    try{
+      await sbFetch("pedidos_compra","PATCH",upd,"id=eq."+id,{"Prefer":"return=minimal"});
+      setPedidos(prev=>prev.map(x=>x.id===id?{...x,...upd}:x));
+      showToast("✓ Status atualizado: "+novoStatus);
+      setObsInput("");
+    }catch(e){showToast("⚠ Erro ao atualizar");}
+  };
+
+  const pedidoAtual=pedidos.find(p=>p.id===viewId);
+
+  return/*#__PURE__*/React.createElement("div",{style:{padding:"24px 28px",maxWidth:960,margin:"0 auto"}},
+    // Header
+    /*#__PURE__*/React.createElement("div",{style:{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:20,flexWrap:"wrap",gap:10}},
+      /*#__PURE__*/React.createElement("div",null,
+        /*#__PURE__*/React.createElement("div",{style:{fontWeight:700,fontSize:18,color:"#111"}},"🛒 Pedidos de Compra — Brilha Goiânia"),
+        /*#__PURE__*/React.createElement("div",{style:{fontSize:12,color:"#6b7280",marginTop:2}},"Solicitações de equipamentos recebidas do sistema Brilha")
+      ),
+      aguardando>0&&/*#__PURE__*/React.createElement("span",{style:{background:"#fee2e2",color:"#b91c1c",padding:"4px 12px",borderRadius:20,fontSize:12,fontWeight:700}},aguardando+" aguardando cotação")
+    ),
+
+    // Filter tabs
+    /*#__PURE__*/React.createElement("div",{style:{display:"flex",gap:6,marginBottom:16,flexWrap:"wrap"}},
+      ["todos","Aguardando","Em Cotação","Aguardando Aprovação Brilha","Aprovado — Aguardando Entrega","Finalizado","Recusado"].map(f=>
+        /*#__PURE__*/React.createElement("button",{key:f,onClick:()=>setFiltro(f),style:{
+          padding:"5px 12px",borderRadius:8,border:"1px solid #e2e4e8",fontSize:11,fontWeight:600,
+          cursor:"pointer",fontFamily:"inherit",
+          background:filtro===f?"#e8650a":"#fff",
+          color:filtro===f?"#fff":"#374151"
+        }},f==="todos"?"Todos ("+pedidos.length+")":f+(f!=="todos"?" ("+pedidos.filter(p=>p.status===f).length+")":""))
+      )
+    ),
+
+    // List
+    filtrados.length===0?
+      /*#__PURE__*/React.createElement("div",{style:{...card,textAlign:"center",padding:48,color:"#9ca3af"}},
+        /*#__PURE__*/React.createElement("div",{style:{fontSize:40,marginBottom:12}},"📋"),
+        /*#__PURE__*/React.createElement("div",{style:{fontWeight:600,fontSize:14,marginBottom:6}},"Nenhum pedido encontrado"),
+        /*#__PURE__*/React.createElement("div",{style:{fontSize:12}},"Os pedidos criados no Brilha Goiânia aparecem aqui automaticamente")
+      ):
+      /*#__PURE__*/React.createElement("div",{style:{display:"flex",flexDirection:"column",gap:10}},
+        filtrados.map(p=>{
+          const sc=statusColor[p.status]||"#6b7280";
+          const sb2=statusBg[p.status]||"#f3f4f6";
+          const uc=urgColor[p.urgencia]||"#6b7280";
+          const total=(p.itens||[]).reduce((s,i)=>s+Number(i.quantidade||0),0);
+          const timeline=p.timeline||[];
+          const last=timeline[timeline.length-1];
+          return/*#__PURE__*/React.createElement("div",{key:p.id,
+            style:{...card,cursor:"pointer",transition:"box-shadow .15s ease,border-color .15s ease",border:"1px solid #edeef1"},
+            onClick:()=>{setViewId(p.id);setObsInput("")},
+            onMouseEnter:e=>{e.currentTarget.style.boxShadow="0 4px 16px rgba(232,101,10,.12)";e.currentTarget.style.borderColor="#f0791f"},
+            onMouseLeave:e=>{e.currentTarget.style.boxShadow="0 1px 2px rgba(16,24,40,.04)";e.currentTarget.style.borderColor="#edeef1"}
+          },
+            /*#__PURE__*/React.createElement("div",{style:{display:"flex",alignItems:"flex-start",justifyContent:"space-between",gap:12,marginBottom:8}},
+              /*#__PURE__*/React.createElement("div",{style:{flex:1,minWidth:0}},
+                /*#__PURE__*/React.createElement("div",{style:{display:"flex",alignItems:"center",gap:8,marginBottom:4,flexWrap:"wrap"}},
+                  /*#__PURE__*/React.createElement("span",{style:{fontSize:10,fontFamily:"monospace",color:"#e8650a",fontWeight:700}},"#"+p.id.slice(-8).toUpperCase()),
+                  /*#__PURE__*/React.createElement("span",{style:{fontSize:11,background:"#f0f1f3",padding:"2px 8px",borderRadius:10,color:"#374151"}},
+                    p.tipo==="nova_aquisicao"?"Nova Aquisição":p.tipo==="reposicao"?"Reposição":"Troca"
+                  ),
+                  /*#__PURE__*/React.createElement("span",{style:{fontSize:11,color:uc,fontWeight:600}},"⚡ "+p.urgencia)
+                ),
+                /*#__PURE__*/React.createElement("div",{style:{fontWeight:600,fontSize:14,color:"#111",marginBottom:4}},p.motivo),
+                /*#__PURE__*/React.createElement("div",{style:{fontSize:11,color:"#6b7280"}},
+                  "👤 "+p.solicitante_nome+" · 📅 "+new Date(p.created_at).toLocaleDateString("pt-BR")+
+                  (p.prazo?" · 🗓 Prazo: "+new Date(p.prazo+"T12:00:00").toLocaleDateString("pt-BR"):"")
+                )
+              ),
+              /*#__PURE__*/React.createElement("div",{style:{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:6,flexShrink:0}},
+                /*#__PURE__*/React.createElement("span",{style:{background:sb2,color:sc,border:"1px solid "+sc,padding:"3px 10px",borderRadius:20,fontSize:11,fontWeight:600}},p.status),
+                /*#__PURE__*/React.createElement("span",{style:{fontSize:11,color:"#6b7280"}},(p.itens||[]).length+" item(ns) · "+total+" un.")
+              )
+            ),
+            last&&/*#__PURE__*/React.createElement("div",{style:{fontSize:11,color:"#9ca3af",paddingTop:8,borderTop:"1px solid #f0f1f3"}},
+              "Última atualização: ",/*#__PURE__*/React.createElement("strong",{style:{color:"#6b7280"}},last.acao)," · "+new Date(last.data).toLocaleString("pt-BR",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"})
+            )
+          );
+        })
+      ),
+
+    // Detail Modal
+    viewId&&pedidoAtual&&/*#__PURE__*/React.createElement("div",{
+      style:{position:"fixed",inset:0,background:"rgba(15,17,21,.55)",backdropFilter:"blur(3px)",zIndex:1000,display:"flex",alignItems:"center",justifyContent:"center",padding:20},
+      onClick:e=>{if(e.target===e.currentTarget)setViewId(null)}
+    },
+      /*#__PURE__*/React.createElement("div",{style:{background:"#fff",borderRadius:16,padding:"22px 24px",width:"100%",maxWidth:640,maxHeight:"88vh",overflowY:"auto",boxShadow:"0 24px 70px rgba(15,17,21,.28)"}},
+        // Modal header
+        /*#__PURE__*/React.createElement("div",{style:{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16}},
+          /*#__PURE__*/React.createElement("div",null,
+            /*#__PURE__*/React.createElement("div",{style:{fontSize:10,color:"#e8650a",fontFamily:"monospace",fontWeight:700,marginBottom:2}},"#"+pedidoAtual.id.slice(-8).toUpperCase()),
+            /*#__PURE__*/React.createElement("div",{style:{fontWeight:700,fontSize:15}},"Pedido de Compras")
+          ),
+          /*#__PURE__*/React.createElement("div",{style:{display:"flex",gap:8,alignItems:"center"}},
+            /*#__PURE__*/React.createElement("span",{style:{
+              background:statusBg[pedidoAtual.status]||"#f3f4f6",
+              color:statusColor[pedidoAtual.status]||"#6b7280",
+              border:"1px solid "+(statusColor[pedidoAtual.status]||"#6b7280"),
+              padding:"3px 10px",borderRadius:20,fontSize:11,fontWeight:600
+            }},pedidoAtual.status),
+            /*#__PURE__*/React.createElement("button",{onClick:()=>setViewId(null),style:{background:"#f3f4f6",border:"none",fontSize:16,cursor:"pointer",color:"#6b7280",padding:"7px 10px",borderRadius:9}},"✕")
+          )
+        ),
+
+        // Info grid
+        /*#__PURE__*/React.createElement("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:14}},
+          [["Tipo",pedidoAtual.tipo==="nova_aquisicao"?"Nova Aquisição":pedidoAtual.tipo==="reposicao"?"Reposição":"Troca"],
+           ["Urgência",pedidoAtual.urgencia],
+           ["Solicitante",pedidoAtual.solicitante_nome||"—"],
+           ["Prazo",pedidoAtual.prazo?new Date(pedidoAtual.prazo+"T12:00:00").toLocaleDateString("pt-BR"):"Não informado"]
+          ].map(([l,v])=>
+            /*#__PURE__*/React.createElement("div",{key:l,style:{background:"#f9fafb",borderRadius:8,padding:"10px 12px"}},
+              /*#__PURE__*/React.createElement("div",{style:{fontSize:10,color:"#6b7280",textTransform:"uppercase",letterSpacing:1,marginBottom:3}},l),
+              /*#__PURE__*/React.createElement("div",{style:{fontSize:13,fontWeight:600}},v)
+            )
+          )
+        ),
+
+        // Motivo
+        /*#__PURE__*/React.createElement("div",{style:{background:"#f9fafb",borderRadius:8,padding:"10px 12px",marginBottom:14}},
+          /*#__PURE__*/React.createElement("div",{style:{fontSize:10,color:"#6b7280",textTransform:"uppercase",letterSpacing:1,marginBottom:4}},"Motivo / Justificativa"),
+          /*#__PURE__*/React.createElement("div",{style:{fontSize:13,lineHeight:1.6}},pedidoAtual.motivo)
+        ),
+
+        // Itens
+        /*#__PURE__*/React.createElement("div",{style:{border:"1px solid #e5e7eb",borderRadius:8,overflow:"hidden",marginBottom:14}},
+          /*#__PURE__*/React.createElement("div",{style:{padding:"8px 12px",background:"#f9fafb",borderBottom:"1px solid #e5e7eb",fontWeight:600,fontSize:12,display:"flex",justifyContent:"space-between"}},
+            /*#__PURE__*/React.createElement("span",null,"Lista de Itens"),
+            /*#__PURE__*/React.createElement("span",{style:{color:"#6b7280"}},(pedidoAtual.itens||[]).reduce((s,i)=>s+Number(i.quantidade||0),0)+" unidades")
+          ),
+          /*#__PURE__*/React.createElement("table",{style:{width:"100%",borderCollapse:"collapse",fontSize:12}},
+            /*#__PURE__*/React.createElement("thead",null,
+              /*#__PURE__*/React.createElement("tr",{style:{background:"#1e293b"}},
+                ["#","Descrição","Qtd"].map(h=>/*#__PURE__*/React.createElement("th",{key:h,style:{padding:"7px 12px",color:"#fff",fontSize:10,fontWeight:600,textAlign:h==="Qtd"?"center":"left"}},h))
+              )
+            ),
+            /*#__PURE__*/React.createElement("tbody",null,
+              (pedidoAtual.itens||[]).map((item,i)=>
+                /*#__PURE__*/React.createElement("tr",{key:i,style:{borderTop:"1px solid #f0f0f0"}},
+                  /*#__PURE__*/React.createElement("td",{style:{padding:"7px 12px",color:"#9ca3af",fontSize:11}},i+1),
+                  /*#__PURE__*/React.createElement("td",{style:{padding:"7px 12px"}},item.descricao),
+                  /*#__PURE__*/React.createElement("td",{style:{padding:"7px 12px",textAlign:"center",fontWeight:700,color:"#e8650a"}},item.quantidade)
+                )
+              )
+            )
+          )
+        ),
+
+        // Timeline
+        /*#__PURE__*/React.createElement("div",{style:{border:"1px solid #e5e7eb",borderRadius:8,overflow:"hidden",marginBottom:14}},
+          /*#__PURE__*/React.createElement("div",{style:{padding:"8px 12px",background:"#f9fafb",borderBottom:"1px solid #e5e7eb",fontWeight:600,fontSize:12}},"📋 Histórico do Pedido"),
+          /*#__PURE__*/React.createElement("div",{style:{padding:"14px 16px",display:"flex",flexDirection:"column",gap:0}},
+            (pedidoAtual.timeline||[]).length===0?
+              /*#__PURE__*/React.createElement("div",{style:{color:"#9ca3af",fontSize:12,textAlign:"center",padding:12}},"Sem registros"):
+              (pedidoAtual.timeline||[]).map((ev,i,arr)=>{
+                const isLast=i===arr.length-1;
+                const evColor={Criado:"#e8650a","Em Cotação":"#3b82f6","Aguardando Aprovação Brilha":"#8b5cf6","Aprovado — Aguardando Entrega":"#10b981","Finalizado":"#059669","Recusado":"#ef4444"}[ev.acao]||"#6b7280";
+                return/*#__PURE__*/React.createElement("div",{key:i,style:{display:"flex",gap:12,position:"relative"}},
+                  /*#__PURE__*/React.createElement("div",{style:{display:"flex",flexDirection:"column",alignItems:"center",flexShrink:0}},
+                    /*#__PURE__*/React.createElement("div",{style:{width:10,height:10,borderRadius:"50%",background:evColor,marginTop:3,flexShrink:0}}),
+                    !isLast&&/*#__PURE__*/React.createElement("div",{style:{width:2,flex:1,minHeight:20,background:"#e5e7eb",margin:"3px 0"}})
+                  ),
+                  /*#__PURE__*/React.createElement("div",{style:{flex:1,paddingBottom:isLast?0:14}},
+                    /*#__PURE__*/React.createElement("div",{style:{display:"flex",alignItems:"baseline",gap:8,flexWrap:"wrap"}},
+                      /*#__PURE__*/React.createElement("span",{style:{fontSize:13,fontWeight:600,color:evColor}},ev.acao),
+                      /*#__PURE__*/React.createElement("span",{style:{fontSize:11,color:"#9ca3af"}},new Date(ev.data).toLocaleString("pt-BR",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"}))
+                    ),
+                    /*#__PURE__*/React.createElement("div",{style:{fontSize:12,color:"#6b7280",marginTop:2}},"por ",/*#__PURE__*/React.createElement("strong",null,ev.usuario)),
+                    ev.obs&&/*#__PURE__*/React.createElement("div",{style:{fontSize:12,color:"#374151",marginTop:4,padding:"5px 9px",background:"#f3f4f6",borderRadius:6}},ev.obs)
+                  )
+                );
+              })
+          )
+        ),
+
+        // Action buttons
+        /*#__PURE__*/React.createElement("div",{style:{background:"#f9fafb",border:"1px solid #e5e7eb",borderRadius:8,padding:14}},
+          /*#__PURE__*/React.createElement("div",{style:{fontWeight:600,fontSize:12,marginBottom:10}},"Atualizar Status"),
+          /*#__PURE__*/React.createElement("textarea",{
+            value:obsInput,onChange:e=>setObsInput(e.target.value),
+            placeholder:"Observação (opcional)...",
+            style:{...inp,minHeight:60,resize:"vertical",marginBottom:10,fontSize:12}
+          }),
+          /*#__PURE__*/React.createElement("div",{style:{display:"flex",gap:8,flexWrap:"wrap"}},
+            pedidoAtual.status==="Aguardando"&&/*#__PURE__*/React.createElement("button",{
+              style:{...btn("primary"),flex:1,justifyContent:"center"},
+              onClick:()=>atualizarStatus(pedidoAtual.id,"Em Cotação",obsInput)
+            },"🔍 Iniciar Cotação"),
+            pedidoAtual.status==="Em Cotação"&&/*#__PURE__*/React.createElement("button",{
+              style:{...btn("primary"),flex:1,justifyContent:"center"},
+              onClick:()=>atualizarStatus(pedidoAtual.id,"Aguardando Aprovação Brilha",obsInput)
+            },"📋 Enviar p/ Aprovação"),
+            pedidoAtual.status==="Aguardando Aprovação Brilha"&&/*#__PURE__*/React.createElement("button",{
+              style:{...btn("primary"),flex:1,justifyContent:"center",background:"#059669",borderColor:"#059669"},
+              onClick:()=>atualizarStatus(pedidoAtual.id,"Aprovado — Aguardando Entrega",obsInput)
+            },"✓ Aprovado pela Brilha"),
+            pedidoAtual.status==="Aprovado — Aguardando Entrega"&&/*#__PURE__*/React.createElement("button",{
+              style:{...btn("primary"),flex:1,justifyContent:"center",background:"#7c3aed",borderColor:"#7c3aed"},
+              onClick:()=>atualizarStatus(pedidoAtual.id,"Finalizado",obsInput)
+            },"📦 Marcar Entregue"),
+            !["Finalizado","Recusado","Cancelado"].includes(pedidoAtual.status)&&/*#__PURE__*/React.createElement("button",{
+              style:{...btn("danger"),flex:"0 0 auto"},
+              onClick:()=>atualizarStatus(pedidoAtual.id,"Recusado",obsInput)
+            },"✗ Recusar")
+          )
+        ),
+
+        /*#__PURE__*/React.createElement("div",{style:{display:"flex",justifyContent:"flex-end",marginTop:12}},
+          /*#__PURE__*/React.createElement("button",{style:btn(),onClick:()=>setViewId(null)},"Fechar")
+        )
+      )
+    )
+  );
+}
+
 function App(){const[user,setUser]=useState(null);const[page,setPage]=useState("dashboard");const[dashFilter,setDashFilter]=useState("");const[clienteAtivo,setClienteAtivo]=useState("brilha");// "brilha" | "f8" — seletor de cliente no topo
 const[obras,setObras]=useState([]);const[budgets,setBudgets]=useState([]);const[toast,setToast]=useState(null);const[openBudgetId,setOpenBudgetId]=useState(null);const[pontos,setPontos]=useState([]);const[espelhos,setEspelhos]=useState([]);// obras espelhadas em Obras e Custos
 const[custosInt,setCustosInt]=useState([]);// custos da aba Custos Interno
@@ -638,9 +880,9 @@ const[l2lReal,setL2lReal]=useState([]);// valores reais mensais do L2L (financei
 // do outro cliente. Swap/Viabilidade e Usuários NÃO passam por aqui —
 // continuam únicos, independente do cliente selecionado.
 const useEscopoCliente=(arrCompleto,setArrCompleto)=>{const visao=React.useMemo(()=>arrCompleto.filter(x=>(x.cliente_tenant||"brilha")===clienteAtivo),[arrCompleto,clienteAtivo]);const setVisao=React.useCallback(updater=>{setArrCompleto(prevCompleto=>{const prevVisao=prevCompleto.filter(x=>(x.cliente_tenant||"brilha")===clienteAtivo);const novaVisao=typeof updater==="function"?updater(prevVisao):updater;const outros=prevCompleto.filter(x=>(x.cliente_tenant||"brilha")!==clienteAtivo);const marcados=novaVisao.map(x=>x.cliente_tenant?x:{...x,cliente_tenant:clienteAtivo});return[...outros,...marcados];});},[setArrCompleto,clienteAtivo]);return[visao,setVisao];};const[obrasView,setObrasView]=useEscopoCliente(obras,setObras);const[budgetsView,setBudgetsView]=useEscopoCliente(budgets,setBudgets);const[pontosView,setPontosView]=useEscopoCliente(pontos,setPontos);const[espelhosView,setEspelhosView]=useEscopoCliente(espelhos,setEspelhos);const[custosIntView,setCustosIntView]=useEscopoCliente(custosInt,setCustosInt);const[fatIntView,setFatIntView]=useEscopoCliente(fatInt,setFatInt);const[investIntView,setInvestIntView]=useEscopoCliente(investInt,setInvestInt);const[itemsView,setItemsView]=useEscopoCliente(items,setItems);const[l2lRealView,setL2lRealView]=useEscopoCliente(l2lReal,setL2lReal);const showToast=(msg,type="ok")=>{setToast({msg,type});setTimeout(()=>setToast(null),3000);};// ── Supabase sync functions ──────────────────────────────────────────────────
-const loadFromSupabase=async()=>{try{const[dbObras,dbBudgets,dbPontos,dbCustos,dbEspelhos,dbFats,dbInvests,dbUsers,dbItens,dbL2lReal,dbSwapContratos,dbViabilidades,dbSwapAditivos]=await Promise.all([sb.get("sir_obras","order=cod"),sb.get("sir_orcamentos","order=ordem"),sb.get("sir_pontos","order=created_at"),sb.get("sir_custos","order=data"),sb.get("sir_espelhos","order=created_at"),sb.get("sir_faturamentos","order=data"),sb.get("sir_investimentos","order=created_at"),sb.get("sir_usuarios","order=nome"),sb.get("sir_itens","order=codigo"),sb.get("sir_l2l_real","order=mes"),sb.get("sir_swap_contratos","order=created_at"),sb.get("sir_viabilidades","order=created_at"),sb.get("sir_swap_aditivos","order=created_at")]);// Obras: se Supabase vazio, faz seed com OBRAS_DATA
+const loadFromSupabase=async()=>{try{const[dbObras,dbBudgets,dbPontos,dbCustos,dbEspelhos,dbFats,dbInvests,dbUsers,dbItens,dbL2lReal,dbSwapContratos,dbViabilidades,dbSwapAditivos,dbPedidosCompra]=await Promise.all([sb.get("sir_obras","order=cod"),sb.get("sir_orcamentos","order=ordem"),sb.get("sir_pontos","order=created_at"),sb.get("sir_custos","order=data"),sb.get("sir_espelhos","order=created_at"),sb.get("sir_faturamentos","order=data"),sb.get("sir_investimentos","order=created_at"),sb.get("sir_usuarios","order=nome"),sb.get("sir_itens","order=codigo"),sb.get("sir_l2l_real","order=mes"),sb.get("sir_swap_contratos","order=created_at"),sb.get("sir_viabilidades","order=created_at"),sb.get("sir_swap_aditivos","order=created_at"),sb.get("pedidos_compra","order=created_at.desc")]);// Obras: se Supabase vazio, faz seed com OBRAS_DATA
 if(dbObras&&dbObras.length>0){setObras(dbObras);}else if(dbObras&&dbObras.length===0){console.log("Seed: populando obras...");setObras([...OBRAS_DATA]);Promise.all(OBRAS_DATA.map(o=>sb.upsert("sir_obras",o))).then(rs=>console.log("Seed obras: "+rs.filter(Boolean).length+"/"+OBRAS_DATA.length)).catch(e=>console.error("Seed obras erro:",e));}// Orçamentos: seed se vazio
-if(dbBudgets&&dbBudgets.length>0){setBudgets(dbBudgets.map(b=>({...b,historico:b.historico||[]})));}else if(dbBudgets&&dbBudgets.length===0){console.log("Seed: populando orçamentos...");setBudgets([...BUDGETS_INIT]);Promise.all(BUDGETS_INIT.map(b=>sb.upsert("sir_orcamentos",b))).then(rs=>console.log("Seed orc: "+rs.filter(Boolean).length+"/"+BUDGETS_INIT.length)).catch(e=>console.error("Seed orc erro:",e));}if(dbPontos?.length)setPontos(dbPontos);if(dbL2lReal?.length)setL2lReal(dbL2lReal);if(dbCustos?.length)setCustosInt(dbCustos);if(dbEspelhos?.length)setEspelhos(dbEspelhos.map(e=>({...e,obra_id:String(e.obra_id)})));if(dbFats?.length)setFatInt(dbFats);if(dbInvests?.length)setInvestInt(dbInvests);if(dbSwapContratos?.length)setSwapContratos(dbSwapContratos);if(dbViabilidades?.length)setViabilidades(dbViabilidades);if(dbSwapAditivos?.length)setSwapAditivos(dbSwapAditivos);if(dbUsers?.length){setSbUsers(dbUsers);// Atualizar o user logado com dados atualizados do Supabase
+if(dbBudgets&&dbBudgets.length>0){setBudgets(dbBudgets.map(b=>({...b,historico:b.historico||[]})));}else if(dbBudgets&&dbBudgets.length===0){console.log("Seed: populando orçamentos...");setBudgets([...BUDGETS_INIT]);Promise.all(BUDGETS_INIT.map(b=>sb.upsert("sir_orcamentos",b))).then(rs=>console.log("Seed orc: "+rs.filter(Boolean).length+"/"+BUDGETS_INIT.length)).catch(e=>console.error("Seed orc erro:",e));}if(dbPontos?.length)setPontos(dbPontos);if(dbL2lReal?.length)setL2lReal(dbL2lReal);if(dbCustos?.length)setCustosInt(dbCustos);if(dbEspelhos?.length)setEspelhos(dbEspelhos.map(e=>({...e,obra_id:String(e.obra_id)})));if(dbFats?.length)setFatInt(dbFats);if(dbInvests?.length)setInvestInt(dbInvests);if(dbSwapContratos?.length)setSwapContratos(dbSwapContratos);if(dbViabilidades?.length)setViabilidades(dbViabilidades);if(dbSwapAditivos?.length)setSwapAditivos(dbSwapAditivos);setPedidosCompra(dbPedidosCompra||[]);if(dbUsers?.length){setSbUsers(dbUsers);// Atualizar o user logado com dados atualizados do Supabase
 setUser(prev=>{if(!prev)return prev;const updated=dbUsers.find(u=>u.id===prev.id||u.email===prev.email);if(!updated)return prev;// Une os módulos em vez de substituir: evita que uma lista antiga salva
 // no banco (de antes de um módulo novo existir, ex: SWAP/Viabilidade)
 // "apague" o acesso que o perfil local já concede por padrão.
@@ -655,7 +897,7 @@ try{const rows=await sb.get("sir_usuarios","email=eq."+encodeURIComponent(email)
 // sempre a página inicial padrão, então qualquer usuário caía nela mesmo
 // sem ter esse módulo liberado). Aqui bloqueamos o acesso à página em si,
 // já considerando o cliente (Brilha/F8) selecionado no momento.
-if(!temAcessoModulo(user,page,clienteAtivo)){return/*#__PURE__*/React.createElement("div",{style:{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",minHeight:"60vh",textAlign:"center",gap:10}},/*#__PURE__*/React.createElement("div",{style:{fontSize:40}},"🔒"),/*#__PURE__*/React.createElement("div",{style:{fontWeight:700,fontSize:15}},"Você não tem permissão para acessar esta página"),/*#__PURE__*/React.createElement("div",{style:{color:"#6b7280",fontSize:12,maxWidth:360}},"Fale com um administrador se acredita que deveria ter acesso a esta área."),/*#__PURE__*/React.createElement("button",{style:{...btn("primary"),marginTop:6},onClick:()=>setPage(primeiraPagePermitida(user,clienteAtivo))},"Voltar ao início"));}switch(page){case"dashboard":return/*#__PURE__*/React.createElement(DashboardPrincipal,{obras:obrasView,budgets:budgetsView,pontos:pontosView,user:user,setPage:setPage,setDashFilter:setDashFilter,setOpenBudgetId:setOpenBudgetId});case"dashint":return/*#__PURE__*/React.createElement(Dashboard,{obras:obrasView,budgets:budgetsView,pontos:pontosView,custosInt:custosIntView,fatInt:fatIntView,investInt:investIntView,espelhos:espelhosView,l2lReal:l2lRealView,user:user,setPage:setPage,setDashFilter:setDashFilter,setOpenBudgetId:setOpenBudgetId});case"obras":return/*#__PURE__*/React.createElement(ObrasPage,{obras:obrasView,setObras:setObrasView,dashFilter:dashFilter,setDashFilter:setDashFilter,user:user,espelhos:espelhosView,setEspelhos:setEspelhosView,setPage:setPage,syncObra:syncObra,delObra:delObra,syncEspelho:syncEspelho,delEspelho:delEspelho,delEspelhoByObraId:delEspelhoByObraId,budgets:budgetsView,showToast:showToast});case"custos":return/*#__PURE__*/React.createElement(CustosPage,{obras:obrasView,setObras:setObrasView,espelhos:espelhosView,setEspelhos:setEspelhosView,setCustosInt:setCustosIntView,syncCusto:syncCusto,setFatInt:setFatIntView,syncFat:syncFat,delEspelho:delEspelho,delEspelhoByObraId:delEspelhoByObraId,budgets:budgetsView,items:itemsView,setItems:setItemsView,syncItem:syncItem,syncObra:syncObra,showToast:showToast});case"custosint":return/*#__PURE__*/React.createElement(CustosInternoPage,{custos:custosIntView,setCustos:setCustosIntView,pontos:pontosView,syncCusto:syncCusto,delCusto:delCusto,showToast:showToast});case"fatint":return/*#__PURE__*/React.createElement(FaturamentoInternoPage,{fats:fatIntView,setFats:setFatIntView,syncFat:syncFat,delFat:delFat,showToast:showToast});case"investint":return/*#__PURE__*/React.createElement(InvestimentosPage,{invests:investIntView,setInvests:setInvestIntView,syncInvest:syncInvest,delInvest:delInvest,showToast:showToast});case"dashswap":return/*#__PURE__*/React.createElement(SwapDashboard,{contratos:swapContratos,viabilidades:viabilidades,setPage:setPage});case"swapcontratos":return/*#__PURE__*/React.createElement(SwapContratosPage,{contratos:swapContratos,setContratos:setSwapContratos,syncContrato:syncSwapContrato,delContrato:delSwapContrato,aditivos:swapAditivos,setAditivos:setSwapAditivos,syncAditivo:syncSwapAditivo,delAditivo:delSwapAditivo,user:user,showToast:showToast});case"viabilidades":return/*#__PURE__*/React.createElement(ViabilidadesPage,{viabilidades:viabilidades,setViabilidades:setViabilidades,syncViabilidade:syncViabilidade,delViabilidade:delViabilidade,showToast:showToast});case"orcamentos":return/*#__PURE__*/React.createElement(OrcamentosPage,{budgets:budgetsView,setBudgets:setBudgetsView,user:user,openBudgetId:openBudgetId,setOpenBudgetId:setOpenBudgetId,syncBudget:syncBudget,delBudget:delBudget,items:itemsView,obras:obrasView,setObras:setObrasView,syncObra:syncObra,showToast:showToast});case"itens":return/*#__PURE__*/React.createElement(ItensPage,{items:itemsView,setItems:setItemsView,syncItem:syncItem,delItem:delItem,showToast:showToast,user:user});case"importar":return/*#__PURE__*/React.createElement(ImportarPage,{showToast:showToast});case"pontos":return/*#__PURE__*/React.createElement(PontosPage,{pontos:pontosView,setPontos:setPontosView,syncPonto:syncPonto,delPonto:delPonto,l2lReal:l2lRealView,setL2lReal:setL2lRealView,syncL2lReal:syncL2lReal,showToast:showToast});case"usuarios":return/*#__PURE__*/React.createElement(UsuariosPage,{users:sbUsers,setUsers:setSbUsers,syncUsuario:syncUsuario,delUsuario:delUsuario,user:user,setUser:setUser,showToast:showToast});default:return/*#__PURE__*/React.createElement(Dashboard,{obras:obras,setPage:setPage,setDashFilter:setDashFilter});}};return/*#__PURE__*/React.createElement("div",{style:{display:"flex",height:"100vh",overflow:"hidden",fontFamily:"'Inter','IBM Plex Sans',system-ui,sans-serif",fontSize:13,background:"#f6f7f9"}},/*#__PURE__*/React.createElement("nav",{style:{width:242,minWidth:242,background:"#fff",borderRight:"1px solid #eef0f2",display:"flex",flexDirection:"column",overflowY:"auto",flexShrink:0,boxShadow:"1px 0 0 rgba(16,24,40,.02)"}},/*#__PURE__*/React.createElement("div",{style:{padding:"18px 18px 14px",borderBottom:"1px solid #f3f4f6",display:"flex",alignItems:"center",justifyContent:"space-between"}},/*#__PURE__*/React.createElement("img",{src:LOGO_B64,alt:"Grupo Jet",style:{height:30,objectFit:"contain",maxWidth:150}}),/*#__PURE__*/React.createElement("span",{style:{background:"linear-gradient(135deg,#fff4ee,#ffe6d3)",color:"#c2410c",fontSize:10,fontWeight:800,padding:"3px 8px",borderRadius:7,letterSpacing:.6,flexShrink:0}},"SIR")),/*#__PURE__*/React.createElement("div",{style:{padding:"10px 12px",flex:1}},(()=>{const items=[];let currentSection=null;NAV.forEach((item,i)=>{if(item.section){currentSection=item.section;const secKey=item.section;// captura o valor desta iteração — evita bug de closure com "let" mutável
+if(!temAcessoModulo(user,page,clienteAtivo)){return/*#__PURE__*/React.createElement("div",{style:{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",minHeight:"60vh",textAlign:"center",gap:10}},/*#__PURE__*/React.createElement("div",{style:{fontSize:40}},"🔒"),/*#__PURE__*/React.createElement("div",{style:{fontWeight:700,fontSize:15}},"Você não tem permissão para acessar esta página"),/*#__PURE__*/React.createElement("div",{style:{color:"#6b7280",fontSize:12,maxWidth:360}},"Fale com um administrador se acredita que deveria ter acesso a esta área."),/*#__PURE__*/React.createElement("button",{style:{...btn("primary"),marginTop:6},onClick:()=>setPage(primeiraPagePermitida(user,clienteAtivo))},"Voltar ao início"));}switch(page){case"dashboard":return/*#__PURE__*/React.createElement(DashboardPrincipal,{obras:obrasView,budgets:budgetsView,pontos:pontosView,user:user,setPage:setPage,setDashFilter:setDashFilter,setOpenBudgetId:setOpenBudgetId});case"dashint":return/*#__PURE__*/React.createElement(Dashboard,{obras:obrasView,budgets:budgetsView,pontos:pontosView,custosInt:custosIntView,fatInt:fatIntView,investInt:investIntView,espelhos:espelhosView,l2lReal:l2lRealView,user:user,setPage:setPage,setDashFilter:setDashFilter,setOpenBudgetId:setOpenBudgetId});case"obras":return/*#__PURE__*/React.createElement(ObrasPage,{obras:obrasView,setObras:setObrasView,dashFilter:dashFilter,setDashFilter:setDashFilter,user:user,espelhos:espelhosView,setEspelhos:setEspelhosView,setPage:setPage,syncObra:syncObra,delObra:delObra,syncEspelho:syncEspelho,delEspelho:delEspelho,delEspelhoByObraId:delEspelhoByObraId,budgets:budgetsView,showToast:showToast});case"custos":return/*#__PURE__*/React.createElement(CustosPage,{obras:obrasView,setObras:setObrasView,espelhos:espelhosView,setEspelhos:setEspelhosView,setCustosInt:setCustosIntView,syncCusto:syncCusto,setFatInt:setFatIntView,syncFat:syncFat,delEspelho:delEspelho,delEspelhoByObraId:delEspelhoByObraId,budgets:budgetsView,items:itemsView,setItems:setItemsView,syncItem:syncItem,syncObra:syncObra,showToast:showToast});case"custosint":return/*#__PURE__*/React.createElement(CustosInternoPage,{custos:custosIntView,setCustos:setCustosIntView,pontos:pontosView,syncCusto:syncCusto,delCusto:delCusto,showToast:showToast});case"fatint":return/*#__PURE__*/React.createElement(FaturamentoInternoPage,{fats:fatIntView,setFats:setFatIntView,syncFat:syncFat,delFat:delFat,showToast:showToast});case"investint":return/*#__PURE__*/React.createElement(InvestimentosPage,{invests:investIntView,setInvests:setInvestIntView,syncInvest:syncInvest,delInvest:delInvest,showToast:showToast});case"dashswap":return/*#__PURE__*/React.createElement(SwapDashboard,{contratos:swapContratos,viabilidades:viabilidades,setPage:setPage});case"swapcontratos":return/*#__PURE__*/React.createElement(SwapContratosPage,{contratos:swapContratos,setContratos:setSwapContratos,syncContrato:syncSwapContrato,delContrato:delSwapContrato,aditivos:swapAditivos,setAditivos:setSwapAditivos,syncAditivo:syncSwapAditivo,delAditivo:delSwapAditivo,user:user,showToast:showToast});case"viabilidades":return/*#__PURE__*/React.createElement(ViabilidadesPage,{viabilidades:viabilidades,setViabilidades:setViabilidades,syncViabilidade:syncViabilidade,delViabilidade:delViabilidade,showToast:showToast});case"orcamentos":return/*#__PURE__*/React.createElement(OrcamentosPage,{budgets:budgetsView,setBudgets:setBudgetsView,user:user,openBudgetId:openBudgetId,setOpenBudgetId:setOpenBudgetId,syncBudget:syncBudget,delBudget:delBudget,items:itemsView,obras:obrasView,setObras:setObrasView,syncObra:syncObra,showToast:showToast});case"itens":return/*#__PURE__*/React.createElement(ItensPage,{items:itemsView,setItems:setItemsView,syncItem:syncItem,delItem:delItem,showToast:showToast,user:user});case"importar":return/*#__PURE__*/React.createElement(ImportarPage,{showToast:showToast});case"pontos":return/*#__PURE__*/React.createElement(PontosPage,{pontos:pontosView,setPontos:setPontosView,syncPonto:syncPonto,delPonto:delPonto,l2lReal:l2lRealView,setL2lReal:setL2lRealView,syncL2lReal:syncL2lReal,showToast:showToast});case"usuarios":return/*#__PURE__*/React.createElement(UsuariosPage,{users:sbUsers,setUsers:setSbUsers,syncUsuario:syncUsuario,delUsuario:delUsuario,user:user,setUser:setUser,showToast:showToast});case"pedidos":return/*#__PURE__*/React.createElement(PedidosCompraPage,{pedidos:pedidosCompra,setPedidos:setPedidosCompra,user:user,showToast:showToast});default:return/*#__PURE__*/React.createElement(Dashboard,{obras:obras,setPage:setPage,setDashFilter:setDashFilter});}};return/*#__PURE__*/React.createElement("div",{style:{display:"flex",height:"100vh",overflow:"hidden",fontFamily:"'Inter','IBM Plex Sans',system-ui,sans-serif",fontSize:13,background:"#f6f7f9"}},/*#__PURE__*/React.createElement("nav",{style:{width:242,minWidth:242,background:"#fff",borderRight:"1px solid #eef0f2",display:"flex",flexDirection:"column",overflowY:"auto",flexShrink:0,boxShadow:"1px 0 0 rgba(16,24,40,.02)"}},/*#__PURE__*/React.createElement("div",{style:{padding:"18px 18px 14px",borderBottom:"1px solid #f3f4f6",display:"flex",alignItems:"center",justifyContent:"space-between"}},/*#__PURE__*/React.createElement("img",{src:LOGO_B64,alt:"Grupo Jet",style:{height:30,objectFit:"contain",maxWidth:150}}),/*#__PURE__*/React.createElement("span",{style:{background:"linear-gradient(135deg,#fff4ee,#ffe6d3)",color:"#c2410c",fontSize:10,fontWeight:800,padding:"3px 8px",borderRadius:7,letterSpacing:.6,flexShrink:0}},"SIR")),/*#__PURE__*/React.createElement("div",{style:{padding:"10px 12px",flex:1}},(()=>{const items=[];let currentSection=null;NAV.forEach((item,i)=>{if(item.section){currentSection=item.section;const secKey=item.section;// captura o valor desta iteração — evita bug de closure com "let" mutável
 const isOpen=collapsed[secKey]!==true;items.push(/*#__PURE__*/React.createElement("div",{key:"s"+i},/*#__PURE__*/React.createElement("div",{onClick:()=>toggleSection(secKey),style:{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"14px 8px 6px",cursor:"pointer",userSelect:"none"}},/*#__PURE__*/React.createElement("span",{style:{fontSize:10.5,fontWeight:700,color:"#a1a8b3",textTransform:"uppercase",letterSpacing:"0.9px"}},item.section),/*#__PURE__*/React.createElement("svg",{width:"12",height:"12",viewBox:"0 0 24 24",fill:"none",stroke:"#a1a8b3",strokeWidth:"2.5",strokeLinecap:"round",strokeLinejoin:"round",style:{transform:isOpen?"rotate(180deg)":"rotate(0deg)",transition:"transform .2s ease"}},/*#__PURE__*/React.createElement("polyline",{points:"6 9 12 15 18 9"})))));}else if(currentSection===null||collapsed[currentSection]!==true){// Verificar se o usuário tem acesso a este módulo NO CLIENTE ATIVO
 if(!temAcessoModulo(user,item.key,clienteAtivo))return;// pular se sem acesso
 const on=page===item.key;items.push(/*#__PURE__*/React.createElement("div",{key:item.key,onClick:()=>{setPage(item.key);setDashFilter("");},onMouseEnter:e=>{if(!on)e.currentTarget.style.background="#f7f8fa";},onMouseLeave:e=>{if(!on)e.currentTarget.style.background="transparent";},style:{display:"flex",alignItems:"center",gap:10,padding:"9px 12px",borderRadius:10,cursor:"pointer",userSelect:"none",color:on?"#e8650a":"#4b5563",background:on?"linear-gradient(135deg,#fff4ee,#ffe9db)":"transparent",fontWeight:on?600:500,fontSize:13,transition:"background .15s ease,color .15s ease",marginBottom:2,boxShadow:on?"0 1px 4px rgba(232,101,10,.14)":"none"}},/*#__PURE__*/React.createElement("span",{style:{color:on?"#e8650a":"#8b93a1",display:"flex",alignItems:"center",flexShrink:0,transition:"color .15s ease"}},/*#__PURE__*/React.createElement(NavIcon,{name:item.key,color:on?"#e8650a":"#8b93a1"})),/*#__PURE__*/React.createElement("span",null,item.label)));}});return items;})()),/*#__PURE__*/React.createElement("div",{style:{padding:"12px 14px",borderTop:"1px solid #f3f4f6"}},/*#__PURE__*/React.createElement("div",{style:{display:"flex",alignItems:"center",gap:9,padding:"7px 8px",borderRadius:10,marginBottom:4}},/*#__PURE__*/React.createElement("div",{style:{...av(30),flexShrink:0}},user.nome[0]),/*#__PURE__*/React.createElement("div",{style:{overflow:"hidden"}},/*#__PURE__*/React.createElement("div",{style:{fontSize:12,fontWeight:600,color:"#16181d",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}},user.nome.split(" ")[0]),/*#__PURE__*/React.createElement("div",{style:{fontSize:10,color:"#9ca3af",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}},user.email))),/*#__PURE__*/React.createElement("div",{onClick:()=>setUser(null),style:{display:"flex",alignItems:"center",gap:9,padding:"8px 10px",borderRadius:10,cursor:"pointer",color:"#6b7280",fontSize:13,transition:"background .15s ease,color .15s ease"},onMouseEnter:e=>{e.currentTarget.style.background="#f7f8fa";e.currentTarget.style.color="#111";},onMouseLeave:e=>{e.currentTarget.style.background="transparent";e.currentTarget.style.color="#6b7280";}},/*#__PURE__*/React.createElement(NavIcon,{name:"logout",color:"#6b7280"}),/*#__PURE__*/React.createElement("span",null,"Sair")))),/*#__PURE__*/React.createElement("div",{style:{flex:1,display:"flex",flexDirection:"column",overflow:"hidden",minWidth:0}},/*#__PURE__*/React.createElement("header",{style:{background:"#fff",borderBottom:"1px solid #eef0f2",padding:"13px 24px",display:"flex",alignItems:"center",justifyContent:"space-between",flexShrink:0,boxShadow:"0 1px 2px rgba(16,24,40,.02)"}},/*#__PURE__*/React.createElement("div",{style:{fontWeight:700,fontSize:15,color:"#16181d",letterSpacing:"-.1px"}},TITLES[page]||"SIR"),/*#__PURE__*/React.createElement("div",{style:{display:"flex",background:"#f1f2f5",borderRadius:10,padding:3,gap:2}},CLIENTES.map(c=>{const ativo=clienteAtivo===c.key;return/*#__PURE__*/React.createElement("button",{key:c.key,onClick:()=>{if(ativo)return;setClienteAtivo(c.key);setDashFilter("");setPage(primeiraPagePermitida(user,c.key));},style:{padding:"6px 16px",borderRadius:8,border:"none",cursor:"pointer",fontSize:12,fontWeight:700,background:ativo?"#fff":"transparent",color:ativo?"#e8650a":"#8b93a1",boxShadow:ativo?"0 1px 4px rgba(16,24,40,.08)":"none",transition:"all .15s ease"}},c.label);})),/*#__PURE__*/React.createElement("div",{style:{display:"flex",alignItems:"center",gap:9,fontSize:12,color:"#6b7280"}},/*#__PURE__*/React.createElement("div",{style:av(28)},user.nome[0]),/*#__PURE__*/React.createElement("span",null,user.nome),/*#__PURE__*/React.createElement("span",{style:{...badgeStyle(user.grupo==="jet"?"info":"orange"),fontSize:10,marginLeft:2}},user.grupo==="jet"?"Jet":"F8"," · ",user.perfil))),/*#__PURE__*/React.createElement("main",{style:{flex:1,overflowY:"auto",padding:"20px 22px",background:"#f6f7f9"}},renderPage())),toast&&/*#__PURE__*/React.createElement(Toast,{msg:toast.msg,type:toast.type,onClose:()=>setToast(null)}));}
