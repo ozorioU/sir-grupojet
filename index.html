@@ -629,18 +629,18 @@ function PedidosCompraPage({pedidos,setPedidos,user,showToast,budgets=[],onCriar
   const[obsInput,setObsInput]=React.useState("");
 
   const statusColor={
-    "Aguardando":"#f59e0b","Em Cotação":"#3b82f6",
+    "Aguardando":"#f59e0b","Em Análise":"#0891b2","Em Cotação":"#3b82f6",
     "Aguardando Aprovação Brilha":"#8b5cf6","Aprovado — Aguardando Entrega":"#10b981",
     "Finalizado":"#059669","Recusado":"#ef4444","Cancelado":"#6b7280"
   };
   const statusBg={
-    "Aguardando":"#fef3c7","Em Cotação":"#dbeafe",
+    "Aguardando":"#fef3c7","Em Análise":"#cffafe","Em Cotação":"#dbeafe",
     "Aguardando Aprovação Brilha":"#ede9fe","Aprovado — Aguardando Entrega":"#d1fae5",
     "Finalizado":"#d1fae5","Recusado":"#fee2e2","Cancelado":"#f3f4f6"
   };
   const urgColor={"Alta":"#ef4444","Urgente":"#dc2626","Média":"#f59e0b","Normal":"#6b7280","Baixa":"#6b7280"};
 
-  const aguardando=pedidos.filter(p=>p.status==="Aguardando").length;
+  const aguardando=pedidos.filter(p=>podeIniciarCotacao(p)).length;
   const filtrados=filtro==="todos"?pedidos:pedidos.filter(p=>p.status===filtro);
 
   const atualizarStatus=async(id,novoStatus,obs)=>{
@@ -671,7 +671,7 @@ function PedidosCompraPage({pedidos,setPedidos,user,showToast,budgets=[],onCriar
 
     // Filter tabs
     /*#__PURE__*/React.createElement("div",{style:{display:"flex",gap:6,marginBottom:16,flexWrap:"wrap"}},
-      ["todos","Aguardando","Em Cotação","Aguardando Aprovação Brilha","Aprovado — Aguardando Entrega","Finalizado","Recusado"].map(f=>
+      ["todos","Aguardando","Em Análise","Em Cotação","Aguardando Aprovação Brilha","Aprovado — Aguardando Entrega","Finalizado","Recusado"].map(f=>
         /*#__PURE__*/React.createElement("button",{key:f,onClick:()=>setFiltro(f),style:{
           padding:"5px 12px",borderRadius:8,border:"1px solid #e2e4e8",fontSize:11,fontWeight:600,
           cursor:"pointer",fontFamily:"inherit",
@@ -784,7 +784,7 @@ function PedidosCompraPage({pedidos,setPedidos,user,showToast,budgets=[],onCriar
               /*#__PURE__*/React.createElement("div",{style:{color:"#9ca3af",fontSize:12,textAlign:"center",padding:12}},"Sem registros"):
               (pedidoAtual.timeline||[]).map((ev,i,arr)=>{
                 const isLast=i===arr.length-1;
-                const evColor={Criado:"#e8650a","Em Cotação":"#3b82f6","Aguardando Aprovação Brilha":"#8b5cf6","Aprovado — Aguardando Entrega":"#10b981","Finalizado":"#059669","Recusado":"#ef4444"}[ev.acao]||(String(ev.acao||"").indexOf("Orçamento")===0?"#0ea5e9":"#6b7280");
+                const evColor={Criado:"#e8650a","Em Análise":"#0891b2","Em Cotação":"#3b82f6","Aguardando Aprovação Brilha":"#8b5cf6","Aprovado — Aguardando Entrega":"#10b981","Finalizado":"#059669","Recusado":"#ef4444"}[ev.acao]||(String(ev.acao||"").indexOf("Orçamento")===0?"#0ea5e9":"#6b7280");
                 return/*#__PURE__*/React.createElement("div",{key:i,style:{display:"flex",gap:12,position:"relative"}},
                   /*#__PURE__*/React.createElement("div",{style:{display:"flex",flexDirection:"column",alignItems:"center",flexShrink:0}},
                     /*#__PURE__*/React.createElement("div",{style:{width:10,height:10,borderRadius:"50%",background:evColor,marginTop:3,flexShrink:0}}),
@@ -842,6 +842,14 @@ const STATUS_PEDIDO_POR_ETAPA = {
   reprovado: "Em Cotação"
 };
 const STATUS_PEDIDO_FINAIS = ["Finalizado", "Recusado", "Cancelado"];
+
+// Fase ANTES da cotação. "Em Análise" é o status que o botão "Iniciar análise" do sistema
+// Brilha grava — para a Jet é o mesmo ponto de partida de "Aguardando".
+const STATUS_PEDIDO_PRE_COTACAO = ["Aguardando", "Em Análise"];
+const STATUS_PEDIDO_CONHECIDOS = ["Aguardando", "Em Análise", "Em Cotação", "Aguardando Aprovação Brilha", "Aprovado — Aguardando Entrega", "Finalizado", "Recusado", "Cancelado"];
+// Pode iniciar a cotação? Fase pré-cotação, ou um status que o SIR não conhece e ainda sem orçamento
+// (assim um status novo do sistema Brilha nunca deixa o pedido sem ação).
+const podeIniciarCotacao = p => STATUS_PEDIDO_PRE_COTACAO.includes(p.status) || !p.orcamento_id && !STATUS_PEDIDO_CONHECIDOS.includes(p.status);
 const codigoPedido = p => String(p?.id || "").slice(-8).toUpperCase();
 
 // Totais de um orçamento (serviços = mão de obra / materiais)
@@ -1284,7 +1292,7 @@ function PedidoAcoes({
       gap: 8,
       flexWrap: "wrap"
     }
-  }, pedido.status === "Aguardando" && /*#__PURE__*/React.createElement("button", {
+  }, podeIniciarCotacao(pedido) && /*#__PURE__*/React.createElement("button", {
     disabled: ocupado,
     style: b(),
     onClick: () => onCriarOrcamento(pedido, {
